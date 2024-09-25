@@ -71,11 +71,59 @@
 
 \section{Diseño conceptual: diagrama de clases UML}
 \label{sec:disenno}
-[escribe aquí]
+[Imagen del Modelo sin Agregados]
+
+\begin{itemize}
+    \item Explicación del modelo básico sin los casos de uso y sin destacar las relaciones entre clases
+    \begin{itemize}
+        \item Área (Centrándose en Tipo, lista de juegos, estado, N-juegos, clima)
+        \item Juego (Centrándose en Estado, Modelo, Historial de intervenciones, lista de incidencias)
+    \end{itemize}
+    \item Análisis de los casos de uso y destacar decisiones en el diseño según estos casos
+    \begin{itemize}
+        \item Caso de uso A
+        \begin{itemize}
+            \item Este caso de uso está centrado en proporcionar un listado completo de los juegos instalados en las diferentes áreas
+            \item Para poder listar las áreas dado un distrito según el Req 1 se ha creado una entidad Distrito que facilite la búsqueda
+            \item Para satisfacer el Req 4 se ha añadido a la entidad Juego el atributo "patrón de desgaste" 
+        \end{itemize}
+        \item Caso de uso B
+        \begin{itemize}
+            \item Este Caso de uso está centrado en la capacidad del sistema de reportar incidencias
+            \item Se ha incorporado una entidad Incidencia con las características asociadas a los requisitos y otra entidad Usuarios
+            \item Para Req 2 se ha integrado en la entidad Incidencia el atributo lista de destinatarios, para conocer los usuarios que han realizado los reportes
+            \item Habría que explicar el por qué de todos los atributos de la entidad Incidencia, ahora mismo no caigo 
+        \end{itemize}
+        \item Caso de Uso C
+        \begin{itemize}
+            \item Este caso de uso está centrado en analizar las condiciones metereológicas para realizar una planificación eficiente del mantenimiento
+            \item Para poder cubrir Req 1 se ha creado una entidad clima con los atributos "Temperatura", "Precipitación" y "Fecha"
+            \item Para Req 2 y Req 3 no es necesario realizar ningún cambio dado que se conocen los aspectos meteorológicos de las áreas y por lo tanto de sus juegos
+            \item Req 4 queda fuera de nuestro alcance como diseñadores de bases de datos
+        \end{itemize}
+        \item Caso de Uso D
+        \begin{itemize}
+            \item Este caso de uso busca mejorar la toma de decisiones sobre las áreas recreativas a través de la capacidad de generar informes y realizar encuestas de satisfacción por parte de los usuarios
+            \item Para cubrir Req 1 no es necesario introducir nuevas características ya que se contempló con anterioridad el uso incidencias
+            \item Se ha incorporado una entidad Encuesta para satisfacer Req 2, esta entidad tiene el usuario que lo ha realizado, la satisfación que tiene con el juego y un comentario. 
+            \item Para Req 3 proporcionamos la información de las áreas junto a los diferentes reportes
+        \end{itemize}
+        \item Caso de Uso E
+        \begin{itemize}
+            \item Para Req 1 no es necesario incluir ninguna característica, ya que los cambios realizados para el caso de uso A ya contemplan este requisito
+            \item Para Req 2 se ha añadido el atributo "N-juegos" (esto no se podría calcular sin necesidad de tenerlo estático??)
+            \item Req 3 es viable hacerlo??
+            \item Req 4 queda fuera del nuestro alcance
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
 
 \section{Diseño de agregados}
 \label{sec:agregados}
-[escribe aquí]
+\begin{itemize}
+    \item Analizar las acciones (lectura, escritura y actualizaciones) de los casos de uso
+    \item El caso de Uso A es completamente de lectura, ya que solo se quiere obtener información de las áreas y juegos
+\end{itemize}
 
 \section{Validación del esquema}
 \label{sec:esquema}
