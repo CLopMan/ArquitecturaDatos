@@ -72,7 +72,32 @@
 
 \section{Diseño conceptual: diagrama de clases UML}
 \label{sec:disenno}
+En esta sección se describe el primer modelo conceptual teniendo en cuenta tanto la semántica extraída de la descripción de la práctica como de los casos de uso.
+
+Podemos extraer la existencia de 8 entidades importantes en nuestro modelo:
+\begin{enumerate}
+    \item \textbf{Distrito:} Aglomeración de \textit{áreas recreativas}.
+    \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, su estdo y su accesibilidad; entre otros.
+    \item \textbf{Juego:} Representación de cada uno de los instrumentos en un \textit{área recreativa}. Contiene información sobre el modelo, estado, patrones de desgaste, etc.
+    \item \textbf{Clima:} Contiene información meteorológica para una fecha.
+    \item \textbf{Historial de intervenciones:} Matiene registro de las \textit{intervenciones} realizadas en un juego.
+    \item \textbf{Intervención:} Representa una revisión o intervención sobre un \textit{juego}. Debe contener información sobre la fecha y observaciones realizadas sobre el \textit{juego}.
+    \item \textbf{Usuario:} Contiene información sobre un usuario como la información de contacto.
+    \item \textbf{Incidencia:} Contiene la información relativa a una incidencia sobre un \textit{juego}. Esto es, naturaleza de la incidencia, lista de usuarios que han reportado la incidencia, estado de la incidencia, empresa encargada de solucionarla, fecha de apertura, fecha de cierre y creador. 
+    \item \textbf{Encuesta:} Registra información sobre la satisfacción de los \textit{usuarios} para un \textit{juego}.
+\end{enumerate}
+Con todo lo anterior, hemos realizado el siguiente diseño del sistema.
+
 [Imagen del Modelo sin Agregados]
+
+\subsection{Caso de uso A}
+\label{subsec:casoA}
+Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluye la entidad \textit{distito} y el campo \textit{barrio} en \textit{área}.
+
+\begin{itemize}
+    \item La base de datos mantendrá registros sobre todas las incidencias. No obstante la generación de informes es algo que queda fuera del diseño y se contempla como funcionalidad de la aplicación..
+    \item 
+\end{itemize}
 
 \begin{itemize}
     \item Explicación del modelo básico sin los casos de uso y sin destacar las relaciones entre clases
