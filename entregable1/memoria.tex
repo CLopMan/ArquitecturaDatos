@@ -120,10 +120,33 @@
 
 \section{Diseño de agregados}
 \label{sec:agregados}
+Con el objetivo de poder analizar las capacidades que tendrán los agregados es necesario conoecer las acciones que conllevan los distintos casos de uso.
 \begin{itemize}
-    \item Analizar las acciones (lectura, escritura y actualizaciones) de los casos de uso
-    \item El caso de Uso A es completamente de lectura, ya que solo se quiere obtener información de las áreas y juegos
+    \item \textbf{Lectura}: Casos de Uso A y E
+    \item \textbf{Escritura}: Casos de Uso B, C y D
 \end{itemize}
+
+En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 4 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a añadir elementos.
+
+Además hemos determinado si las relaciones entre entidades deben de ser embebidas, referencias o tablas resumen. Estas decisiones se fundamentan en la frecuencia de lectura, modificación y crecimiento de los datos.
+
+A continuación se describirán los agregados y las entidates que lo conforman, además de abordar las características de los agregados, como son la raíz y el perímetro.
+
+\subsection{Agregado_Rojo}
+\label{sub_sec:agregado_rojo}
+\begin{itemize}
+    \item \textbf{Entidades}: Distrito, Área y Juego
+    \item \textbf{Raíz}: Distrito
+    \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden. Cada juego está asociado al área al que pertenece.
+    \item \textbf{Casos de Uso optimizados}:
+    \begin{itemize}
+        \item CU\_A : (Listado detallado de juegos y su estado): Este agregado proporciona consultas rápidas para obtener información sobre los juegos y su estado actual.
+        \item CU\_E : (Informe agrupado por distritos): También es capaz de generar un informe agrupado por distritos que muestre información sobre sus juegos. 
+    \end{itemize}
+\end{itemize}
+
+[Imagen con agregados]
+
 
 \section{Validación del esquema}
 \label{sec:esquema}
