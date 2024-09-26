@@ -178,18 +178,20 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 \label{sec:esquema}
 Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias como el uso de referencias en vez de embeber los datos. Sin embargo, para aquellos datos que hemos decidido embeber, debemos redactar una serie de reglas para mantener la consistencia de nuestro esquema. Estas reglas son:
 \begin{itemize}
-    \item Nombres de \textit{Distrito}: Cada distrito debe tener un nombre único para así evitar duplicados.
     \item Coordenadas de \textit{Área}: Las coordenadas de las áreas serán una tupla que contenga en grados, minutos y segundos la latitud y longitud del área.
-    \item Estado Operativo \textit{Área}: El estado operativo de las áreas sólo podrán guardar los valores "Operativas", "En Mantenimiento" y "Fuera de servicio".
+    \item Tipo de \textit{Área}: El tipo de un área solo puede guardar los valores: ``Parques infantiles'', ``Zonas deportivas'' y ``Espacios para mayores''.
+    \item Estado Operativo \textit{Área}: El estado operativo de las áreas sólo podrán guardar los valores ``Operativas'', ``En Mantenimiento'' y ``Fuera de servicio''.
     \item Número de Juegos \textit{Área}: El número de juegos instalados en un área debe ser un entero no negativo y siempre menor o igual al número máximo de juegos de un área.
     \item Número Máximo de Juegos \textit{Área}: El número máximo de juegos de un área debe ser un enterno no negativo.
     \item Temperatura \textit{Clima}: La temperatura de \textit{Clima} es un float y se medirá en grados Celsius.
     \item Precipitación \textit{Clima}: La precipitación de \textit{Clima} es un float y se medirá en litros por metro cuadrado.
-    \item Estado Operativo \textit{Juego}: El estado operativo de los juegos sólo podrá guardar dos valores "Disponible" o "No Disponible".
+    \item Estado Operativo \textit{Juego}: El estado operativo de los juegos sólo podrá guardar dos valores ``Disponible'' o ``No Disponible''.
     \item QR \textit{Juego}: El QR de los juegos debe de ser una imagen.
-    \item Accesibilidad \textit{Juego}: La accesibilidad de un juego debe ser un texto que indique las personas con alguna deficiencia física, mental o sensorial que puedan acceder.
+    \item Accesibilidad \textit{Juego}: La accesibilidad de un juego debe ser un texto que indique las personas con alguna deficiencia física que puedan acceder al juego.
     \item Fechas \textit{Incidencia}: La fecha de apertura debe ser anterior a la fecha de cierre.
-    \item Fechas: Las fechas de todas las entidades deben seguir el formato: "yyyy/mm/dd hh:MM:ss".
+    \item Naturaleza \textit{Indicencia}: Se debe comprobar que no haya una incidencia con la misma naturaleza asociada al mismo objeto antes de introducirla.
+    \item e-mail de \textit{Usuario}: El e-mail de los usuarios debe tener un formato válido para poder gestionar el contacto al resolver las incidencias.
+    \item Fechas: Las fechas de todas las entidades deben seguir el formato: ``yyyy/mm/dd hh:MM:ss''.
 \end{itemize}
 
 
