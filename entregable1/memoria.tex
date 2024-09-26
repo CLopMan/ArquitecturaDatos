@@ -79,7 +79,7 @@ En esta sección se describe el primer modelo conceptual teniendo en cuenta tant
 
 Podemos extraer la existencia de 8 entidades importantes en nuestro modelo:
 \begin{enumerate}
-    \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, el distrito al que pertenecen, su estdo y su accesibilidad; entre otros.
+    \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, el distrito al que pertenecen, su estado y su accesibilidad; entre otros.
     \item \textbf{Juego:} Representación de cada uno de los instrumentos en un \textit{Área recreativa}. Contiene información sobre el modelo, estado, patrones de desgaste, etc.
     \item \textbf{Clima:} Contiene información meteorológica para una fecha.
     \item \textbf{Historial de intervenciones:} Matiene registro de las \textit{Intervenciones} realizadas en un juego.
@@ -98,7 +98,7 @@ Con todo lo anterior, hemos realizado el siguiente diseño del sistema.
 
 \subsection{Caso de uso A}
 \label{subsec:casoA}
-Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluyen los campos \textit{distrito}, \textit{barrio} en \textit{Área}. En el diagrama contiene toda la información necesaria para satisfacer la totalidad de los requistos.
+Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluyen los campos \textit{distrito} y \textit{barrio} en \textit{Área}. En el diagrama contiene toda la información necesaria para satisfacer la totalidad de los requistos.
 
 \subsection{Caso de uso B}
 \label{subsec:casoB}
@@ -110,7 +110,7 @@ En este caso se relaciona la información climática con los juegos y áreas. Po
 
 \subsection{Caso de uso D}
 \label{subsec:casoD}
-Este caso de uso permite relacionar las incidencias reportadas por los usuarios y las encuestas de satisfacción para mejorar la seguridad, accesibilidad y satisfacción de los ciudadanos. Gracias a las entidades \textit{Incidencia}y \textit{Encuesta} y los campos \textit{encuestas} e \textit{incidencias} en juego recogemos toda la información necesaria para cumplir los 4 requisitos recogidos en este caso de uso.
+Este caso de uso permite relacionar las incidencias reportadas por los usuarios y las encuestas de satisfacción para mejorar la seguridad, accesibilidad y satisfacción de los ciudadanos. Gracias a las entidades \textit{Incidencia} y \textit{Encuesta} y los campos \textit{encuestas} e \textit{incidencias} en juego recogemos toda la información necesaria para cumplir los 4 requisitos recogidos en este caso de uso.
 
 \subsection{Caso de uso E}
 \label{subsec:casoE}
@@ -123,13 +123,13 @@ Anteriormente hemos visto como el diseño recoge toda la información necesaria 
 \newpage
 \section{Diseño de agregados}
 \label{sec:agregados}
-Con el objetivo de poder analizar las capacidades que tendrán los agregados es necesario conoecer las acciones que conllevan los distintos casos de uso.
+Con el objetivo de poder analizar las capacidades que tendrán los agregados es necesario conocer las acciones que conllevan los distintos casos de uso.
 \begin{itemize}
     \item \textbf{Lectura}: Casos de Uso A y E
     \item \textbf{Escritura}: Casos de Uso B, C y D
 \end{itemize}
 
-En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a las inserciones.
+En el diseño de agregados para el sistema de áreas y sus juegos se han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a las inserciones.
 
 Además hemos determinado si las relaciones entre entidades deben de ser embebidas, referencias o tablas resumen. Estas decisiones se fundamentan en la frecuencia de lectura, modificación y crecimiento de los datos.
 
@@ -149,13 +149,13 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
     \end{itemize}
     \item \textbf{Embeber vs Referencias}
     \begin{itemize}
-        \item Lecturas frecuentes (CU\_A, CU\_E): Para poder realizar las consultas de estos dos casos de uso se ha optado por embeber las intervenciones en el historial de intervenciones que a la vez está embebidos en sus respectivos juegos.
-        \item Inserciones frecuentes (CU\_C): Con el objetivo de que las inserciones no sean costosas se ha decidido embeber el clima en el área, ya que clima será redundante en ninguna otra agregación.
+        \item Lecturas frecuentes (CU\_A, CU\_E): Para poder realizar las consultas de estos dos casos de uso se ha optado por embeber las intervenciones en el historial de intervenciones que a la vez está embebido en sus respectivos juegos.
+        \item Inserciones frecuentes (CU\_C): Con el objetivo de que las inserciones no sean costosas se ha decidido embeber el clima en el área, ya que clima no será redundante en ningún otro agregado.
         \item Tabla resumen: Se ha decidido incluir una tabla resumen entre Área y Juego con el objetivo de realizar lecturas rápidas para aquellos atributos estáticos y poder realizar inserciones en juego (dado que juego se encuentra en dos agregados) sin ser costosas.
     \end{itemize}
     \item \textbf{Uso de Índices}
     \begin{itemize}
-        \item Para poder realizar búsquedas de todas las áreas de un distrito se ha optado por usar un índice que permita obtener todas las áreas de un distrito, de esta mánera no será necesario realizar una búsqueda exhaustiva
+        \item Para poder realizar búsquedas de todas las áreas de un distrito se ha optado por usar un índice que permita obtener todas las áreas de un distrito, de esta manera no será necesario realizar una búsqueda exhaustiva
     \end{itemize}
 \end{itemize}
 
@@ -167,7 +167,7 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
     \item \textbf{Perímetro}: Este agregado permite generar informes sobre las incidencias de los juegos y el grado de satisfacción de los usuarios sobre los diferentes juegos.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
-        \item CU\_B : (Proceso de mantenimiento del mobiliario urbano): Este agregado proporciona la capacidad generar incidentes en los juegos.
+        \item CU\_B : (Proceso de mantenimiento del mobiliario urbano): Este agregado proporciona a los usuarios la capacidad de abrir incidencias sobre los juegos.
         \item CU\_D : (Mejora la toma de decisiones con incidentes de seguridad y satisfacción): Este agregado permite almacenar nuevas encuestas sobre los juegos y generar informes con las correlaciones entre las incidencias y las encuestas de un mismo juego. 
     \end{itemize}
     \item \textbf{Embeber vs Referencias}
@@ -186,7 +186,7 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 
 \subsection{JSONs de ejemplos}
 \label{sub_sec:json_ejemplos}
-Para poder visualizar de una manera más práctica los agregados, a continuación se ejemplifica en formato JSON cada uno de los agregados. 
+Para poder visualizar de una manera más práctica los agregados, a continuación se ejemplifican en formato JSON cada uno de los agregados. 
 \begin{itemize}
     \item \textbf{Agregado sobre áreas y juegos}
 \end{itemize}
@@ -300,13 +300,13 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
 \newpage
 \section{Validación del esquema}
 \label{sec:esquema}
-Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias como el uso de referencias en vez de embeber los datos. Sin embargo, para aquellos datos que hemos decidido embeber, debemos redactar una serie de reglas para mantener la consistencia de nuestro esquema. Estas reglas son:
+En este apartado se describen los formatos y tipos de datos de cada uno de los campos con el fin de mantener la integridad de los datos y asegurar un correcto funcionamiento del sistema. Para esto, se definen las siguientes reglas:
 \begin{itemize}
-    \item \textbf{Coordenadas de \textit{Área}}: Las coordenadas de las áreas serán un string que contenga en grados, minutos, segundos y dirección la latitud y longitud del área. Además, los grados deben ser números enteros no negativos menores de 91, los minutos y segundos deben ser números flotatntes no negativos menores o iguales a 60 y la dirección tendrán los valores ``N'' o ``S'' para la latitud y ``E'' o ``W'' para la longitud.
+    \item \textbf{Coordenadas de \textit{Área}}: Las coordenadas de las áreas serán un string que contenga en grados, minutos, segundos y dirección la latitud y longitud del área. Además, los grados deben ser números enteros no negativos menores de 91, los minutos y segundos deben ser números flotantes no negativos menores o iguales a 60 y la dirección tendrán los valores ``N'' o ``S'' para la latitud y ``E'' o ``W'' para la longitud.
     \item \textbf{Tipo de \textit{Área}}: El tipo de un área solo puede guardar los valores: ``Parque infantil'', ``Zona deportiva'' y ``Espacio para mayores''.
     \item \textbf{Estado Operativo \textit{Área}}: El estado operativo de las áreas sólo podrán guardar los valores ``Operativa'', ``En Mantenimiento'' y ``Fuera de servicio''.
     \item \textbf{Número de Juegos \textit{Área}}: El número de juegos instalados en un área debe ser un entero no negativo y siempre menor o igual al número máximo de juegos de un área.
-    \item \textbf{Número Máximo de Juegos \textit{Área}}: El número máximo de juegos de un área debe ser un enterno no negativo.
+    \item \textbf{Número Máximo de Juegos \textit{Área}}: El número máximo de juegos de un área debe ser un entero no negativo.
     \item \textbf{Temperatura \textit{Clima}}: La temperatura de \textit{Clima} es un float y se medirá en grados Celsius.
     \item \textbf{Precipitación \textit{Clima}}: La precipitación de \textit{Clima} es un float y se medirá en litros por metro cuadrado.
     \item \textbf{Estado Operativo \textit{Juego}}: El estado operativo de los juegos sólo podrá guardar dos valores ``Disponible'' o ``No Disponible''.
