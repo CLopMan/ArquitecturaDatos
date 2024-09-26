@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{float}
 
 \definecolor{miverde}{rgb}{0,0.6,0}
 
@@ -72,6 +73,7 @@
 \label{sec:introduccion}
 En este documento se recoge el desarrollo de la primera práctica de la asignatura Arquitectura de datos. A continuación, se especifica el diseño de la base de datos a través de un diagrama de clases UML, el diseño de agregados y las estrategias para la validación del esquema.
 
+\newpage
 \section{Diseño conceptual: diagrama de clases UML}
 \label{sec:disenno}
 En esta sección se describe el primer modelo conceptual teniendo en cuenta tanto la semántica extraída de la descripción de la práctica como de los casos de uso.
@@ -79,21 +81,25 @@ En esta sección se describe el primer modelo conceptual teniendo en cuenta tant
 Podemos extraer la existencia de 8 entidades importantes en nuestro modelo:
 \begin{enumerate}
     \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, el distrito al que pertenecen, su estdo y su accesibilidad; entre otros.
-    \item \textbf{Juego:} Representación de cada uno de los instrumentos en un \textit{área recreativa}. Contiene información sobre el modelo, estado, patrones de desgaste, etc.
+    \item \textbf{Juego:} Representación de cada uno de los instrumentos en un \textit{Área recreativa}. Contiene información sobre el modelo, estado, patrones de desgaste, etc.
     \item \textbf{Clima:} Contiene información meteorológica para una fecha.
-    \item \textbf{Historial de intervenciones:} Matiene registro de las \textit{intervenciones} realizadas en un juego.
-    \item \textbf{Intervención:} Representa una revisión o intervención sobre un \textit{juego}. Debe contener información sobre la fecha y observaciones realizadas sobre el \textit{juego}.
-    \item \textbf{Usuario:} Contiene información sobre un usuario como la información de contacto.
-    \item \textbf{Incidencia:} Contiene la información relativa a una incidencia sobre un \textit{juego}. Esto es, naturaleza de la incidencia, lista de usuarios que han reportado la incidencia, estado de la incidencia, empresa encargada de solucionarla, fecha de apertura, fecha de cierre y creador.
-    \item \textbf{Encuesta:} Registra información sobre la satisfacción de los \textit{usuarios} para un \textit{juego}.
+    \item \textbf{Historial de intervenciones:} Matiene registro de las \textit{Intervenciones} realizadas en un juego.
+    \item \textbf{Intervención:} Representa una revisión o intervención sobre un \textit{Juego}. Debe contener información sobre la fecha y observaciones realizadas sobre el \textit{Juego}.
+    \item \textbf{Usuario:} Contiene información sobre un usuario como los datos de contacto.
+    \item \textbf{Incidencia:} Contiene la información relativa a una incidencia sobre un \textit{Juego}. Esto es, naturaleza de la incidencia, lista de usuarios que han reportado la incidencia, estado de la incidencia, empresa encargada de solucionarla, fecha de apertura, fecha de cierre y creador.
+    \item \textbf{Encuesta:} Registra información sobre la satisfacción de los usuarios para un \textit{Juego}.
 \end{enumerate}
 Con todo lo anterior, hemos realizado el siguiente diseño del sistema.
 
-\includegraphics[width=0.9\textwidth]{diagrama_arqui-noaggregados.png}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{diagrama_arqui-noaggregados.png}
+    \caption{\small Diagrama de clases}
+\end{figure}
 
 \subsection{Caso de uso A}
 \label{subsec:casoA}
-Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluyen los campos \textit{distito}, \textit{barrio} en \textit{área}. En el diagrama contiene toda la información necesaria para satisfacer la totalidad de los requistos.
+Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluyen los campos \textit{distrito}, \textit{barrio} en \textit{Área}. En el diagrama contiene toda la información necesaria para satisfacer la totalidad de los requistos.
 
 \subsection{Caso de uso B}
 \label{subsec:casoB}
@@ -101,7 +107,7 @@ Este caso de uso otorga a los usuarios la capacidad de abrir o completar una inc
 
 \subsection{Caso de uso C}
 \label{subsec:casoC}
-En este caso se relaciona la información climática con los \textit{juegos} y \textit{áreas}. Por esto se incluyen la entidad \textit{clima} y el campo \textit{patrones de desgaste} en juego. A través de esta información todos los requisitos quedan contemplados en el diagrama.
+En este caso se relaciona la información climática con los juegos y áreas. Por esto se incluyen la entidad \textit{Clima} y el campo \textit{patrones de desgaste} en juego. A través de esta información todos los requisitos quedan contemplados en el diagrama.
 
 \subsection{Caso de uso D}
 \label{subsec:casoD}
@@ -109,7 +115,7 @@ Este caso de uso permite relacionar las incidencias reportadas por los usuarios 
 
 \subsection{Caso de uso E}
 \label{subsec:casoE}
-Este caso de uso permite recoger toda la información relativa a las áreas recreativas para la generación de un informe. Gracias a las entidades \textit{historial de intervenciones} y \textit{áreas} el diseño recoge los datos necesarios para generar el informe requerido.
+Este caso de uso permite recoger toda la información relativa a las áreas recreativas para la generación de un informe. Gracias a las entidades \textit{Historial de intervenciones} y \textit{Área} el diseño recoge los datos necesarios para generar el informe requerido.
 
 \subsection{Conclusiones sobre el modelo}
 \label{subsec:conclusiones-modelo}
@@ -133,8 +139,8 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 \subsection{Agregado sobre Áreas y Juegos}
 \label{sub_sec:agregado_area_juego}
 \begin{itemize}
-    \item \textbf{Entidades}: Área, Clima, Historial Intervenciones, Intervención y Juego
-    \item \textbf{Raíz}: Área
+    \item \textbf{Entidades}: \textit{Área}, \textit{Clima}, \textit{Historial Intervenciones}, \textit{Intervención} y \textit{Juego}.
+    \item \textbf{Raíz}: \textit{Área}.
     \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden y agregar nuevos tiempos climatológicos a las áreas. Cada juego está asociado al área al que pertenece.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
@@ -157,8 +163,8 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 \subsection{Agregado sobre Incidencias y Encuestas}
 \label{sub_sec:agregado_inserciones_encuestas}
 \begin{itemize}
-    \item \textbf{Entidades}: Juego, Incidencia, Usuario y Encuestas
-    \item \textbf{Raíz}: Juego
+    \item \textbf{Entidades}: \textit{Juego}, \textit{Incidencia}, \textit{Usuario} y \textit{Encuestas}.
+    \item \textbf{Raíz}: \textit{Juego}.
     \item \textbf{Perímetro}: Este agregado permite generar informes sobre las incidencias de los juegos y el grado de satisfacción de los usuarios sobre los diferentes juegos.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
@@ -172,7 +178,12 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
     \end{itemize}
 \end{itemize}
 
-\includegraphics[width=0.9\textwidth]{diagrama_arqui.png}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{diagrama_arqui.png}
+    \caption{\small Diseño conceptual con agregados}
+\end{figure}
+
 
 \subsection{JSONs de ejemplos}
 \label{sub_sec:json_ejemplos}
@@ -227,7 +238,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
 \end{lstlisting}
 
 \begin{itemize}
-    \item \textbf{Agregado sobre áreas y juegos}
+    \item \textbf{Agregado sobre Incidencias y Encuestas}
 \end{itemize}
 \begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Indicencias y Encuestas, language=C]
 {
@@ -238,7 +249,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
         "Muletas"
     ],
     "QR": imagen,
-    "Fecha": "2024/09/26 10:00:00""Accesibilidad"
+    "Fecha": "2024/09/26 10:00:00"
     "Patrones de desgaste": [
         "Lluvia",
         "Fuego"
@@ -281,7 +292,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
                     "Contacto": "ernesto_2010@gmail.com"
                 }
             ],
-            "Encargdo": "Natalia Garcia Lopez"
+            "Encargado": "Natalia Garcia Lopez"
         }
     ]
 }
