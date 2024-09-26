@@ -6,6 +6,8 @@
 \usepackage{listings}
 \usepackage{xcolor}
 
+\definecolor{miverde}{rgb}{0,0.6,0}
+
 % style for listings (código)
 \lstdefinestyle{mystyle} {
     commentstyle=\color{gray},
@@ -173,25 +175,140 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 
 [Imagen con agregados]
 
+\subsection{JSONs de ejemplos}
+\label{sub_sec:json_ejemplos}
+Para poder visualizar de una manera más práctica los agregados, a continuación se ejemplifica en formato JSON cada uno de los agregados. 
+\begin{itemize}
+    \item \textbf{Agregado sobre áreas y juegos}
+\end{itemize}
+\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Áreas y Juegos, language=C, stringstyle=\color{miverde}]
+{
+    "Coordenadas": "36 30 10.0 N 6 16 30.0 W",
+    "Tipo": "Parque infantil",
+    "Fecha": "2024/09/26 10:23:49",
+    "Estado": "Operativa",
+    "N-Juegos": 2,
+    "N-Max": 50,
+    "Barrio": "Barrio de Puntuales",
+    "Distrito": "Cadiz",
+    "Climatologia": [
+        {
+            "Fecha": "2024/09/26 23:59:59",
+            "Temperatura": 23,
+            "Precipitacion": 0
+        },
+        {
+            "Fecha": "2024/09/27 23:59:59",
+            "Temperatura": 27,
+            "Precipitacion": 0
+        }
+    ],
+    "Resumen Juego": [
+        {
+            "_id": 1,
+            "Modelo": "Columpio",
+            "Accesibilidad": [
+                "Silla de ruedas",
+                "Muletas"
+            ],
+            "QR": imagen,
+            "Fecha": "2024/09/26 10:00:00"
+        },
+        {
+            "_id": 2,
+            "Modelo": "Balancin",
+            "Accesibilidad": [
+                "Muletas"
+            ],
+            "QR": imagen,
+            "Fecha": "2024/09/26 10:15:00"
+        }
+    ]
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Agregado sobre áreas y juegos}
+\end{itemize}
+\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Indicencias y Encuestas, language=C, stringstyle=\color{miverde}]
+{
+    "Estado": "Disponible",
+    "Modelo": "Columpio",
+    "Accesibilidad": [
+        "Silla de ruedas",
+        "Muletas"
+    ],
+    "QR": imagen,
+    "Fecha": "2024/09/26 10:00:00""Accesibilidad"
+    "Patrones de desgaste": [
+        "Lluvia",
+        "Fuego"
+    ],
+    "Encuestas": [
+        {
+            "Puntuacion": 4.6,
+            "Comentario": "Buena localizacion con un un ambiente tranquilo",
+            "User": {
+                "Nombre": "Ernesto",
+                "Contacto": "ernesto_2010@gmail.com"
+                }
+        },
+        {
+            "Puntuacion": 5.0,
+            "Comentario": "Muy buena atraccion para mis hijos, 100% recomendado",
+            "User": {
+                "Nombre": "Mari Pili",
+                "Contacto": "lapili_mari@gmail.com"
+            }
+        }
+    ]
+    "Incidencias": [
+        {
+            "Fecha Apertura": "2024/09/26 16:00:30",
+            "Estado": "Cerrada",
+            "Creador": {
+                "Nombre": "Pablo",
+                "Contacto": "_pablo_@gmail.com"
+            },
+            "Fecha Cierre": "2024/09/26 17:31:48",
+            "Naturaleza": "Fallo de estructura",
+            "Destinatarios": [
+                {
+                    "Nombre": "Pablo",
+                    "Contacto": "_pablo_@gmail.com"
+                },
+                {
+                    "Nombre": "Ernesto",
+                    "Contacto": "ernesto_2010@gmail.com"
+                }
+            ],
+            "Encargdo": "Natalia Garcia Lopez"
+        }
+    ]
+}
+\end{lstlisting}
+
 
 \section{Validación del esquema}
 \label{sec:esquema}
 Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias como el uso de referencias en vez de embeber los datos. Sin embargo, para aquellos datos que hemos decidido embeber, debemos redactar una serie de reglas para mantener la consistencia de nuestro esquema. Estas reglas son:
 \begin{itemize}
-    \item Coordenadas de \textit{Área}: Las coordenadas de las áreas serán una tupla que contenga en grados, minutos y segundos la latitud y longitud del área.
-    \item Tipo de \textit{Área}: El tipo de un área solo puede guardar los valores: ``Parques infantiles'', ``Zonas deportivas'' y ``Espacios para mayores''.
-    \item Estado Operativo \textit{Área}: El estado operativo de las áreas sólo podrán guardar los valores ``Operativas'', ``En Mantenimiento'' y ``Fuera de servicio''.
-    \item Número de Juegos \textit{Área}: El número de juegos instalados en un área debe ser un entero no negativo y siempre menor o igual al número máximo de juegos de un área.
-    \item Número Máximo de Juegos \textit{Área}: El número máximo de juegos de un área debe ser un enterno no negativo.
-    \item Temperatura \textit{Clima}: La temperatura de \textit{Clima} es un float y se medirá en grados Celsius.
-    \item Precipitación \textit{Clima}: La precipitación de \textit{Clima} es un float y se medirá en litros por metro cuadrado.
-    \item Estado Operativo \textit{Juego}: El estado operativo de los juegos sólo podrá guardar dos valores ``Disponible'' o ``No Disponible''.
-    \item QR \textit{Juego}: El QR de los juegos debe de ser una imagen.
-    \item Accesibilidad \textit{Juego}: La accesibilidad de un juego debe ser un texto que indique las personas con alguna deficiencia física que puedan acceder al juego.
-    \item Fechas \textit{Incidencia}: La fecha de apertura debe ser anterior a la fecha de cierre.
-    \item Naturaleza \textit{Indicencia}: Se debe comprobar que no haya una incidencia con la misma naturaleza asociada al mismo objeto antes de introducirla.
-    \item e-mail de \textit{Usuario}: El e-mail de los usuarios debe tener un formato válido para poder gestionar el contacto al resolver las incidencias.
-    \item Fechas: Las fechas de todas las entidades deben seguir el formato: ``yyyy/mm/dd hh:MM:ss''.
+    \item \textbf{Coordenadas de \textit{Área}}: Las coordenadas de las áreas serán un string que contenga en grados, minutos, segundos y dirección la latitud y longitud del área. Además, los grados deben ser números enteros no negativos menores de 91, los minutos y segundos deben ser números flotatntes no negativos menores o iguales a 60 y la dirección tendrán los valores ``N'' o ``S'' para la latitud y ``E'' o ``W'' para la longitud.
+    \item \textbf{Tipo de \textit{Área}}: El tipo de un área solo puede guardar los valores: ``Parque infantil'', ``Zona deportiva'' y ``Espacio para mayores''.
+    \item \textbf{Estado Operativo \textit{Área}}: El estado operativo de las áreas sólo podrán guardar los valores ``Operativa'', ``En Mantenimiento'' y ``Fuera de servicio''.
+    \item \textbf{Número de Juegos \textit{Área}}: El número de juegos instalados en un área debe ser un entero no negativo y siempre menor o igual al número máximo de juegos de un área.
+    \item \textbf{Número Máximo de Juegos \textit{Área}}: El número máximo de juegos de un área debe ser un enterno no negativo.
+    \item \textbf{Temperatura \textit{Clima}}: La temperatura de \textit{Clima} es un float y se medirá en grados Celsius.
+    \item \textbf{Precipitación \textit{Clima}}: La precipitación de \textit{Clima} es un float y se medirá en litros por metro cuadrado.
+    \item \textbf{Estado Operativo \textit{Juego}}: El estado operativo de los juegos sólo podrá guardar dos valores ``Disponible'' o ``No Disponible''.
+    \item \textbf{QR \textit{Juego}}: El QR de los juegos debe de ser una imagen.
+    \item \textbf{Accesibilidad \textit{Juego}}: La accesibilidad de un juego debe ser un texto que indique las personas con alguna deficiencia física que puedan acceder al juego.
+    \item \textbf{Estado \textit{Incidencia}}: El estado operativo de los juegos sólo podrá guardar dos valores ``Abierta'' o ``Cerrada''.
+    \item \textbf{Fechas \textit{Incidencia}}: La fecha de apertura debe ser anterior a la fecha de cierre si el estado es ``Cerrada''.
+    \item \textbf{Naturaleza \textit{Indicencia}}: Se debe comprobar que no haya una incidencia con la misma naturaleza asociada al mismo objeto antes de introducirla.
+    \item \textbf{e-mail de \textit{Usuario}}: El e-mail de los usuarios debe tener un formato válido para poder gestionar el contacto al resolver las incidencias.
+    \item \textbf{Fechas}: Las fechas de todas las entidades deben seguir el formato: ``yyyy/mm/dd hh:MM:ss''.
+    \item \textbf{Decimal}: Los números flotantes se determinan con un ``.''.
 \end{itemize}
 
 
