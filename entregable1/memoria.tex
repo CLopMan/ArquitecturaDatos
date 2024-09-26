@@ -43,7 +43,7 @@
 
     {\Huge \textbf{Práctica 1} \par}
     \vspace{0.5cm}
-    {\Large Diseño de una Base de Datos no relacional \par}
+    {\Large Diseño de una Base de Datos No Relacional \par}
     \vspace{8cm}
 
    \textbf{Ingeniería Informática, Cuarto curso}\\
@@ -152,7 +152,7 @@ Con el objetivo de poder analizar las capacidades que tendrán los agregados es 
     \item \textbf{Escritura}: Casos de Uso B, C y D
 \end{itemize}
 
-En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a añadir elementos.
+En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a las inserciones.
 
 Además hemos determinado si las relaciones entre entidades deben de ser embebidas, referencias o tablas resumen. Estas decisiones se fundamentan en la frecuencia de lectura, modificación y crecimiento de los datos.
 
@@ -161,13 +161,42 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 \subsection{Agregado sobre Áreas y Juegos}
 \label{sub_sec:agregado_area_juego}
 \begin{itemize}
-    \item \textbf{Entidades}: Distrito, Área, Clima y Juego
+    \item \textbf{Entidades}: Área, Clima, Historial Intervenciones, Intervención y Juego
     \item \textbf{Raíz}: Área
-    \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden. Cada juego está asociado al área al que pertenece.
+    \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden y agregar nuevos tiempos climatológicos a las áreas. Cada juego está asociado al área al que pertenece.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
-        \item CU\_A : (Listado detallado de juegos y su estado): Este agregado proporciona consultas rápidas para obtener información sobre los juegos y su estado actual.
+        \item CU\_A : (Listado detallado de juegos y su estado): Este agregado proporciona consultas rápidas para obtener información sobre los juegos y su estado actual. 
+        \item CU\_C : (Impacto del clima en el mantenimiento de juegos): Este agregado permite analizar cómo las condiciones climáticas afectan el desgates de los juegos en las áreas recreativas.
         \item CU\_E : (Informe agrupado por distritos): También es capaz de generar un informe agrupado por distritos que muestre información sobre sus juegos. 
+    \end{itemize}
+    \item \textbf{Embeber vs Referencias}
+    \begin{itemize}
+        \item Lecturas frecuentes (CU\_A, CU\_E): Para poder realizar las consultas de estos dos casos de uso se ha optado por embeber las intervenciones en el historial de intervenciones que a la vez está embebidos en sus respectivos juegos.
+        \item Inserciones frecuentes (CU\_C): Con el objetivo de que las inserciones no sean costosas se ha decidido embeber el clima en el área, ya que clima será redundante en ninguna otra agregación.
+        \item Tabla resumen: Se ha decidido incluir una tabla resumen entre Área y Juego con el objetivo de realizar lecturas rápidas para aquellos atributos estáticos y poder realizar inserciones en juego (dado que juego se encuentra en dos agregados) sin ser costosas.
+    \end{itemize}
+    \item \textbf{Uso de Índices}
+    \begin{itemize}
+        \item Para poder realizar búsquedas de todas las áreas de un distrito se ha optado por usar un índice que permita obtener todas las áreas de un distrito, de esta mánera no será necesario realizar una búsqueda exhaustiva
+    \end{itemize}
+\end{itemize}
+
+\subsection{Agregado sobre Incidencias y Encuestas}
+\label{sub_sec:agregado_inserciones_encuestas}
+\begin{itemize}
+    \item \textbf{Entidades}: Juego, Incidencia, Usuario y Encuestas
+    \item \textbf{Raíz}: Juego
+    \item \textbf{Perímetro}: Este agregado permite generar informes sobre las incidencias de los juegos y el grado de satisfacción de los usuarios sobre los diferentes juegos.
+    \item \textbf{Casos de Uso optimizados}:
+    \begin{itemize}
+        \item CU\_B : (Proceso de mantenimiento del mobiliario urbano): Este agregado proporciona la capacidad generar incidentes en los juegos.
+        \item CU\_D : (Mejora la toma de decisiones con incidentes de seguridad y satisfacción): Este agregado permite almacenar nuevas encuestas sobre los juegos y generar informes con las correlaciones entre las incidencias y las encuestas de un mismo juego. 
+    \end{itemize}
+    \item \textbf{Embeber vs Referencias}
+    \begin{itemize}
+        \item Lecturas frecuentes (CU\_B y CU\_D): Para realizar los diferentes informes de ambos casos de uso se necesita consultar las incidencias y las encuestas almacenadas. Las encuestas se implementarán de forma embebida para reducir el coste de lectura. Las incidencias se implementarán como referencias ya que consideramos que, aunque quede fuera de los casos de uso, las incidencias se actualizarán con frecuencia lo que nos permitirá reducir el coste de las actualizaciones. 
+        \item Inserciones frecuentes (CU\_B y CU\_D): Dadas las características mencionadas con anterioridad tanto las encuestas como las incidencias tendrán un coste reducido, dado que las incidencias se implementan como referencias y las encuestas de forma embebida pero no existirán otras copias. Estas inserciones en juego no afectarán al anterior agregado ya que se implementó como una tabla resumen donde los datos que cambian se obtendrán por referencia y los datos no cambiantes irán dentro del resumen
     \end{itemize}
 \end{itemize}
 
@@ -191,7 +220,5 @@ Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias c
     \item Fechas \textit{Incidencia}: La fecha de apertura debe ser anterior a la fecha de cierre.
     \item Fechas: Las fechas de todas las entidades deben seguir el formato: "yyyy/mm/dd hh:MM:ss".
 \end{itemize}
-
-
 
 \end{document}
