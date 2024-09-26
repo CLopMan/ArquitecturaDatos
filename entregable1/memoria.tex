@@ -11,10 +11,7 @@
 
 % style for listings (código)
 \lstdefinestyle{mystyle} {
-    commentstyle=\color{gray},
-    keywordstyle=\color{blue},
-    numberstyle=\color{yellow},
-    stringstyle=\color{brown},
+    stringstyle=\color{miverde},
     breaklines=true,
     breakatwhitespace=false,
     captionpos=b,
@@ -22,6 +19,7 @@
     numbers=none,
     numbersep=5pt,
     showspaces=false,
+    showstringspaces=false,
     showtabs=false,
     tabsize=2
 }
@@ -117,6 +115,7 @@ Este caso de uso permite recoger toda la información relativa a las áreas recr
 \label{subsec:conclusiones-modelo}
 Anteriormente hemos visto como el diseño recoge toda la información necesaria para cumplir los 5 casos de uso propuestos en el enunciado. Es por esto que concluímos que se trata de un buen diseño que cumple con las espectativas del sistema.
 
+\newpage
 \section{Diseño de agregados}
 \label{sec:agregados}
 Con el objetivo de poder analizar las capacidades que tendrán los agregados es necesario conoecer las acciones que conllevan los distintos casos de uso.
@@ -181,7 +180,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
 \begin{itemize}
     \item \textbf{Agregado sobre áreas y juegos}
 \end{itemize}
-\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Áreas y Juegos, language=C, stringstyle=\color{miverde}]
+\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Áreas y Juegos, language=C]
 {
     "Coordenadas": "36 30 10.0 N 6 16 30.0 W",
     "Tipo": "Parque infantil",
@@ -230,7 +229,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
 \begin{itemize}
     \item \textbf{Agregado sobre áreas y juegos}
 \end{itemize}
-\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Indicencias y Encuestas, language=C, stringstyle=\color{miverde}]
+\begin{lstlisting}[caption=Ejemplo de JSON para Agregado sobre Indicencias y Encuestas, language=C]
 {
     "Estado": "Disponible",
     "Modelo": "Columpio",
@@ -288,7 +287,7 @@ Para poder visualizar de una manera más práctica los agregados, a continuació
 }
 \end{lstlisting}
 
-
+\newpage
 \section{Validación del esquema}
 \label{sec:esquema}
 Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias como el uso de referencias en vez de embeber los datos. Sin embargo, para aquellos datos que hemos decidido embeber, debemos redactar una serie de reglas para mantener la consistencia de nuestro esquema. Estas reglas son:
