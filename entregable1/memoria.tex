@@ -3,6 +3,7 @@
 \usepackage[spanish]{babel}
 \usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
 \usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{xcolor}
 
@@ -25,6 +26,7 @@
     tabsize=2
 }
 \lstset{style=mystyle}
+\lstset{basicstyle=\ttfamily}
 
 %title
 \title{Práctica 1} 
@@ -45,12 +47,12 @@
 
     {\Huge \textbf{Práctica 1} \par}
     \vspace{0.5cm}
-    {\Large Diseño de una Base de Datos no relacional \par}
+    {\Large Diseño de una Base de Datos No Relacional \par}
     \vspace{8cm}
 
    \textbf{Ingeniería Informática, Cuarto curso}\\
     \vspace{0.2cm} 
-    Adrián Fernández Galán       (NIA: 100472182, e-mail: 100472182@alumnos.uc3m.es) \\
+    Adrián Fernández Galán       (NIA: 100472182, e-mail: 100472182@alumnos.uc3m.es)\\
     César López Mantecón         (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)\\
     Manuel Gómez-Plana Rodríguez (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)
     \vspace{0.5cm}
@@ -70,7 +72,7 @@
 
 \section{Introducción}
 \label{sec:introduccion}
-
+En este documento se recoge el desarrollo de la primera práctica de la asignatura Arquitectura de datos. A continuación, se especifica el diseño de la base de datos a través de un diagrama de clases UML, el diseño de agregados y las estrategias para la validación del esquema.
 
 \section{Diseño conceptual: diagrama de clases UML}
 \label{sec:disenno}
@@ -78,73 +80,42 @@ En esta sección se describe el primer modelo conceptual teniendo en cuenta tant
 
 Podemos extraer la existencia de 8 entidades importantes en nuestro modelo:
 \begin{enumerate}
-    \item \textbf{Distrito:} Aglomeración de \textit{áreas recreativas}.
-    \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, su estdo y su accesibilidad; entre otros.
+    \item \textbf{Área:} Representación de cada una de las áreas recreativas. Deben contener información sobre el clima, los \textit{juegos} que contiene, el distrito al que pertenecen, su estdo y su accesibilidad; entre otros.
     \item \textbf{Juego:} Representación de cada uno de los instrumentos en un \textit{área recreativa}. Contiene información sobre el modelo, estado, patrones de desgaste, etc.
     \item \textbf{Clima:} Contiene información meteorológica para una fecha.
     \item \textbf{Historial de intervenciones:} Matiene registro de las \textit{intervenciones} realizadas en un juego.
     \item \textbf{Intervención:} Representa una revisión o intervención sobre un \textit{juego}. Debe contener información sobre la fecha y observaciones realizadas sobre el \textit{juego}.
     \item \textbf{Usuario:} Contiene información sobre un usuario como la información de contacto.
-    \item \textbf{Incidencia:} Contiene la información relativa a una incidencia sobre un \textit{juego}. Esto es, naturaleza de la incidencia, lista de usuarios que han reportado la incidencia, estado de la incidencia, empresa encargada de solucionarla, fecha de apertura, fecha de cierre y creador. 
+    \item \textbf{Incidencia:} Contiene la información relativa a una incidencia sobre un \textit{juego}. Esto es, naturaleza de la incidencia, lista de usuarios que han reportado la incidencia, estado de la incidencia, empresa encargada de solucionarla, fecha de apertura, fecha de cierre y creador.
     \item \textbf{Encuesta:} Registra información sobre la satisfacción de los \textit{usuarios} para un \textit{juego}.
 \end{enumerate}
 Con todo lo anterior, hemos realizado el siguiente diseño del sistema.
 
-[Imagen del Modelo sin Agregados]
+\includegraphics[width=0.9\textwidth]{diagrama_arqui-noaggregados.png}
 
 \subsection{Caso de uso A}
 \label{subsec:casoA}
-Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluye la entidad \textit{distito} y el campo \textit{barrio} en \textit{área}.
+Este caso se centra en proporcionar un listado completo sobre los juegos instalados en diferentes áreas permitiendo una búsqueda por barrio, distrito o área. Por esto se incluyen los campos \textit{distito}, \textit{barrio} en \textit{área}. En el diagrama contiene toda la información necesaria para satisfacer la totalidad de los requistos.
 
-\begin{itemize}
-    \item La base de datos mantendrá registros sobre todas las incidencias. No obstante la generación de informes es algo que queda fuera del diseño y se contempla como funcionalidad de la aplicación..
-    \item 
-\end{itemize}
+\subsection{Caso de uso B}
+\label{subsec:casoB}
+Este caso de uso otorga a los usuarios la capacidad de abrir o completar una incidencia en relación a alguno de los juegos de un área recreativa. En el diagrama actual contiene toda la información necesaria para cubrir la totalidad de los requisitos.
 
-\begin{itemize}
-    \item Explicación del modelo básico sin los casos de uso y sin destacar las relaciones entre clases
-    \begin{itemize}
-        \item Área (Centrándose en Tipo, lista de juegos, estado, N-juegos, clima)
-        \item Juego (Centrándose en Estado, Modelo, Historial de intervenciones, lista de incidencias)
-    \end{itemize}
-    \item Análisis de los casos de uso y destacar decisiones en el diseño según estos casos
-    \begin{itemize}
-        \item Caso de uso A
-        \begin{itemize}
-            \item Este caso de uso está centrado en proporcionar un listado completo de los juegos instalados en las diferentes áreas
-            \item Para poder listar las áreas dado un distrito según el Req 1 se ha creado una entidad Distrito que facilite la búsqueda
-            \item Para satisfacer el Req 4 se ha añadido a la entidad Juego el atributo "patrón de desgaste" 
-        \end{itemize}
-        \item Caso de uso B
-        \begin{itemize}
-            \item Este Caso de uso está centrado en la capacidad del sistema de reportar incidencias
-            \item Se ha incorporado una entidad Incidencia con las características asociadas a los requisitos y otra entidad Usuarios
-            \item Para Req 2 se ha integrado en la entidad Incidencia el atributo lista de destinatarios, para conocer los usuarios que han realizado los reportes
-            \item Habría que explicar el por qué de todos los atributos de la entidad Incidencia, ahora mismo no caigo 
-        \end{itemize}
-        \item Caso de Uso C
-        \begin{itemize}
-            \item Este caso de uso está centrado en analizar las condiciones metereológicas para realizar una planificación eficiente del mantenimiento
-            \item Para poder cubrir Req 1 se ha creado una entidad clima con los atributos "Temperatura", "Precipitación" y "Fecha"
-            \item Para Req 2 y Req 3 no es necesario realizar ningún cambio dado que se conocen los aspectos meteorológicos de las áreas y por lo tanto de sus juegos
-            \item Req 4 queda fuera de nuestro alcance como diseñadores de bases de datos
-        \end{itemize}
-        \item Caso de Uso D
-        \begin{itemize}
-            \item Este caso de uso busca mejorar la toma de decisiones sobre las áreas recreativas a través de la capacidad de generar informes y realizar encuestas de satisfacción por parte de los usuarios
-            \item Para cubrir Req 1 no es necesario introducir nuevas características ya que se contempló con anterioridad el uso incidencias
-            \item Se ha incorporado una entidad Encuesta para satisfacer Req 2, esta entidad tiene el usuario que lo ha realizado, la satisfación que tiene con el juego y un comentario. 
-            \item Para Req 3 proporcionamos la información de las áreas junto a los diferentes reportes
-        \end{itemize}
-        \item Caso de Uso E
-        \begin{itemize}
-            \item Para Req 1 no es necesario incluir ninguna característica, ya que los cambios realizados para el caso de uso A ya contemplan este requisito
-            \item Para Req 2 se ha añadido el atributo "N-juegos" (esto no se podría calcular sin necesidad de tenerlo estático??)
-            \item Req 3 es viable hacerlo??
-            \item Req 4 queda fuera del nuestro alcance
-        \end{itemize}
-    \end{itemize}
-\end{itemize}
+\subsection{Caso de uso C}
+\label{subsec:casoC}
+En este caso se relaciona la información climática con los \textit{juegos} y \textit{áreas}. Por esto se incluyen la entidad \textit{clima} y el campo \textit{patrones de desgaste} en juego. A través de esta información todos los requisitos quedan contemplados en el diagrama.
+
+\subsection{Caso de uso D}
+\label{subsec:casoD}
+Este caso de uso permite relacionar las incidencias reportadas por los usuarios y las encuestas de satisfacción para mejorar la seguridad, accesibilidad y satisfacción de los ciudadanos. Gracias a las entidades \textit{Incidencia}y \textit{Encuesta} y los campos \textit{encuestas} e \textit{incidencias} en juego recogemos toda la información necesaria para cumplir los 4 requisitos recogidos en este caso de uso.
+
+\subsection{Caso de uso E}
+\label{subsec:casoE}
+Este caso de uso permite recoger toda la información relativa a las áreas recreativas para la generación de un informe. Gracias a las entidades \textit{historial de intervenciones} y \textit{áreas} el diseño recoge los datos necesarios para generar el informe requerido.
+
+\subsection{Conclusiones sobre el modelo}
+\label{subsec:conclusiones-modelo}
+Anteriormente hemos visto como el diseño recoge toda la información necesaria para cumplir los 5 casos de uso propuestos en el enunciado. Es por esto que concluímos que se trata de un buen diseño que cumple con las espectativas del sistema.
 
 \section{Diseño de agregados}
 \label{sec:agregados}
@@ -154,7 +125,7 @@ Con el objetivo de poder analizar las capacidades que tendrán los agregados es 
     \item \textbf{Escritura}: Casos de Uso B, C y D
 \end{itemize}
 
-En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a añadir elementos.
+En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a las inserciones.
 
 Además hemos determinado si las relaciones entre entidades deben de ser embebidas, referencias o tablas resumen. Estas decisiones se fundamentan en la frecuencia de lectura, modificación y crecimiento de los datos.
 
@@ -163,13 +134,42 @@ A continuación se describirán los agregados y las entidates que lo conforman, 
 \subsection{Agregado sobre Áreas y Juegos}
 \label{sub_sec:agregado_area_juego}
 \begin{itemize}
-    \item \textbf{Entidades}: Distrito, Área, Clima y Juego
+    \item \textbf{Entidades}: Área, Clima, Historial Intervenciones, Intervención y Juego
     \item \textbf{Raíz}: Área
-    \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden. Cada juego está asociado al área al que pertenece.
+    \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden y agregar nuevos tiempos climatológicos a las áreas. Cada juego está asociado al área al que pertenece.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
-        \item CU\_A : (Listado detallado de juegos y su estado): Este agregado proporciona consultas rápidas para obtener información sobre los juegos y su estado actual.
+        \item CU\_A : (Listado detallado de juegos y su estado): Este agregado proporciona consultas rápidas para obtener información sobre los juegos y su estado actual. 
+        \item CU\_C : (Impacto del clima en el mantenimiento de juegos): Este agregado permite analizar cómo las condiciones climáticas afectan el desgates de los juegos en las áreas recreativas.
         \item CU\_E : (Informe agrupado por distritos): También es capaz de generar un informe agrupado por distritos que muestre información sobre sus juegos. 
+    \end{itemize}
+    \item \textbf{Embeber vs Referencias}
+    \begin{itemize}
+        \item Lecturas frecuentes (CU\_A, CU\_E): Para poder realizar las consultas de estos dos casos de uso se ha optado por embeber las intervenciones en el historial de intervenciones que a la vez está embebidos en sus respectivos juegos.
+        \item Inserciones frecuentes (CU\_C): Con el objetivo de que las inserciones no sean costosas se ha decidido embeber el clima en el área, ya que clima será redundante en ninguna otra agregación.
+        \item Tabla resumen: Se ha decidido incluir una tabla resumen entre Área y Juego con el objetivo de realizar lecturas rápidas para aquellos atributos estáticos y poder realizar inserciones en juego (dado que juego se encuentra en dos agregados) sin ser costosas.
+    \end{itemize}
+    \item \textbf{Uso de Índices}
+    \begin{itemize}
+        \item Para poder realizar búsquedas de todas las áreas de un distrito se ha optado por usar un índice que permita obtener todas las áreas de un distrito, de esta mánera no será necesario realizar una búsqueda exhaustiva
+    \end{itemize}
+\end{itemize}
+
+\subsection{Agregado sobre Incidencias y Encuestas}
+\label{sub_sec:agregado_inserciones_encuestas}
+\begin{itemize}
+    \item \textbf{Entidades}: Juego, Incidencia, Usuario y Encuestas
+    \item \textbf{Raíz}: Juego
+    \item \textbf{Perímetro}: Este agregado permite generar informes sobre las incidencias de los juegos y el grado de satisfacción de los usuarios sobre los diferentes juegos.
+    \item \textbf{Casos de Uso optimizados}:
+    \begin{itemize}
+        \item CU\_B : (Proceso de mantenimiento del mobiliario urbano): Este agregado proporciona la capacidad generar incidentes en los juegos.
+        \item CU\_D : (Mejora la toma de decisiones con incidentes de seguridad y satisfacción): Este agregado permite almacenar nuevas encuestas sobre los juegos y generar informes con las correlaciones entre las incidencias y las encuestas de un mismo juego. 
+    \end{itemize}
+    \item \textbf{Embeber vs Referencias}
+    \begin{itemize}
+        \item Lecturas frecuentes (CU\_B y CU\_D): Para realizar los diferentes informes de ambos casos de uso se necesita consultar las incidencias y las encuestas almacenadas. Las encuestas se implementarán de forma embebida para reducir el coste de lectura. Las incidencias se implementarán como referencias ya que consideramos que, aunque quede fuera de los casos de uso, las incidencias se actualizarán con frecuencia lo que nos permitirá reducir el coste de las actualizaciones. 
+        \item Inserciones frecuentes (CU\_B y CU\_D): Dadas las características mencionadas con anterioridad tanto las encuestas como las incidencias tendrán un coste reducido, dado que las incidencias se implementan como referencias y las encuestas de forma embebida pero no existirán otras copias. Estas inserciones en juego no afectarán al anterior agregado ya que se implementó como una tabla resumen donde los datos que cambian se obtendrán por referencia y los datos no cambiantes irán dentro del resumen
     \end{itemize}
 \end{itemize}
 
@@ -310,7 +310,5 @@ Para mantener la integridad de los datos, MongoDB ofrece el uso de estrategias c
     \item \textbf{Fechas}: Las fechas de todas las entidades deben seguir el formato: ``yyyy/mm/dd hh:MM:ss''.
     \item \textbf{Decimal}: Los números flotantes se determinan con un ``.''.
 \end{itemize}
-
-
 
 \end{document}
