@@ -152,17 +152,17 @@ Con el objetivo de poder analizar las capacidades que tendrán los agregados es 
     \item \textbf{Escritura}: Casos de Uso B, C y D
 \end{itemize}
 
-En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 4 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a añadir elementos.
+En el diseño de agregados para el sistema de áreas y sus juegos sea han creado 2 agregados, cada uno optimizado para casos de uso específicos. En estos agregados se ha buscado un equilibrio entre lecturas y escrituras para aquellos agregados enfocados a añadir elementos.
 
 Además hemos determinado si las relaciones entre entidades deben de ser embebidas, referencias o tablas resumen. Estas decisiones se fundamentan en la frecuencia de lectura, modificación y crecimiento de los datos.
 
 A continuación se describirán los agregados y las entidates que lo conforman, además de abordar las características de los agregados, como son la raíz y el perímetro.
 
-\subsection{Agregado_Rojo}
-\label{sub_sec:agregado_rojo}
+\subsection{Agregado sobre Áreas y Juegos}
+\label{sub_sec:agregado_area_juego}
 \begin{itemize}
-    \item \textbf{Entidades}: Distrito, Área y Juego
-    \item \textbf{Raíz}: Distrito
+    \item \textbf{Entidades}: Distrito, Área, Clima y Juego
+    \item \textbf{Raíz}: Área
     \item \textbf{Perímetro}: Este agregado está enfocado en poder consultar la información relevante sobre las áreas y los juegos que lo comprenden. Cada juego está asociado al área al que pertenece.
     \item \textbf{Casos de Uso optimizados}:
     \begin{itemize}
