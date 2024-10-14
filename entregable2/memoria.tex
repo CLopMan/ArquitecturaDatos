@@ -1,0 +1,81 @@
+\documentclass[]{article}
+\usepackage{graphicx}
+\usepackage[spanish]{babel}
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+
+\definecolor{miverde}{rgb}{0,0.6,0}
+
+% style for listings (código)
+\lstdefinestyle{mystyle} {
+    stringstyle=\color{miverde},
+    breaklines=true,
+    breakatwhitespace=false,
+    captionpos=b,
+    keepspaces=true,
+    numbers=none,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+\lstset{basicstyle=\ttfamily}
+
+%title
+\title{Práctica 1.2} 
+
+\author{Adrián Ferández Galán, César López Mantecón y Manuel Gómez-Plana Rodríguez}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+   \includegraphics[width=0.9\textwidth]{uc3m.jpg} 
+    {\Huge Universidad Carlos III\\
+    
+     \Large Arquitectura de Datos\\
+     \vspace{0.5cm}
+     Curso 2024-25}
+    \vspace{2cm}
+
+    {\Huge \textbf{Práctica 1.2} \par}
+    \vspace{0.5cm}
+    {\Large Proceso de extracción, transformación y carga sobre un dataset \par}
+    \vspace{8cm}
+
+   \textbf{Ingeniería Informática, Cuarto curso}\\
+    \vspace{0.2cm} 
+    Adrián Fernández Galán       (NIA: 100472182, e-mail: 100472182@alumnos.uc3m.es)\\
+    César López Mantecón         (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)\\
+    Manuel Gómez-Plana Rodríguez (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)
+    \vspace{0.5cm}
+
+   
+    \textbf{Prof .} Lourdes Moreno López\\
+    
+    \textbf{Grupo: } 81   
+    
+\end{titlepage}
+\newpage
+
+\renewcommand{\contentsname}{\centering Índice}
+\tableofcontents
+
+\newpage
+
+\section{Introducción}
+\label{sec:introduccion}
+En este documento se recoge el desarrollo de la segunda práctica de la asignatura Arquitectura de datos. 
+\newpage
+\section{Conclusión}
+\label{sec:conclusion}
+
+Esta práctica nos ha permitido simular un proceso de mudanza de base de datos siguiendo un modelo no relacional...
+
+\end{document}
