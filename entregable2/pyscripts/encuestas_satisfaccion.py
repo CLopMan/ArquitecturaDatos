@@ -1,5 +1,5 @@
 import pandas as pd
-PATH="../csvs/EncuestasSatisfaccionSucio.csv"
+import sys # argumentos de programa
 
 def read_csv(path: str): 
     return pd.read_csv(path)
@@ -18,8 +18,18 @@ def standarize_str(df):
     df["COMENTARIOS"] = df["COMENTARIOS"].str.upper()
         
 
-def main():
+def encuestas_satisfaccion(source, dest):
+#    # program args
+#    if len(sys.argv) < 3:
+#        print(f'[ERROR] Usage: python3 {sys.argv[0]} source.csv dest.csv')
+#        return -1
+#    else:
+#        PATH = sys.argv[1]
+#        PATH_OUT = sys.argv[2]
     # data frame
+    PATH = source + "EncuestasSatisfaccionSucio.csv"
+    PATH_OUT = dest + "encuestas_satisfaccion_limpio.csv"
+
     df = read_csv(PATH)
     
     print(df)
@@ -35,9 +45,9 @@ def main():
     standarize_date(df)
     standarize_str(df)
     print("[INFO] Generating csv")
-    df.to_csv("encuestas_satisfaccion_limpio.csv")
+    df.to_csv(PATH_OUT)
     
 
 
 if __name__ == "__main__":
-    main()
+    encuestas_satisfaccion()
