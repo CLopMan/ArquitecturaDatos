@@ -9,5 +9,3 @@ def preproceso_incidencias_usuario(csv_input, cvs_output):
     df["ESTADO"] = df["ESTADO"].str.upper()
 
     df.to_csv(cvs_output)
-    
-preproceso_incidencias_usuario()
