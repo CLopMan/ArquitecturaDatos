@@ -15,13 +15,28 @@ def change_accents(word):
             word = word[0:letter] + "U" + word[letter + 1:]
     return word
 
-def preproceso_area():
-    areas = pd.read_csv("AreasSucio.csv")
+def preproceso_area(csv_input, csv_output):
+    csv_input = csv_input + "AreasSucio.csv"
+    csv_output = csv_output + "areas_limpias.csv"
+
+    # Leemos las areas
+    areas = pd.read_csv(csv_input)
 
     # Cambiamos los nombres de los Barrios para estandarizarlos
+    zips_por_barrio = {}
     for indice, valor in areas.iterrows():
         barrio = change_accents(valor["BARRIO"].upper())
         areas.loc[indice, "BARRIO"] = barrio
+        
+        # Guardamos el codigo postal del barrio
+        cod_postal = valor["COD_POSTAL"]
+        if pd.notna(cod_postal) and cod_postal != 0.0:
+            zips_por_barrio[barrio] = cod_postal
+
+    # Rellenamos los Códigos Postales que falten
+    for indice, valor in areas.iterrows():
+        barrio = valor["BARRIO"]
+        areas.loc[indice, "COD_POSTAL"] = zips_por_barrio[barrio]
 
     # Cambiamos los nombres de los Distrito para estandarizarlos
     codigos_por_distritos = {}
@@ -71,17 +86,19 @@ def preproceso_area():
                     areas.loc[indice, "TIPO_VIA"] = "PAISAJE"
                 elif ("paseo" in dir_aux):
                     areas.loc[indice, "TIPO_VIA"] = "PASEO"
-                
-                # Si no existe nombre, conseguimos los datos de la dirección auxiliar
-                if not pd.notna(nom_via):
-                    try:
-                        areas.loc[indice, "NOM_VIA"] = dir_aux[0:dir_aux.index(',')-1].upper()
-                    except:
-                        areas.loc[indice, "NOM_VIA"] = dir_aux[0:].upper()
-                    try:
-                        areas.loc[indice, "NOM_VIA"] = areas.loc[indice, "NOM_VIA"][areas.loc[indice, "NOM_VIA"].index('·') + 2:].upper()
-                    except ValueError:
-                        pass
+            
+        # Si no existe nombre, conseguimos los datos de la dirección auxiliar
+        if not pd.notna(nom_via):
+            if pd.notna(dir_aux):
+                dir_aux = dir_aux.lower()
+                try:
+                    areas.loc[indice, "NOM_VIA"] = dir_aux[0:dir_aux.index(',')-1].upper()
+                except:
+                    areas.loc[indice, "NOM_VIA"] = dir_aux[0:].upper()
+                try:
+                    areas.loc[indice, "NOM_VIA"] = areas.loc[indice, "NOM_VIA"][areas.loc[indice, "NOM_VIA"].index('·') + 2:].upper()
+                except ValueError as e:
+                    pass
 
                 # Si no tiene número, lo conseguimos de la vía auxiliar
                 if not pd.notna(num_via):
@@ -122,11 +139,16 @@ def preproceso_area():
     # Formateo de fechas            
     for indice, value in areas.iterrows():
         if value["FECHA_INSTALACION"] == "fecha_incorrecta":
-            areas.loc[indice, "FECHA_INSTALACION"] = ""
+            areas.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
     
     areas["FECHA_INSTALACION"] = pd.to_datetime(areas["FECHA_INSTALACION"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+
+    # Formateo de tipo
+    areas["tipo"] = areas["tipo"].str.upper()
+
+    areas.to_csv(csv_output)
 
 
     
 if __name__=="__main__":
-    preproceso_area()
+    preproceso_area("./csvs/", "./")
