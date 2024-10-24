@@ -25,6 +25,25 @@ def standarize_str(df, column):
     print(f'[INFO] Actualizando {column} a mayúsculas y elimninando tildes') 
     df[column] = df[column].str.upper().apply(change_accents)
     
+def imput_missing_district(df):
+    columnA = "DISTRITO"
+    columnB = "COD_DISTRITO"
+    print(f'[INFO] Imputando valores faltantes en {columnA} y {columnB}') 
+    distritos = {} # relates distrito - cod_distrito bidirectional
+    for row in df['DISTRITO']:
+        if row not in distritos.keys():
+            distritos[row] = None
+    for index, row in df.iterrows():
+        if row['DISTRITO'] is not None:
+            if distritos[row['DISTRITO']] == None and row['COD_DISTRITO'] != None:
+                distritos[row['DISTRITO']] = row['COD_DISTRITO']
+                distritos[row['COD_DISTRITO']] = row['DISTRITO']
+    # print(distritos)
+    for d in distritos.keys():
+        if (type(d) == str):
+                df.loc[df['DISTRITO'] == d, 'COD_DISTRITO'] = distritos[d]
+        elif (type(d) == int):
+                df.loc[df['COD_DISTRITO'] == d, 'DISTRITO'] = distritos[d]
 
 
 def juegos(source, dest):
@@ -48,9 +67,14 @@ def juegos(source, dest):
         if (df[c].dtype == object):
            standarize_str(df, c) 
 
+    # imputacion cod_distrito y distrito
+    imput_missing_district(df)
+    # print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
+
 
 if __name__ == "__main__":
     juegos("../csvs/JuegosSucio.csv", "../juegos_limpio.csv")
+    
     
 
 
