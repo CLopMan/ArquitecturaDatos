@@ -1,4 +1,3 @@
-from math import isnan
 import pandas as pd
 
 def change_accents(word):
