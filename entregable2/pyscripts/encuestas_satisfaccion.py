@@ -13,9 +13,9 @@ def standarize_date(df):
     print("[INFO] Actualizando la fecha al formato dd-mm-yyyy") 
     df["FECHA"] = pd.to_datetime(df["FECHA"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
 
-def standarize_str(df):
-    print("[INFO] Actualizando los comentarios a mayúsculas") 
-    df["COMENTARIOS"] = df["COMENTARIOS"].str.upper()
+def standarize_str(df, column):
+    print(f'[INFO] Actualizando {column} a mayúsculas') 
+    df[column] = df[column].str.upper()
         
 
 def encuestas_satisfaccion(source, dest):
@@ -43,11 +43,11 @@ def encuestas_satisfaccion(source, dest):
         print("[INFO] No existen valores nulos")
 
     standarize_date(df)
-    standarize_str(df)
+    standarize_str(df, "COMENTARIOS")
     print("[INFO] Generating csv")
     df.to_csv(PATH_OUT)
     
 
 
 if __name__ == "__main__":
-    encuestas_satisfaccion()
+    encuestas_satisfaccion("../csvs/EcuestasSatisfaccionSucio.csv")
