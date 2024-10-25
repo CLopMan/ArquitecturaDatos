@@ -164,9 +164,7 @@ def juegos(source, dest):
     # imputacion cod_distrito y distrito
     imput_missing_district(df)
     imput_missing_addr(df)
-    print(detect_missing_values(df))
-    print(df)
-    # print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
+    print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
     #print(df['LONGITUD'].describe())
 
 
