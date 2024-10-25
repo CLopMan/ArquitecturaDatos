@@ -1,7 +1,15 @@
 import pandas as pd
 
-def format_phone_number(phone):
+def detect_missing_values(df):
+    missing: bool = df.isnull().sum()
+    return missing
 
+def fill_missing_tipo(row,column,string_missing):
+    if pd.isnull(row[column]):
+        return f'{string_missing}_{row["NIF"]}'
+    return row[column]
+
+def format_phone_number(phone):
     phone = phone.replace(" ", "")
     if phone.startswith("+34"):
         phone = phone[3:]
@@ -9,15 +17,15 @@ def format_phone_number(phone):
         phone = phone[2:]
     return phone
 
-def preproceso_mantenimiento(csv_input, csv_output):
+def preproceso_usuarios(csv_input, csv_output):
     csv_input = csv_input + "UsuariosSucio.csv"
     csv_output = csv_output + "usuarios_limpios.csv"
-    print(csv_input)
+
     df = pd.read_csv(csv_input)
     df["NOMBRE"] = df["NOMBRE"].str.upper()
     df["EMAIL"] = df["EMAIL"].str.upper()
     df["TELEFONO"] = df["TELEFONO"].apply(format_phone_number)
+    df = df.drop(columns=["Email"])
+    df["EMAIL"] = df.apply(lambda row: fill_missing_tipo(row, "EMAIL", "EMAIL_DESCONOCIDO"), axis=1)
 
-    print(df["TELEFONO"])
-   # df.to_csv(csv_output,index=False)
-preproceso_mantenimiento("./csvs/",".")
+    df.to_csv(csv_output,index=False)

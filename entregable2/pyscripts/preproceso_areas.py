@@ -1,4 +1,3 @@
-from math import isnan
 import pandas as pd
 
 def change_accents(word):
@@ -15,12 +14,21 @@ def change_accents(word):
             word = word[0:letter] + "U" + word[letter + 1:]
     return word
 
+def fill_missing_tipo(row,column,string_missing):
+    if pd.isnull(row[column]):
+        return f'{string_missing}_{row["ID"]}'
+    return row[column]
+
 def preproceso_area(csv_input, csv_output):
     csv_input = csv_input + "AreasSucio.csv"
     csv_output = csv_output + "areas_limpias.csv"
 
     # Leemos las areas
     areas = pd.read_csv(csv_input)
+
+    # Estandarizar la descripción de la clasificación
+    for indice, valor in areas.iterrows():
+        areas.loc[indice, "DESC_CLASIFICACION"] = change_accents(valor["DESC_CLASIFICACION"].upper())
 
     # Cambiamos los nombres de los Barrios para estandarizarlos
     zips_por_barrio = {}
@@ -86,6 +94,8 @@ def preproceso_area(csv_input, csv_output):
                     areas.loc[indice, "TIPO_VIA"] = "PAISAJE"
                 elif ("paseo" in dir_aux):
                     areas.loc[indice, "TIPO_VIA"] = "PASEO"
+            else:
+                areas.loc[indice, "TIPO_VIA"] = "tipo_desconocido_" + str(areas.loc[indice, "ID"])
             
         # Si no existe nombre, conseguimos los datos de la dirección auxiliar
         if not pd.notna(nom_via):
@@ -135,18 +145,28 @@ def preproceso_area(csv_input, csv_output):
                             pass
                     # Borramos la dirección auxiliar
                     areas.loc[indice, "DIRECCION_AUX"] = ""
+            else:
+                areas.loc[indice, "NOM_VIA"] = "NOMBRE_DESCONOCIDO_" + str(areas.loc[indice, "ID"])
+                areas.loc[indice, "NUM_VIA"] = "NUMERO_DESCONOCIDO_" + str(areas.loc[indice, "ID"])
+
+        if not pd.notna(num_via):
+            areas.loc[indice, "NUM_VIA"] = "NUMERO_DESCONOCIDO_" + str(areas.loc[indice, "ID"])
+            
 
     # Formateo de fechas            
     for indice, value in areas.iterrows():
-        if value["FECHA_INSTALACION"] == "fecha_incorrecta":
+        if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
             areas.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
     
     areas["FECHA_INSTALACION"] = pd.to_datetime(areas["FECHA_INSTALACION"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
 
+    # Formateo de codigo_interno
+    areas["CODIGO_INTERNO"] = areas.apply(lambda row: fill_missing_tipo(row, "CODIGO_INTERNO", "CODIGO_DESCONOCIDO"), axis=1)
+
     # Formateo de tipo
     areas["tipo"] = areas["tipo"].str.upper()
 
-    areas.to_csv(csv_output)
+    areas.to_csv(csv_output, index=False)
 
 
     
