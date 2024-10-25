@@ -132,7 +132,8 @@ dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAM
 
     \begin{lstlisting}
 for indice, value in areas.iterrows():
-    if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
+    if not pd.notna(value["FECHA_INSTALACION"]) or 
+      value["FECHA_INSTALACION"] == "fecha_incorrecta":
         areas.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
     \end{lstlisting}
 
