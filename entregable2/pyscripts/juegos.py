@@ -22,7 +22,7 @@ def detect_missing_values(df):
     return missing
 
 def standarize_str(df, column):
-    print(f'[INFO] Actualizando {column} a mayúsculas y elimninando tildes')
+    #print(f'[INFO] Actualizando {column} a mayúsculas y elimninando tildes')
     df[column] = df[column].str.upper().apply(change_accents)
     df[column] = df[column].str.rstrip()
     df[column] = df[column].str.lstrip()    
@@ -30,7 +30,7 @@ def standarize_str(df, column):
 def imput_missing_district(df):
     columnA = "DISTRITO"
     columnB = "COD_DISTRITO"
-    print(f'[INFO] Imputando valores faltantes en {columnA} y {columnB}') 
+    #print(f'[INFO] Imputando valores faltantes en {columnA} y {columnB}') 
     distritos = {} # relates distrito - cod_distrito bidirectional
     for row in df['DISTRITO']:
         if row not in distritos.keys():
@@ -53,7 +53,11 @@ def parse_dir_aux(dir_aux, ID):
         "nombre_via" : "",
         "num_via"    : ""
     }
-    patrones = ["PARQUE", "CALLE", "C", "PLAZA", "VIA", "PASAJE", "PJE", "PASEO", "AUTOVIA",  "AUTOV", "AVENIDA", "AVDA", "AV", "RONDA", "RDA","PLAZA", "PZA", "PARQUE", "JAR"]
+    patrones = [ 
+                 "PARQUE", "CALLE", "C", "PLAZA", "VIA", "PASAJE", "PJE",
+                 "PASEO", "AUTOVIA",  "AUTOV", "AVENIDA", "AVDA", "AV", 
+                 "RONDA", "RDA","PLAZA", "PZA", "PARQUE", "JAR"
+               ]
     separators = " ,·;:/-"
     # Get Tipo_Via
     word = ""
@@ -67,7 +71,7 @@ def parse_dir_aux(dir_aux, ID):
         while i < len(dir_aux) and dir_aux[i] not in separators:
             word += dir_aux[i]
             i += 1
-        # print(word, len(word))
+        # #print(word, len(word))
         i += 1
         # Get via type
         if state == "via":
@@ -128,7 +132,7 @@ def parse_dir_aux(dir_aux, ID):
 
 
 def imput_missing_addr(df):
-    print(f'[INFO] Imputando valores faltantes en TIPO_VIA, NUM_VIA y NOM_VIA') 
+    #print(f'[INFO] Imputando valores faltantes en TIPO_VIA, NUM_VIA y NOM_VIA') 
     for indice, valor in df.iterrows():
         tipo_via = valor["TIPO_VIA"]
         nom_via = valor["NOM_VIA"]
@@ -142,19 +146,21 @@ def imput_missing_addr(df):
     
 
 def juegos(source, dest):
+    source += "JuegosSucio.csv"
+    dest += "JuegosLimpio.csv"
     df = pd.read_csv(source) 
     # analisis csv
-    print(df)
-    print(df.describe())
+    #print(df)
+    #print(df.describe())
 
     # missing_values
-    missing = detect_missing_values(df)
-    if missing.sum() > 0:
-        print("[INFO] Existen valores nulos: ", missing.sum()) 
-        print("\n")
-        print(missing)
-    else: 
-        print("[INFO] No existen valores nulos")
+    #missing = detect_missing_values(df)
+    #if missing.sum() > 0:
+    #    print("[INFO] Existen valores nulos: ", missing.sum()) 
+    #    print("\n")
+    #    print(missing)
+    #else: 
+    #    print("[INFO] No existen valores nulos")
     
     # correcting strings
     for c in df.columns.to_list():
@@ -164,9 +170,10 @@ def juegos(source, dest):
     # imputacion cod_distrito y distrito
     imput_missing_district(df)
     imput_missing_addr(df)
-    print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
+    #print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
     #print(df['LONGITUD'].describe())
 
 
+
 if __name__ == "__main__":
-    juegos("../csvs/JuegosSucio.csv", "../juegos_limpio.csv")
+    juegos("./csvs/", "./output/")
