@@ -143,12 +143,34 @@ def imput_missing_addr(df):
             df.loc[indice, ["TIPO_VIA"]] = dir_aux["via"] if not tipo_via else tipo_via
             df.loc[indice, ["NOM_VIA"]] = dir_aux["nombre_via"] if not nom_via else nom_via
             df.loc[indice, ["NUM_VIA"]] = dir_aux["num_via"] if not num_via else num_via
+
+def fussion_df(df1, df2, columnas_clave, new_column):
+    df1[new_column] = None
+    for i, row in df2.iterrows():
+        condition = False
+        for key in columnas_clave:
+            condition |= (df1[key] == row[key])
+        #print(condition)
+
+        df1.loc[condition, new_column] = row["ID"] # rows de juegos
+        for c in df1.columns.tolist(): # copiar valores faltantes del uno al otro
+            if c in df2.columns.tolist():
+                if row[c] is not None:
+                    df1.loc[df1[new_column] == row["ID"], c] = row[c]
+                else:
+                    for j, r in df1.interrows():
+                        if r[c] is not None:
+                            df2.loc[i, c] = r[c] # actualizamos al primero
+                            break
     
+   
+     
 
 def juegos(source, dest):
     source += "JuegosSucio.csv"
-    dest += "JuegosLimpio.csv"
+    dest_csv = dest + "JuegosLimpio.csv"
     df = pd.read_csv(source) 
+    #print(df)
     # analisis csv
     #print(df)
     #print(df.describe())
@@ -167,13 +189,21 @@ def juegos(source, dest):
         if (df[c].dtype == object):
            standarize_str(df, c)
 
-    # imputacion cod_distrito y distrito
+    # imputacion de valores en el propio df
     imput_missing_district(df)
     imput_missing_addr(df)
-    #print(df.groupby(['DISTRITO'])['COD_DISTRITO'].unique())
-    #print(df['LONGITUD'].describe())
-
-
+    
+    # fusion con Area
+    df_areas = pd.read_csv(dest + "areas_limpias.csv")
+    fussion_df(df, df_areas, ["CODIGO_INTERNO", "NDP"], "AREA") 
+    df.to_csv(dest_csv, index=False)
+    df_areas.to_csv(dest + "areas_limpias.csv")
+    missing = detect_missing_values(df)
+    print(missing)
+    
+    missing = detect_missing_values(df_areas)
+    print(missing)
 
 if __name__ == "__main__":
     juegos("./csvs/", "./output/")
+    
