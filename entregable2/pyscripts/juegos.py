@@ -162,11 +162,20 @@ def fussion_df(df1, df2, columnas_clave, new_column):
                         if r[c] is not None:
                             df2.loc[i, c] = r[c] # actualizamos al primero
                             break
-    
-   
-     
+def fill_missing_tipo(row,column,string_missing):
+    if pd.isnull(row[column]):
+        return f'{string_missing}_{row["ID"]}'
+    return row[column]
+
+
+def fill_missing(df, optionals:list):
+    for c in df.columns.tolist():
+        if c not in optionals:
+            df[c] = df.apply(lambda row: fill_missing_tipo(row, c, f'{c}_DESCONOCIDO'), axis=1)
+    return df
 
 def juegos(source, dest):
+    optionals = ["DIRECCION_AUX"]
     source += "JuegosSucio.csv"
     dest_csv = dest + "JuegosLimpio.csv"
     df = pd.read_csv(source) 
@@ -196,14 +205,12 @@ def juegos(source, dest):
     # fusion con Area
     df_areas = pd.read_csv(dest + "areas_limpias.csv")
     fussion_df(df, df_areas, ["CODIGO_INTERNO", "NDP"], "AREA") 
+    df = fill_missing(df, optionals)
+    df_areas = fill_missing(df_areas, optionals)
     df.to_csv(dest_csv, index=False)
     df_areas.to_csv(dest + "areas_limpias.csv")
-    missing = detect_missing_values(df)
-    print(missing)
-    
-    missing = detect_missing_values(df_areas)
-    print(missing)
-
+    #print(detect_missing_values(df))
+    #print(detect_missing_values(df_areas))
 if __name__ == "__main__":
     juegos("./csvs/", "./output/")
-    
+
