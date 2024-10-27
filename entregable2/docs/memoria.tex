@@ -65,11 +65,11 @@
     \vspace{0.2cm} 
     Adrián Fernández Galán       (NIA: 100472182, e-mail: 100472182@alumnos.uc3m.es)\\
     César López Mantecón         (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)\\
-    Manuel Gómez-Plana Rodríguez (NIA: 100472092, e-mail: 100472092@alumnos.uc3m.es)
+    Manuel Gómez-Plana Rodríguez (NIA: 100472310, e-mail: 100472310@alumnos.uc3m.es)
     \vspace{0.5cm}
 
    
-    \textbf{Prof .} Lourdes Moreno López\\
+    \textbf{Prof.} Lourdes Moreno López\\
     
     \textbf{Grupo: } 81   
     
@@ -82,7 +82,7 @@
 \newpage
 \section{Introducción}
 \label{sec:introduccion}
-En este documento se recoge el desarrollo de la segunda práctica de la asignatura Arquitectura de datos. A continuación, se especifica el preprocesado de los datos sucios usando la biblioteca \textit{Pandas} de Python, la realización de la validación de esquemas de mongoDB y la carga de los csvs limpios a esta herramienta.
+En este documento se recoge el desarrollo de la segunda práctica de la asignatura Arquitectura de datos. A continuación, se especifica el preprocesado de los datos usando la biblioteca \textit{Pandas} de Python, la realización de la validación de esquemas de mongoDB y la carga de los csvs limpios a esta herramienta.
 
 \newpage
 \lstset{style=python}
@@ -92,11 +92,12 @@ En este apartado se describen las técnicas más comunes para el preprocesado de
 
 \begin{enumerate}
     \item Se carga el csv a limpiar en un \textit{dataframe} de \textit{Pandas}
-    \item Se aplican técnicas de preprocesado como la normalización de los strings o el rellenado de \textit{missing values}
+    \item Se aplican técnicas de preprocesado como la normalización de los strings o imputación genérica de \textit{missing values}
     \item Se escribe el csv limpio a partir del \textit{dataframe} preprocesado
 \end{enumerate}
 
 \subsection{Técnicas de preprocesado comunes}
+\label{subsec:preprocesadocomun}
 Se han aplicado técnicas de preprocesado que son comunes a todos los ficheros, independientemente de cual se quiera limpiar. A continuación, se listan y explican las técnias más usadas:
 
 \begin{itemize}
@@ -106,6 +107,8 @@ Se han aplicado técnicas de preprocesado que son comunes a todos los ficheros, 
 
     \begin{lstlisting}[language=Python]
 def change_accents(word):
+    if type(word) != str:
+        return
     for letter in range(len(word)):
         if word[letter] == "Á":
             word = word[0:letter] + "A" + word[letter + 1:]
@@ -131,14 +134,14 @@ dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAM
     Las fechas que tenían el valor ``fecha desconocida'' o que no tenían valor han sido rellenadas con el valor ``01/01/1970'' a través del siguiente código:
 
     \begin{lstlisting}
-for indice, value in areas.iterrows():
+for indice, value in dataframe.iterrows():
     if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
-        areas.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
+        dataframe.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
     \end{lstlisting}
 
-    \item \textbf{Rellenado de \textit{missing values}}
+    \item \textbf{Rellenado genérico de \textit{missing values}}
     
-    Las columnas que tenían valores nulos han sido rellenadas con un valor fácilmente indetificable que sigue el formato ``NOM-COL\_DESCONOCIDO\_ID-FILA'' mediante la siguiente función:
+    Las columnas que tenían valores nulos que no ha sido posible imputar han sido rellenadas con un valor fácilmente indetificable que sigue el formato ``NOM-COL\_DESCONOCIDO\_ID-FILA'' mediante la siguiente función:
 
     \begin{lstlisting}
 def fill_missing_tipo(row,column,string_missing):
@@ -156,6 +159,17 @@ df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_D
 \end{itemize}
 
 \subsection{Técnicas de preprocesado especificas}
+\label{subsec:preprocessespecifico}
+
+\subsubsection{Juegos}
+\label{subsubsec:preprocessjuego}
+Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
+
+\begin{itemize}
+    \item Imputación de valores en \textit{DISTRITO} y \textit{CODIGO\_DISTRITO}: se han relacionado valores de distrito con códigos de forma unívoca, rellenando los valores faltantes en caso necesario. Esto se hace mediante la llamada a la función \texttt{imput\_missing\_district}.
+    \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible.
+    \item Fusión con \textit{areas\_limpias.csv}: se han asociado los juegos a un área mediante los campos \textit{CODIGO\_INTERNO} y \textit{NDP}. Esto se ha traducido en una columna nueva en la tabla de \textit{juegos} con el ID del área al que pertenece. Adicionalmente se ha completado la información faltante de cada tabla con información del otro en los casos posibles.
+\end{itemize}
 
 \newpage
 \section{Validación de Esquemas}
