@@ -14,30 +14,30 @@ db.createCollection("incidencias_usuario", {
             properties: {
                 id: {
                     bsonType: "int",
-                    descriptcion: "número identificativo de la columna",
+                    description: "número identificativo de la columna",
                 },
                 tipo_incidencia: {
                     bsonType: "string",
                     enum: ["DESGASTE", "ROTURA", "VANDALISMO", "MAL FUNCIONAMIENTO"],
-                    descriptcion: "tipo de incidencia reportada",
+                    description: "tipo de incidencia reportada",
                 },
                 fecha_reporte: {
                     bsonType: "date",
-                    descriptcion: "fecha en la que se reportó la incidencia",
+                    description: "fecha en la que se reportó la incidencia",
                 },
                 estado: {
                     bsonType: "string",
                     enum: ["CERRADA", "ABIERTA"],
-                    descriptcion: "estado actual de la incidencia",
+                    description: "estado actual de la incidencia",
                 },
                 usuario_id: {
                     bsonType: "array",
-                    descriptcion: "listado de usuarios",
+                    description: "listado de usuarios",
                     minItems: 1,
                     uniqueItems: true,
                     items: {
                         bsonType: "object",
-                        descriptcion: "información de usuarios",
+                        description: "información de usuarios",
                         required: ["nif", "nombre", "email", "telefono"],
                         properties: {
                             nif: {
