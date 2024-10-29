@@ -1,0 +1,93 @@
+db.createCollection("juegos", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "juegos Validator",
+            required: ["id", "desc_clasificacion", "cod_barrio", "barrio", "cod_distrito", "distrito", "estado", "coord_gis_x", "coord_gis_y", "latitud", "longitud", "tipo_via", "nom_via", "num_via", "cod_postal", "fecha_instalacion", "modelo", "tipo_juego", "accesible", "area"],
+            properties: {
+                id: {
+                    bsonType: "int",
+                    description: "id del juego"
+                },
+                desc_clasificacion: {
+                    bsonType: "string",
+                    enum: ["AREAS DE JUEGO/ESPECIAL", "AREAS DE MAYORES", "AREAS INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
+                    description: "descripción del tipo de juego recreativa"
+                },
+                cod_barrio: {
+                    bsonType: "int",
+                    description: "código del barrio al que pertenece el juego"
+                },
+                barrio: {
+                    bsonType: "string",
+                    description: "barrio al que pertenece el juego"
+                },
+                cod_distrito: {
+                    bsonType: "int",
+                    description: "código del distrito al que pertenece el juego"
+                },
+                distrito: {
+                    bsonType: "string",
+                    description: "distrito al que pertenece el juego"
+                },
+                estado: {
+                    bsonType: "string",
+                    enum: ["OPERATIVO"],
+                    description: "estado del juego"
+                },
+                coord_gis_x: {
+                    bsonType: "number",
+                    description: "coordenadas en el eje X del juego"
+                },
+                coord_gis_y: {
+                    bsonType: "number",
+                    description: "coordenadas en el eje Y del juego"
+                },
+                latitud: {
+                    bsonType: "number",
+                    description: "latitud del juego"
+                },
+                longitud: {
+                    bsonType: "number",
+                    description: "longitud del juego"
+                },
+                tipo_via: {
+                    bsonType: "string",
+                    description: "tipo del vía donde se encuentra el juego"
+                },
+                nom_via: {
+                    bsonType: "string",
+                    description: "nombre de la vía donde se encuentra el juego"
+                },
+                num_via: {
+                    bsonType: "string",
+                    description: "número de la vía donde se encuentra el juego"
+                },
+                cod_postal: {
+                    bsonType: "string",
+                    description: "código postal de la zona postal en la que se encuentra el juego"
+                },
+                fecha_instalacion: {
+                    bsonType: "date",
+                    description: "fecha en la que se instaló el juego"
+                },
+                modelo: {
+                    bsonType: "string"
+                    description: "modelo de juego"
+                },
+                tipo_juego: {
+                    bsonType: "string",
+                    description: "tipo de juego"
+                },
+                accesible: {
+                    bsonType: "bool",
+                    description: "indica si el juego es accesible"
+                },
+                areas: {
+                    bsonType: "int",
+                    description: "area al que pertenece el juego"
+                }
+            }
+        }
+    }
+})
