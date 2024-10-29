@@ -1,4 +1,3 @@
-import pandas as pd
 import warnings
 
 def change_accents(word):
@@ -184,45 +183,8 @@ def fill_missing(df, optionals:list):
             df[c] = df.apply(lambda row: fill_missing_tipo(row, c, f'{c}_DESCONOCIDO'), axis=1)
     return df
 
-def juegos(source, dest):
-    optionals = ["DIRECCION_AUX"]
-    source += "JuegosSucio.csv"
-    dest_csv = dest + "JuegosLimpio.csv"
-    df = pd.read_csv(source) 
-    #print(df)
-    # analisis csv
-    #print(df)
-    #print(df.describe())
 
-    # missing_values
-    #missing = detect_missing_values(df)
-    #if missing.sum() > 0:
-    #    print("[INFO] Existen valores nulos: ", missing.sum()) 
-    #    print("\n")
-    #    print(missing)
-    #else: 
-    #    print("[INFO] No existen valores nulos")
-    
-    # correcting strings
-    for c in df.columns.to_list():
-        if (df[c].dtype == object):
-           standarize_str(df, c)
-    # Correcting dates
-    fill_dates(df)
 
-    # imputacion de valores en el propio df
-    imput_missing_district(df)
-    imput_missing_addr(df)
-
-    # fusion con Area
-    df_areas = pd.read_csv(dest + "areas_limpias.csv")
-    fussion_df(df, df_areas, ["CODIGO_INTERNO", "NDP"], "AREA") 
-    df = fill_missing(df, optionals)
-    df_areas = fill_missing(df_areas, optionals)
-    df.to_csv(dest_csv, index=False)
-    df_areas.to_csv(dest + "areas_limpias.csv", index=False)
-    #print(detect_missing_values(df))
-    #print(detect_missing_values(df_areas))
 if __name__ == "__main__":
-    juegos("./csvs/", "./output/")
+    preproceso_juegos("./csvs/", "./output/")
 
