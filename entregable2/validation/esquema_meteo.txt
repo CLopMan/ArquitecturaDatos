@@ -1,0 +1,31 @@
+db.createCollection("meteo", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "meteo validator",
+            required: [ "fecha", "temperatura", "precipitacion", "viento", "distrito"],
+            properties: {
+                fecha: {
+                    bsonType: "date"
+                    description: "fecha en la que se recoge el clima"
+                },
+                temperatura: {
+                    bsonType: "number"
+                    description: "temperatura"
+                },
+                precipitacion: {
+                    bsonType: "number", 
+                    description: "cantidad de precipitación"
+                },
+                viento: {
+                    bsonType: "bool"
+                    description: "indica si ha habido vientos fuertes"
+                },
+                distrito: {
+                    bsonType: "string"
+                    description: "distrto que está asociado al registro climático"
+                },
+            }
+        }
+    }
+})

@@ -1,0 +1,37 @@
+// ID	PUNTUACION_ACCESIBILIDAD	PUNTUACION_CALIDAD	COMENTARIOS	AreaRecreativaID	FECHA
+db.createCollection("encuestas_satisfacion", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "encuestas_satisfaction_validation",
+            required: ["id", "puntuacion_accesibilidad", "puntuacion_calidad", "comentarios", "fecha_instalacion", "area_recreativa_id"],
+            properties: {
+                id: {
+                    bsonType: "int",
+                    description: "identificador de la encuesta"
+                },
+                puntuacion_accesibilidad: {
+                    bsonType: "int",
+                    description: "puntuación de la accesibilidad del area asociada a la encuesta"
+                },
+                puntacion_calidad: {
+                    bsonType: "int",
+                    description: "puntuación de la calidad del area asociada a la encuesta"
+                },
+                comentarios: {
+                    bsonType: "string",
+                    description: "comentarios adicionales de los usuarios"
+                },
+                fecha: {
+                    bsonType: "date",
+                    description: "fecha de realización de la encuesta"
+                },
+                area_recreativa_id: {
+                    bsonType: "int",
+                    description: "identificador del área recreativa evaluada"
+                }
+            }
+        }
+    }
+}
+)
