@@ -24,7 +24,6 @@ def preproceso_meteo24(csv_input, csv_output):
     meteo = pd.read_csv(meteo_csv, delimiter=';')
     areas = pd.read_csv(areas_csv)
 
-    print(meteo)
     relacionar_meteo_area(meteo,areas)
     
     new_meteo = pd.DataFrame(columns=["FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ID_AREA"])
@@ -53,4 +52,3 @@ def preproceso_meteo24(csv_input, csv_output):
 
 
     new_meteo.to_csv(csv_output,index=False)
-preproceso_meteo24("./csvs/",".")
