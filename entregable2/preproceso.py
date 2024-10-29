@@ -460,6 +460,8 @@ def preproceso_meteo24(csv_input, csv_output):
                     # Actualizar la fila existente
                     new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area), magnitudes[magnitud]] = valor
 
+    for i, row in new_meteo.iterrows():
+        new_meteo.loc[i, 'VIENTO'] = 1 if row['VIENTO'] > 11.4 else 0
 
     new_meteo.to_csv(csv_output,index=False)
 
@@ -495,20 +497,20 @@ def main():
     output_path = sys.argv[2]
 
     # Call functions from imported modules
-    info_msg("executing encuestas_satisfaccion")
-    encuestas_satisfaccion(input_path,output_path)
-    info_msg("executing preproceso_incidencias_de_usuario")
-    preproceso_incidencias_usuario(input_path,output_path)
-    info_msg("executing preproceso_incidencias_seguridad")
-    preproceso_incidencias_seguridad(input_path,output_path)
-    info_msg("executing preproceso_area")
-    preproceso_area(input_path, output_path)
-    info_msg("executing preproceso_mantenimiento")
-    preproceso_mantenimiento(input_path, output_path)
-    info_msg("executing preproceso_usuario")
-    preproceso_usuarios(input_path, output_path)
-    info_msg("executing juegos")
-    preproceso_juegos(input_path, output_path)
+#    info_msg("executing encuestas_satisfaccion")
+#    encuestas_satisfaccion(input_path,output_path)
+#    info_msg("executing preproceso_incidencias_de_usuario")
+#    preproceso_incidencias_usuario(input_path,output_path)
+#    info_msg("executing preproceso_incidencias_seguridad")
+#    preproceso_incidencias_seguridad(input_path,output_path)
+#    info_msg("executing preproceso_area")
+#    preproceso_area(input_path, output_path)
+#    info_msg("executing preproceso_mantenimiento")
+#    preproceso_mantenimiento(input_path, output_path)
+#    info_msg("executing preproceso_usuario")
+#    preproceso_usuarios(input_path, output_path)
+#    info_msg("executing juegos")
+#    preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
     info_msg("FINISH")
