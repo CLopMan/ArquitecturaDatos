@@ -1,9 +1,5 @@
 import pandas as pd
 
-def detect_missing_values(df):
-    missing: bool = df.isnull().sum()
-    return missing
-
 def fill_missing_tipo(row,column,string_missing):
     if pd.isnull(row[column]):
         return f'{string_missing}_{row["NIF"]}'
@@ -21,7 +17,6 @@ def format_phone_number(phone):
 def preproceso_mantenimiento(csv_input, csv_output):
     csv_input = csv_input + "UsuariosSucio.csv"
     csv_output = csv_output + "usuarios_limpios.csv"
-    print(csv_input)
     df = pd.read_csv(csv_input)
     df["NOMBRE"] = df["NOMBRE"].str.upper()
     df["EMAIL"] = df["EMAIL"].str.upper()
