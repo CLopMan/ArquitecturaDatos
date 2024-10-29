@@ -8,6 +8,7 @@ def fill_missing_tipo(row,column,string_missing):
 def preproceso_mantenimiento(csv_input, csv_output):
     csv_input = csv_input + "MantenimientoSucio.csv"
     csv_output = csv_output + "mantenimiento_limpio.csv"
+
     df = pd.read_csv(csv_input)
     df["TIPO_INTERVENCION"] = df["TIPO_INTERVENCION"].str.upper()
     df["FECHA_INTERVENCION"] = pd.to_datetime(df["FECHA_INTERVENCION"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
@@ -19,4 +20,7 @@ def preproceso_mantenimiento(csv_input, csv_output):
 
     df["Comentarios"] = df.apply(lambda row: fill_missing_tipo(row, "Comentarios", "COMENTARIO_DESCONOCIDO"), axis=1)
 
-    df.to_csv(csv_output)
+    df.to_csv(csv_output, index=False)
+
+if __name__ == "__main__":
+    preproceso_mantenimiento("./csvs/", "./")

@@ -6,3 +6,4 @@
 *.zip
 *.gz
 *.pdf
+__pycache__/
