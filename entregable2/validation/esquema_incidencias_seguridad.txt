@@ -1,0 +1,49 @@
+db.createCollection("incidencias_seguridad", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Incidencias Seguridad Validator",
+            required: [
+                "id",
+                "fecha_reporte",
+                "tipo_incidente",
+                "gravedad",
+                "area_recreativa_id",
+            ],
+            properties: {
+                id: {
+                    bsonType: "int",
+                    description: "'id' es el identificador de la fila",
+                },
+                fecha_reporte: {
+                    bsonType: "date",
+                    description:
+                        "'fecha_reporte' corresponde con la fecha en la que se realizó el reporte",
+                },
+                tipo_incidente: {
+                    bsonType: "enum",
+                    enum: [
+                        "ROBO",
+                        "VANDALISMO",
+                        "ACCIDENTE",
+                        "CAIDA",
+                        "DAÑO ESTRUCTURAL",
+                    ],
+                    description:
+                        "'tipo_incidente' corresponde con el tipo de incidente reportado",
+                },
+                gravedad: {
+                    bsonType: "enum",
+                    enum: ["CRITICA", "ALTA", "MEDIA", "BAJA"],
+                    description:
+                        "'gravedad' corresponde con el nivel de gravedad del incidente",
+                },
+                area_recreativa_id: {
+                    bsonType: "int",
+                    description:
+                        "'area_recreativa_id' corresponde con el identificador del área a la que corresponde el reporte del incidente",
+                },
+            },
+        },
+    },
+});
