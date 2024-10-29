@@ -1,4 +1,5 @@
 import pandas as pd
+import warnings
 
 def change_accents(word):
     if type(word) != str:
@@ -144,6 +145,10 @@ def imput_missing_addr(df):
             df.loc[indice, ["NOM_VIA"]] = dir_aux["nombre_via"] if not nom_via else nom_via
             df.loc[indice, ["NUM_VIA"]] = dir_aux["num_via"] if not num_via else num_via
 
+def fill_dates(df):
+    df.loc[(df["FECHA_INSTALACION"] == "fecha_incorrecta") | (df["FECHA_INSTALACION"].isna()), 'FECHA_INSTALACION'] = "01/01/1970"
+
+
 def fussion_df(df1, df2, columnas_clave, new_column):
     df1[new_column] = None
     for i, row in df2.iterrows():
@@ -156,12 +161,17 @@ def fussion_df(df1, df2, columnas_clave, new_column):
         for c in df1.columns.tolist(): # copiar valores faltantes del uno al otro
             if c in df2.columns.tolist():
                 if row[c] is not None:
-                    df1.loc[df1[new_column] == row["ID"], c] = row[c]
+                    with warnings.catch_warnings(record=True) as w:
+                        df1.loc[df1[new_column] == row["ID"], c] = row[c]
+                        if w:
+                            for warning in w:
+                                pass
                 else:
                     for j, r in df1.interrows():
                         if r[c] is not None:
                             df2.loc[i, c] = r[c] # actualizamos al primero
                             break
+
 def fill_missing_tipo(row,column,string_missing):
     if pd.isnull(row[column]):
         return f'{string_missing}_{row["ID"]}'
@@ -197,18 +207,20 @@ def juegos(source, dest):
     for c in df.columns.to_list():
         if (df[c].dtype == object):
            standarize_str(df, c)
+    # Correcting dates
+    fill_dates(df)
 
     # imputacion de valores en el propio df
     imput_missing_district(df)
     imput_missing_addr(df)
-    
+
     # fusion con Area
     df_areas = pd.read_csv(dest + "areas_limpias.csv")
     fussion_df(df, df_areas, ["CODIGO_INTERNO", "NDP"], "AREA") 
     df = fill_missing(df, optionals)
     df_areas = fill_missing(df_areas, optionals)
     df.to_csv(dest_csv, index=False)
-    df_areas.to_csv(dest + "areas_limpias.csv")
+    df_areas.to_csv(dest + "areas_limpias.csv", index=False)
     #print(detect_missing_values(df))
     #print(detect_missing_values(df_areas))
 if __name__ == "__main__":
