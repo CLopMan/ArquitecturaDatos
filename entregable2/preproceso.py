@@ -461,8 +461,13 @@ def preproceso_meteo24(csv_input, csv_output):
                     new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area), magnitudes[magnitud]] = valor
                 count_id+=1
     new_meteo = new_meteo.astype(object)
+    for i, row in new_meteo.iterrows():
+        new_meteo.loc[i, 'VIENTO'] = 1 if row['VIENTO'] > 11.4 else 0
     fill_missing(new_meteo,[])
     
+
+    
+
     new_meteo.to_csv(csv_output,index=False)
 
 def format_phone_number(phone):
@@ -509,8 +514,8 @@ def main():
     preproceso_mantenimiento(input_path, output_path)
     info_msg("executing preproceso_usuario")
     preproceso_usuarios(input_path, output_path)
-    #info_msg("executing juegos")
-    #preproceso_juegos(input_path, output_path)
+    info_msg("executing juegos")
+    preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
     info_msg("FINISH")

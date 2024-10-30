@@ -3,7 +3,7 @@ db.createCollection("meteo", {
         $jsonSchema: {
             bsonType: "object",
             title: "meteo validator",
-            required: [ "fecha", "temperatura", "precipitacion", "viento", "distrito"],
+            required: [ "fecha", "temperatura", "precipitacion", "viento", "distrito", "area"],
             properties: {
                 fecha: {
                     bsonType: "date"
@@ -25,6 +25,10 @@ db.createCollection("meteo", {
                     bsonType: "string"
                     description: "distrto que está asociado al registro climático"
                 },
+                area: {
+                    bsonType: "int",
+                    description: "area asociada"
+                }
             }
         }
     }
