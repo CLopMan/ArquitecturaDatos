@@ -436,10 +436,10 @@ def preproceso_meteo24(csv_input, csv_output):
 
     relacionar_meteo_area(meteo,areas)
     
-    new_meteo = pd.DataFrame(columns=["FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ID_AREA"])
+    new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ID_AREA"])
 
     magnitudes = {81:"VIENTO",83:"TEMPERATURA",89:"PRECIPITACION"}
-
+    count_id = 1
     for _,row in meteo.iterrows():
         magnitud = row["MAGNITUD"]
         if magnitud in magnitudes:
@@ -454,13 +454,15 @@ def preproceso_meteo24(csv_input, csv_output):
                 # Verificar si ya existe una fila con la misma fecha e ID_AREA
                 if not ((new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area)).any():
                     # Crear una nueva fila
-                    new_row = {"FECHA": fecha, "ID_AREA": id_area, magnitudes[magnitud]: valor}
+                    new_row = {"ID":count_id,"FECHA": fecha, "ID_AREA": id_area, magnitudes[magnitud]: valor}
                     new_meteo.loc[len(new_meteo.index)] = new_row
                 else:
                     # Actualizar la fila existente
                     new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area), magnitudes[magnitud]] = valor
-
-
+                count_id+=1
+    new_meteo = new_meteo.astype(object)
+    fill_missing(new_meteo,[])
+    
     new_meteo.to_csv(csv_output,index=False)
 
 def format_phone_number(phone):
@@ -507,8 +509,8 @@ def main():
     preproceso_mantenimiento(input_path, output_path)
     info_msg("executing preproceso_usuario")
     preproceso_usuarios(input_path, output_path)
-    info_msg("executing juegos")
-    preproceso_juegos(input_path, output_path)
+    #info_msg("executing juegos")
+    #preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
     info_msg("FINISH")
