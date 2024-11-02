@@ -410,21 +410,6 @@ def preproceso_mantenimiento(csv_input, csv_output):
 
     df.to_csv(csv_output, index=False)
 
-def relacionar_meteo_area(meteo, areas):
-    lugares = {102: "MORATALAZ", 103: "VILLAVERDE", 104:"LA CHINA", 106:"CENTRO MPAL. DE ACUSTICA", 107: "HORTALEZA", 108: "PEÑAGRANDE", 109:"CHAMBERI", 110:"CENTRO", 111:"CHAMARTIN", 112:"VALLECAS", 113:"VALLECAS", 114:"MATEDERO", 115:"MATADERO", 4: "PLAZA ESPAÑA", 8: "ESCUELAS AGUIRRE", 16: "ARTURO SORIA", 18:"FAROLILLO", 24:"CASA DE CAMPO", 36:"MORATALAZ", 38:"CUATRO CAMINOS", 39:"PILAR", 54:"ENSANCHE DE VALLECAS", 56:"PLAZA ELIPTICA", 58:"FUENCARRAL - EL PARDO", 59: "JUAN CARLOS I"  }
-
-    for index, row in meteo.iterrows():
-        estacion = row['ESTACION']
-        if estacion in lugares:
-            lugar = lugares[estacion]
-            # Buscar el valor en las columnas BARRIO y DISTRITO
-            area_row = areas[(areas['BARRIO'].str.contains(lugar, case=False, na=False)) | (areas['DISTRITO'].str.contains(lugar, case=False, na=False))]
-            if not area_row.empty:
-                # Tomar el valor del ID de la primera coincidencia
-                meteo.at[index, 'ID_AREA'] = area_row.iloc[0]['ID']
-            else:
-                meteo.at[index, 'ID_AREA'] = -1
-
 def preproceso_meteo24(csv_input, csv_output):
     meteo_csv = csv_input + "meteo24.csv"
     csv_output = csv_output + "meteo24_limpio.csv"
@@ -433,10 +418,8 @@ def preproceso_meteo24(csv_input, csv_output):
 
     meteo = pd.read_csv(meteo_csv, delimiter=';')
     areas = pd.read_csv(areas_csv)
-
-    relacionar_meteo_area(meteo,areas)
     
-    new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ID_AREA"])
+    new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ESTACION"])
 
     magnitudes = {81:"VIENTO",83:"TEMPERATURA",89:"PRECIPITACION"}
     count_id = 1
@@ -446,29 +429,38 @@ def preproceso_meteo24(csv_input, csv_output):
             año = row["ANO"]
             mes = row["MES"]
             dia = 1
-            id_area = row["ID_AREA"]
+            estacion = row["ESTACION"]
             for dia in range(1,32):
                 valor = row.iloc[7 + (dia - 1) * 2]
                 fecha = f"{dia:02d}-{mes:02d}-{año}"
 
                 # Verificar si ya existe una fila con la misma fecha e ID_AREA
-                if not ((new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area)).any():
+                if not ((new_meteo["FECHA"] == fecha) & (new_meteo["ESTACION"] == estacion)).any():
                     # Crear una nueva fila
-                    new_row = {"ID":count_id,"FECHA": fecha, "ID_AREA": id_area, magnitudes[magnitud]: valor}
+                    new_row = {"ID":count_id,"FECHA": fecha, "ESTACION": estacion, magnitudes[magnitud]: valor}
                     new_meteo.loc[len(new_meteo.index)] = new_row
                 else:
                     # Actualizar la fila existente
-                    new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ID_AREA"] == id_area), magnitudes[magnitud]] = valor
+                    new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ESTACION"] == estacion), magnitudes[magnitud]] = valor
                 count_id+=1
     new_meteo = new_meteo.astype(object)
     for i, row in new_meteo.iterrows():
         new_meteo.loc[i, 'VIENTO'] = 1 if row['VIENTO'] > 11.4 else 0
     fill_missing(new_meteo,[])
-    
-
-    
 
     new_meteo.to_csv(csv_output,index=False)
+
+def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
+    csv_input = csv_input + "estaciones_meteo_CodigoPostal.csv"
+    csv_output = csv_output + "estaciones_meteo_codigo_postal.csv"
+
+    input_csv = pd.read_csv(csv_input, delimiter=";")
+
+
+    input_csv.at[0,"Codigo Postal"] = input_csv.at[0,"Codigo Postal"].split(',')[0]
+
+    input_csv.to_csv(csv_output,index=False)
+
 
 def format_phone_number(phone):
     phone = phone.replace(" ", "")
@@ -518,6 +510,8 @@ def main():
     preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
+    info_msg("executing preprocese_estaciones_meteo_codigo_postal")
+    preproceso_estaciones_meteo_codigo_postal(input_path,output_path)
     info_msg("FINISH")
 
 if __name__ == "__main__":
