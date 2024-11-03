@@ -208,6 +208,8 @@ def preproceso_juegos(source, dest):
     fussion_df(df, df_areas, ["CODIGO_INTERNO", "NDP"], "AREA") 
     df = fill_missing(df, optionals)
     df_areas = fill_missing(df_areas, optionals)
+    df = df.rename(columns={'ID':'_id'})
+    df_areas = df_areas.rename(columns={'ID':'_id'})
     df.to_csv(dest_csv, index=False)
     df_areas.to_csv(dest + "areas_limpias.csv", index=False)
 
@@ -370,6 +372,7 @@ def encuestas_satisfaccion(source, dest):
     df["FECHA"] = pd.to_datetime(df["FECHA"], utc=True, format="mixed", dayfirst=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     column = "COMENTARIOS"
     df[column] = df[column].str.upper()
+    df = df.rename(columns={'ID':'_id'})
     df.to_csv(PATH_OUT, index=False)
  
 def preproceso_incidencias_usuario(csv_input, csv_output):
@@ -380,7 +383,8 @@ def preproceso_incidencias_usuario(csv_input, csv_output):
     df["FECHA_REPORTE"] = pd.to_datetime(df["FECHA_REPORTE"], format="mixed",
     dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     df["ESTADO"] = df["ESTADO"].str.upper()
-
+    
+    df = df.rename(columns={'ID':'_id'})
     df.to_csv(csv_output, index=False)
 
 def preproceso_incidencias_seguridad(csv_input, csv_output):
@@ -393,6 +397,7 @@ def preproceso_incidencias_seguridad(csv_input, csv_output):
     df["TIPO_INCIDENTE"] = df["TIPO_INCIDENTE"].str.upper().apply(change_accents)
     df["GRAVEDAD"] = df["GRAVEDAD"].str.upper().apply(change_accents)
 
+    df = df.rename(columns={'ID':'_id'})
     df.to_csv(csv_output, index=False)
 
 def preproceso_mantenimiento(csv_input, csv_output):
@@ -412,6 +417,7 @@ def preproceso_mantenimiento(csv_input, csv_output):
     df["Comentarios"] = df["Comentarios"].str.upper()
     df["Comentarios"] = df.apply(lambda row: fill_missing_tipo(row, "Comentarios", "COMENTARIO_DESCONOCIDO", "ID"), axis=1)
 
+    df = df.rename(columns={'ID':'_id'})
     df.to_csv(csv_output, index=False)
 
 def preproceso_meteo24(csv_input, csv_output):
@@ -452,6 +458,8 @@ def preproceso_meteo24(csv_input, csv_output):
         new_meteo.loc[i, 'VIENTO'] = 1 if row['VIENTO'] > 11.4 else 0
     fill_missing(new_meteo,[])
 
+    
+    new_meteo = new_meteo.rename(columns={'ID':'_id'})
     new_meteo.to_csv(csv_output,index=False)
 
 def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
@@ -463,6 +471,7 @@ def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
 
     input_csv.at[0,"Codigo Postal"] = input_csv.at[0,"Codigo Postal"].split(',')[0]
 
+    input_csv = input_csv.rename(columns={'ID':'_id'})
     input_csv.to_csv(csv_output,index=False)
 
 
@@ -484,6 +493,7 @@ def preproceso_usuarios(csv_input, csv_output):
     df = df.drop(columns=["Email"])
     df["EMAIL"] = df.apply(lambda row: fill_missing_tipo(row, "EMAIL", "EMAIL_DESCONOCIDO", "NIF"), axis=1)
 
+    df = df.rename(columns={'NIF':'_id'})
     df.to_csv(csv_output,index=False)
 
 def info_msg(msg: str):
