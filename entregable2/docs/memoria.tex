@@ -162,6 +162,16 @@ for indice, value in dataframe.iterrows():
     esta forma es un valor fácilmente reconocible que no inclumple la validación
     de esquemas que implementaremos en \texttt{MongoDB}.
 
+    \item \textbf{Formateo de fechas}
+
+    Todas las fechas han sido formateadas al formato de mongo a través del siguiente código:
+
+    \begin{lstlisting}
+dataframe["COLUMNA_A_CAMBIAR"] = pd.to_datetime(dataframe["COLUMNA_A_CAMBIAR"], format="mixed", dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    \end{lstlisting}
+
+    Se ha seleccionado este valor por tratarse de la \textit{fecha UNIX}. De
+    esta forma es un valor fácilmente reconocible que no inclumple la validación
     \item \textbf{Rellenado genérico de \textit{missing values}}
     
     Las columnas que tenían valores nulos que no ha sido posible imputar han sido rellenadas con un valor fácilmente indetificable que sigue el formato ``NOM-COL\_DESCONOCIDO\_ID-FILA'' mediante la siguiente función:
@@ -181,21 +191,48 @@ df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_D
 
 \end{itemize}
 
-\subsection{Técnicas de preprocesado especificas}
+\subsection{Preprocesado de los csvs}
 \label{subsec:preprocessespecifico}
+En este apartado se explican las técnicas y procedimientos para el preprocesado de cada uno de los csvs sucios.
 
 \subsubsection{Áreas}
 \label{subsubsec:preprocessarea}
+Para el fichero \textit{AreasSucio.csv} se ha aplicado el siguiente proceso:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Normalización de la columna \textit{DESC\_CLASIFICACION}: mediante el paso a mayúsculas y la eliminación de los acentos de toda la columna
+    \item Normalización de la columna \textit{BARRIO}: mediante el paso a mayúsculas y eliminación de los acentos de toda la columna, así como la obtención de los valores de \textit{COD\_POSTAL} por barrio para su posterior imputación siempre y cuando sus valores no sean nulos
+    \item Imputación de los valores faltantes de \textit{COD\_POSTAL}: mediante la identificación del barrio y la imputación del código postal identificado por el barrio
+    \item Normalización de la columna \textit{DISTRITO}: mediante el paso a mayúsculas y eliminación de los acentos de toda la columna, así como la obtención de los valores de \textit{COD\_DISTRITO} por distrito y viceversa para su posterior imputación, siempre y cuando sus valores no sean nulos
+    \item Imputación de los valores faltantes de \textit{COD\_DISTRITO} y \textit{DISTRITO}: mediante la identificación del código buscando por distrito cuando este no es nulo y viceversa
+    \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible siguiendo los siguientes pasos:
+    \begin{itemize}
+        \item Si no hay \textit{TIPO\_VIA}, se extrae el tipo de la dirección auxiliar. Si esta no existe, se escribe el valor ``tipo\_desconocido\_ID''
+        \item Si no hay \textit{NOM\_VIA}, se extrae el nombre de la dirección auxiliar. Si esta no existe, se escribe el valor ``NOMBRE\_DESCONOCIDO\_ID''
+        \item Si no hay \textit{NUM\_VIA}, se extrae el número de la dirección auxiliar. Aquí, puede haber tres opciones:
+        \begin{itemize}
+            \item Existe solo un número en la dirección auxiliar, que tiene la forma ``VALDEBERNARDO, 000037''. En este caso, simplemente se extrae y se castea a entero para eliminar los 0's innecesarios
+            \item Existen más de un número en la dirección auxiliar, que tiene la forma ``V · VIA LÍMITE 115 , ASCENDIENTE 1: 064 · ALMENAR''. En este caso, se extrae el primer número y se interpreta como el número de la vía
+            \item Si no existen números en la dirección auxiliar, que tiene la forma ``PARQUE ROMA''. Aquí, simplemente se escribe el valor ``NUMERO\_DESCONOCIDO\_ID''
+        \end{itemize}
+        \item Tras sacar los datos de la dirección auxiliar, se borra esta columna de la instancia imputada
+    \end{itemize}
+    \item Formateo de \textit{FECHA\_INSTALACION}: mediante el paso de la fecha al formato de mongo
+    \item Imputación de valores faltantes en \textit{CODIGO\_INTERNO}: mediante el rellenado de estos datos con los valores ``CÓDIGO\_INTERNO\_ID\_DESCONOCIDO''.
+    \item Normalización de la columna \textit{tipo}: mediante el paso a mayúsculas y eliminación de los acentos de toda la columna
+    \item Escritura del csv limpio final
+\end{enumerate}
 
 \subsubsection{Juegos}
 \label{subsubsec:preprocessjuego}
 Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
 
-\begin{itemize}
+\begin{enumerate}
     \item Imputación de valores en \textit{DISTRITO} y \textit{CODIGO\_DISTRITO}: se han relacionado valores de distrito con códigos de forma unívoca, rellenando los valores faltantes en caso necesario. Esto se hace mediante la llamada a la función \texttt{imput\_missing\_district}.
     \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible.
     \item Fusión con \textit{areas\_limpias.csv}: se han asociado los juegos a un área mediante los campos \textit{CODIGO\_INTERNO} y \textit{NDP}. Esto se ha traducido en una columna nueva en la tabla de \textit{juegos} con el ID del área al que pertenece. Adicionalmente se ha completado la información faltante de cada tabla con información del otro en los casos posibles.
-\end{itemize}
+\end{enumerate}
 
 \subsubsection{Meteo24}
 \label{subsubsec:preprocessmeteo}
@@ -218,7 +255,7 @@ El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pe
 \label{sec:validacion}
 Para la validación de esquemas, se han desarrollado unos esquemas para cada csv que ha sido limpiado en el apartado anterior. Para ello, todos han seguido una estructura similar a la siguiente:
 
-\lstset{style=bash}
+\lstset{style=python}
 \begin{lstlisting}
 db.createCollection("nombre\_de\_colección", {
     validator: {
@@ -244,9 +281,4 @@ db.createCollection("nombre\_de\_colección", {
     }
 })
 \end{lstlisting}
-
-\newpage
-\section{Carga de Datos en MongoDB}
-\label{sec:mondongo}
-
 \end{document}
