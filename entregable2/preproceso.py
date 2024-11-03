@@ -486,7 +486,6 @@ def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
     input_csv.at[0,"Codigo Postal"] = input_csv.at[0,"Codigo Postal"].split(',')[0]
 
     input_csv = input_csv.rename(columns={'ID':'_id'})
-    input_csv = delete_duplicates(input_csv, "_id")
     input_csv.to_csv(csv_output,index=False)
 
 def format_phone_number(phone):
@@ -539,7 +538,7 @@ def main():
     preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
-    info_msg("executing preprocese_estaciones_meteo_codigo_postal")
+    info_msg("executing preproceso_estaciones_meteo_codigo_postal")
     preproceso_estaciones_meteo_codigo_postal(input_path,output_path)
     info_msg("FINISH")
 
