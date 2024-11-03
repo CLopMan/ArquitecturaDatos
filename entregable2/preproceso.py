@@ -419,7 +419,7 @@ def preproceso_meteo24(csv_input, csv_output):
     meteo = pd.read_csv(meteo_csv, delimiter=';')
     areas = pd.read_csv(areas_csv)
     
-    new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","ESTACION"])
+    new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","PUNTO_MUESTREO"])
 
     magnitudes = {81:"VIENTO",83:"TEMPERATURA",89:"PRECIPITACION"}
     count_id = 1
@@ -429,19 +429,19 @@ def preproceso_meteo24(csv_input, csv_output):
             año = row["ANO"]
             mes = row["MES"]
             dia = 1
-            estacion = row["ESTACION"]
+            estacion = row["PUNTO_MUESTREO"]
             for dia in range(1,32):
                 valor = row.iloc[7 + (dia - 1) * 2]
                 fecha = f"{dia:02d}-{mes:02d}-{año}"
 
                 # Verificar si ya existe una fila con la misma fecha e ID_AREA
-                if not ((new_meteo["FECHA"] == fecha) & (new_meteo["ESTACION"] == estacion)).any():
+                if not ((new_meteo["FECHA"] == fecha) & (new_meteo["PUNTO_MUESTREO"] == str(estacion)[:8])).any():
                     # Crear una nueva fila
-                    new_row = {"ID":count_id,"FECHA": fecha, "ESTACION": estacion, magnitudes[magnitud]: valor}
+                    new_row = {"ID":count_id,"FECHA": fecha, "PUNTO_MUESTREO": str(estacion)[:8], magnitudes[magnitud]: valor}
                     new_meteo.loc[len(new_meteo.index)] = new_row
                 else:
                     # Actualizar la fila existente
-                    new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["ESTACION"] == estacion), magnitudes[magnitud]] = valor
+                    new_meteo.loc[(new_meteo["FECHA"] == fecha) & (new_meteo["PUNTO_MUESTREO"] == str(estacion)[:8]), magnitudes[magnitud]] = valor
                 count_id+=1
     new_meteo = new_meteo.astype(object)
     for i, row in new_meteo.iterrows():
@@ -456,11 +456,10 @@ def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
 
     input_csv = pd.read_csv(csv_input, delimiter=";")
 
-
+    
     input_csv.at[0,"Codigo Postal"] = input_csv.at[0,"Codigo Postal"].split(',')[0]
 
     input_csv.to_csv(csv_output,index=False)
-
 
 def format_phone_number(phone):
     phone = phone.replace(" ", "")
@@ -494,7 +493,7 @@ def main():
     output_path = sys.argv[2]
 
     # Call functions from imported modules
-    info_msg("executing encuestas_satisfaccion")
+    """ info_msg("executing encuestas_satisfaccion")
     encuestas_satisfaccion(input_path,output_path)
     info_msg("executing preproceso_incidencias_de_usuario")
     preproceso_incidencias_usuario(input_path,output_path)
@@ -507,7 +506,7 @@ def main():
     info_msg("executing preproceso_usuario")
     preproceso_usuarios(input_path, output_path)
     info_msg("executing juegos")
-    preproceso_juegos(input_path, output_path)
+    preproceso_juegos(input_path, output_path) """
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
     info_msg("executing preprocese_estaciones_meteo_codigo_postal")

@@ -27,7 +27,7 @@ db.createCollection("incidencias_seguridad", {
                         "VANDALISMO",
                         "ACCIDENTE",
                         "CAIDA",
-                        "DAÑO ESTRUCTURAL",
+                        "DAÑO ESTRUCTURAL"
                     ],
                     description:
                         "'tipo_incidente' corresponde con el tipo de incidente reportado",
