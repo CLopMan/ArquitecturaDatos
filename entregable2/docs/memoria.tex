@@ -123,7 +123,7 @@ def change_accents(word):
     return word
     \end{lstlisting}
 
-    La cuál se llamaba de la siguiente manera:
+    La cuál se llama de la siguiente manera:
 
     \begin{lstlisting}
 dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAMBIAR"].upper())
@@ -136,8 +136,12 @@ dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAM
     \begin{lstlisting}
 for indice, value in dataframe.iterrows():
     if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
-        dataframe.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
+        dataframe.loc[indice, "FECHA_INSTALACION"] = "1970-01-01T00:00:00Z"
     \end{lstlisting}
+
+    Se ha seleccionado este valor por tratarse de la \textit{fecha UNIX}. De
+    esta forma es un valor fácilmente reconocible que no inclumple la validación
+    de esquemas que implementaremos en \texttt{MongoDB}.
 
     \item \textbf{Rellenado genérico de \textit{missing values}}
     
@@ -176,7 +180,7 @@ Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transfor
 El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pedido, el proceso de reestructuración es el siguiente
 
 \begin{enumerate}
-    \item Se ha creado un nuevo dataframe con las siguientes columnas: \text{Id}, \textit{Fecha}, \textit{Temperatura}, \textit{Precipitación}, \textit{Viento} y \textit{Estación}.
+    \item Se ha creado un nuevo dataframe con las siguientes columnas: \textit{Id}, \textit{Fecha}, \textit{Temperatura}, \textit{Precipitación}, \textit{Viento} y \textit{Estación}.
     \item Se ha creado un diccionario en python que permita asociar el código de la magnitud con la propia magnitud con tan solo las magnitudes que nos interesan.
     \item Para cada fila de meteo24 se ha tomado el valor de la magnitud, comprobando que era una de las magnitudes que nos interesan, el código de la estación, el valor del año y del mes, y se ha iterado por cada columna que corresponde a un día del mes
     \item Para cada valor de día se creaba una fecha completa (\%DD,\%MM,\%AAAA) y se tomaba el valor de la columna de ese día para esa magnitud. Con estos datos se rellena el dataframe nuevo de la siguiente manera.
