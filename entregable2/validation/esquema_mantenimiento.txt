@@ -3,40 +3,40 @@ db.createCollection("mantenimiento", {
         $jsonSchema: {
             bsonType: "object",
             title: "Maintenance Validation",
-            required: [ "id", "fecha_intervencion", "tipo_intervencion", "estado_previo", "estado_posterior", "juego_id", "tipo", "comentarios" ],
+            required: [ "ID", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios" ],
             properties: {
-                id: {
+                ID: {
                     bsonType: "string",
                     description: "id del mantenimiento",
                 },
-                fecha_intervencion: {
-                    bsonType: "date",
+                FECHA_INTERVENCION: {
+                    bsonType: "string",
                     description: "fecha en la que se realizaón la intervención",
                 },
-                tipo_intervencion: {
+                TIPO_INTERVENCION: {
                     bsonType: "string",
                     enum: [ "CORRECTIVO", "EMERGENCIA", "PREVENTIVO" ],
                     description: "tipo de la intervención realizada"
                 },
-                estado_previo: {
+                ESTADO_PREVIO: {
                     bsonType: "string",
                     enum: ["MALO", "REGULAR", "BUENO"],
                     description: "estado previo a la revisión"
                 },
-                estado_posterior: {
+                ESTADO_POSTERIOR: {
                     bsonType: "string",
                     enum: ["MALO", "REGULAR", "BUENO"],
                     description: "estado posterior a la revisión",
                 },
-                juego_id: {
+                JuegoID: {
                     bsonType: "int",
                     description: "identificador del juego al que se le realizó el mantenimiento",
                 },
-                tipo: {
+                Tipo: {
                     bsonType: "string",
                     description: "tipo de mantenimiento",
                 },
-                comentarios: {
+                Comentarios: {
                     bsonType: "string",
                     description: "comentario realizado sobre el mantimiento",
                 },

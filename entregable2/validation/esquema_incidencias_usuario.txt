@@ -4,33 +4,33 @@ db.createCollection("incidencias_usuario", {
             bsonType: "object",
             title: "Incidencias Usuario Validator",
             required: [
-                "id",
-                "tipo_incidencia",
-                "fecha_reporte",
-                "estado",
-                "usuario_id",
-                "mantenimiento",
+                "ID",
+                "TIPO_INCIDENCIA",
+                "FECHA_REPORTE",
+                "ESTADO",
+                "UsuarioID",
+                "MantenimientoID",
             ],
             properties: {
-                id: {
+                ID: {
                     bsonType: "int",
                     description: "número identificativo de la columna",
                 },
-                tipo_incidencia: {
+                TIPO_INCIDENCIA: {
                     bsonType: "string",
                     enum: ["DESGASTE", "ROTURA", "VANDALISMO", "MAL FUNCIONAMIENTO"],
                     description: "tipo de incidencia reportada",
                 },
-                fecha_reporte: {
-                    bsonType: "date",
+                FECHA_REPORTE: {
+                    bsonType: "string",
                     description: "fecha en la que se reportó la incidencia",
                 },
-                estado: {
+                ESTADO: {
                     bsonType: "string",
                     enum: ["CERRADA", "ABIERTA"],
                     description: "estado actual de la incidencia",
                 },
-                usuario_id: {
+                UsuarioID: {
                     bsonType: "array",
                     description: "listado de usuarios",
                     minItems: 1,
@@ -38,27 +38,31 @@ db.createCollection("incidencias_usuario", {
                     items: {
                         bsonType: "object",
                         description: "información de usuarios",
-                        required: ["nif", "nombre", "email", "telefono"],
+                        required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
                         properties: {
-                            nif: {
+                            NIF: {
                                 bsonType: "string",
                                 description: "número de identificación del usuario",
                             },
-                            nombre: {
+                            NOMBRE: {
                                 bsonType: "string",
                                 description: "nombre del usuario",
                             },
-                            email: {
+                            EMAIL: {
                                 bsonType: "string",
                                 description: "email del usuario",
                             },
-                            telefono: {
+                            TELEFONO: {
                                 bsonType: "string",
                                 description: "telefono del usuario",
                             },
                         },
                     },
                 },
+                MantenimientoID: {
+                    bsonType: ["string"],
+                    description: "id de mantenimiento",
+                }
             },
         },
     },

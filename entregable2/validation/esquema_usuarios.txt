@@ -3,7 +3,7 @@ db.createCollection("usuarios", {
         $jsonSchema: {
             bsonType: "object",
             title: "Users Validator",
-            required: ["nif", "nombre", "email", "telefono"],
+            required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
             properties: {
                 nif: {
                     bsonType: "string",
