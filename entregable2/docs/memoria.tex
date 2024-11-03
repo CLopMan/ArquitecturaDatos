@@ -27,6 +27,24 @@
     escapeinside={\%*}{*)},             % Para incluir código LaTeX en los listings
     morekeywords={self}                 % Palabras clave adicionales
 }
+
+\lstdefinestyle{bash}{
+    language=shell,
+    backgroundcolor=\color{gray!2},     % Color de fondo
+    basicstyle=\ttfamily,               % Tipo y tamaño de fuente
+    keywordstyle=\color{blue}\bfseries, % Color para palabras clave
+    stringstyle=\color{miverde},        % Color para cadenas
+    commentstyle=\color{red},           % Color para comentarios
+    showspaces=false,                   % No mostrar espacios
+    showstringspaces=false,             % No mostrar espacios en las cadenas
+    frame=single,                       % Poner un marco alrededor del código
+    breaklines=true,                    % Romper las líneas largas
+    captionpos=b,                       % Posición del caption
+    tabsize=4,                          % Tamaño de las tabulaciones
+    escapeinside={\%*}{*)},             % Para incluir código LaTeX en los listings
+    morekeywords={self}                 % Palabras clave adicionales
+}
+
 \lstset{basicstyle=\ttfamily}
 \lstset{
     inputencoding=utf8,
@@ -38,6 +56,7 @@
         {ó}{{\'o}}1 {Ó}{{\'O}}1
         {ú}{{\'u}}1 {Ú}{{\'U}}1
 }
+
 
 %title
 \title{Práctica 2} 
@@ -194,6 +213,34 @@ El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pe
 \newpage
 \section{Validación de Esquemas}
 \label{sec:validacion}
+Para la validación de esquemas, se han desarrollado unos esquemas para cada csv que ha sido limpiado en el apartado anterior. Para ello, todos han seguido una estructura similar a la siguiente:
+
+\lstset{style=bash}
+\begin{lstlisting}
+db.createCollection("nombre\_de\_colección", {
+    validator: {
+        \$jsonSchema: {
+            bsonType: "object",
+            title: "Nombre\_de\_colección Validation",
+            required: ["param1", "param2", "paramN"],
+            properties: {
+                param1: {
+                    bsonType: "tipo1",
+                    description: "descripción1"
+                },
+                param2: {
+                    bsonType: "tipo2",
+                    description: "descripción2"
+                },
+                paramN: {
+                    bsonType: "tipo3",
+                    description: "descripción3"
+                }
+            }
+        }
+    }
+})
+\end{lstlisting}
 
 \newpage
 \section{Carga de Datos en MongoDB}

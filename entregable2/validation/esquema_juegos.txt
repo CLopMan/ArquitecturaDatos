@@ -3,75 +3,75 @@ db.createCollection("juegos", {
         $jsonSchema: {
             bsonType: "object",
             title: "juegos Validator",
-            required: ["id", "desc_clasificacion", "cod_barrio", "barrio", "cod_distrito", "distrito", "estado", "coord_gis_x", "coord_gis_y", "latitud", "longitud", "tipo_via", "nom_via", "num_via", "cod_postal", "fecha_instalacion", "modelo", "tipo_juego", "accesible", "area"],
+            required: ["ID", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION", "MODELO", "tipo_juego", "ACCESIBLE", "AREA"],
             properties: {
-                id: {
+                ID: {
                     bsonType: "int",
                     description: "id del juego"
                 },
-                desc_clasificacion: {
+                DESC_CLASIFICACION: {
                     bsonType: "string",
                     enum: ["AREAS DE JUEGO/ESPECIAL", "AREAS DE MAYORES", "AREAS INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
                     description: "descripción del tipo de juego recreativa"
                 },
-                cod_barrio: {
+                COD_BARRIO: {
                     bsonType: "int",
                     description: "código del barrio al que pertenece el juego"
                 },
-                barrio: {
+                BARRIO: {
                     bsonType: "string",
                     description: "barrio al que pertenece el juego"
                 },
-                cod_distrito: {
+                COD_DISTRITO: {
                     bsonType: "int",
                     description: "código del distrito al que pertenece el juego"
                 },
-                distrito: {
+                DISTRITO: {
                     bsonType: "string",
                     description: "distrito al que pertenece el juego"
                 },
-                estado: {
+                ESTADO: {
                     bsonType: "string",
                     enum: ["OPERATIVO"],
                     description: "estado del juego"
                 },
-                coord_gis_x: {
+                COORD_GIS_X: {
                     bsonType: "number",
                     description: "coordenadas en el eje X del juego"
                 },
-                coord_gis_y: {
+                COORD_GIS_Y: {
                     bsonType: "number",
                     description: "coordenadas en el eje Y del juego"
                 },
-                latitud: {
+                LATITUD: {
                     bsonType: "number",
                     description: "latitud del juego"
                 },
-                longitud: {
+                LONGITUD: {
                     bsonType: "number",
                     description: "longitud del juego"
                 },
-                tipo_via: {
+                TIPO_VIA: {
                     bsonType: "string",
                     description: "tipo del vía donde se encuentra el juego"
                 },
-                nom_via: {
+                NOM_VIA: {
                     bsonType: "string",
                     description: "nombre de la vía donde se encuentra el juego"
                 },
-                num_via: {
+                NUM_VIA: {
                     bsonType: "string",
                     description: "número de la vía donde se encuentra el juego"
                 },
-                cod_postal: {
+                COD_POSTAL: {
                     bsonType: "string",
                     description: "código postal de la zona postal en la que se encuentra el juego"
                 },
-                fecha_instalacion: {
-                    bsonType: "date",
+                FECHA_INSTALACION: {
+                    bsonType: "string",
                     description: "fecha en la que se instaló el juego"
                 },
-                modelo: {
+                MODELO: {
                     bsonType: "string"
                     description: "modelo de juego"
                 },
@@ -79,11 +79,11 @@ db.createCollection("juegos", {
                     bsonType: "string",
                     description: "tipo de juego"
                 },
-                accesible: {
+                ACCESIBLE: {
                     bsonType: "bool",
                     description: "indica si el juego es accesible"
                 },
-                areas: {
+                AREA: {
                     bsonType: "int",
                     description: "area al que pertenece el juego"
                 }

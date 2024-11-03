@@ -4,19 +4,19 @@ db.createCollection("incidencias_seguridad", {
             bsonType: "object",
             title: "Incidencias Seguridad Validator",
             required: [
-                "id",
-                "fecha_reporte",
-                "tipo_incidente",
-                "gravedad",
-                "area_recreativa_id",
+                "ID",
+                "FECHA_REPORTE",
+                "TIPO_INCIDENTE",
+                "GRAVEDAD",
+                "AreaRecreativaID",
             ],
             properties: {
-                id: {
+                ID: {
                     bsonType: "int",
                     description: "'id' es el identificador de la fila",
                 },
-                fecha_reporte: {
-                    bsonType: "date",
+                FECHA_REPORTE: {
+                    bsonType: "string",
                     description:
                         "'fecha_reporte' corresponde con la fecha en la que se realizó el reporte",
                 },
@@ -38,7 +38,7 @@ db.createCollection("incidencias_seguridad", {
                     description:
                         "'gravedad' corresponde con el nivel de gravedad del incidente",
                 },
-                area_recreativa_id: {
+                AreaRecreativaID: {
                     bsonType: "int",
                     description:
                         "'area_recreativa_id' corresponde con el identificador del área a la que corresponde el reporte del incidente",

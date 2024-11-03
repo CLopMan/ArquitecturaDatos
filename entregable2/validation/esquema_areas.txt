@@ -3,71 +3,71 @@ db.createCollection("areas", {
         $jsonSchema: {
             bsonType: "object",
             title: "Areas Validator",
-            required: ["id", "desc_clasificacion", "cod_barrio", "barrio", "cod_distrito", "distrito", "estado", "coord_gis_x", "coord_gis_y", "latitud", "longitud", "tipo_via", "nom_via", "num_via", "cod_postal", "fecha_instalacion"],
+            required: ["ID", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION"],
             properties: {
-                id: {
+                ID: {
                     bsonType: "int",
                     description: "id del área"
                 },
-                desc_clasificacion: {
+                DESC_CLASIFICACION: {
                     bsonType: "string",
                     enum: ["AREAS DE JUEGO/ESPECIAL", "AREAS DE MAYORES", "AREAS INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
                     description: "descripción del tipo de área recreativa"
                 },
-                cod_barrio: {
+                COD_BARRIO: {
                     bsonType: "int",
                     description: "código del barrio al que pertenece el área"
                 },
-                barrio: {
+                BARRIO: {
                     bsonType: "string",
                     description: "barrio al que pertenece el área"
                 },
-                cod_distrito: {
+                COD_DISTRITO: {
                     bsonType: "int",
                     description: "código del distrito al que pertenece el área"
                 },
-                distrito: {
+                DISTRITO: {
                     bsonType: "string",
                     description: "distrito al que pertenece el área"
                 },
-                estado: {
+                ESTADO: {
                     bsonType: "string",
                     enum: ["OPERATIVO"],
                     description: "estado del área"
                 },
-                coord_gis_x: {
+                COORD_GIS_X: {
                     bsonType: "number",
                     description: "coordenadas en el eje X del área"
                 },
-                coord_gis_y: {
+                COORD_GIS_Y: {
                     bsonType: "number",
                     description: "coordenadas en el eje Y del área"
                 },
-                latitud: {
+                LATITUD: {
                     bsonType: "number",
                     description: "latitud del área"
                 },
-                longitud: {
+                LONGITUD: {
                     bsonType: "number",
                     description: "longitud del área"
                 },
-                tipo_via: {
+                TIPO_VIA: {
                     bsonType: "string",
                     description: "tipo del vía donde se encuentra el área"
                 },
-                nom_via: {
+                NOM_VIA: {
                     bsonType: "string",
                     description: "nombre de la vía donde se encuentra el área"
                 },
-                num_via: {
+                NUM_VIA: {
                     bsonType: "string",
                     description: "número de la vía donde se encuentra el área"
                 },
-                cod_postal: {
+                COD_POSTAL: {
                     bsonType: "string",
                     description: "código postal de la zona postal en la que se encuentra el área"
                 },
-                fecha_instalacion: {
+                FECHA_INSTALACION: {
                     bsonType: "date",
                     description: "fecha en la que se instaló el área"
                 },
