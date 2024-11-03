@@ -20,8 +20,13 @@ db.createCollection("incidencias_seguridad", {
                     description:
                         "'fecha_reporte' corresponde con la fecha en la que se realizó el reporte",
                 },
+<<<<<<< HEAD
                 TIPO_INCIDENTE: {
                     bsonType: "enum",
+=======
+                tipo_incidente: {
+                    bsonType: "string",
+>>>>>>> efc90a7a5dff43f1db550dfb69d08e5b4705bfae
                     enum: [
                         "ROBO",
                         "VANDALISMO",
@@ -32,8 +37,13 @@ db.createCollection("incidencias_seguridad", {
                     description:
                         "'tipo_incidente' corresponde con el tipo de incidente reportado",
                 },
+<<<<<<< HEAD
                 GRAVEDAD: {
                     bsonType: "enum",
+=======
+                gravedad: {
+                    bsonType: "string",
+>>>>>>> efc90a7a5dff43f1db550dfb69d08e5b4705bfae
                     enum: ["CRITICA", "ALTA", "MEDIA", "BAJA"],
                     description:
                         "'gravedad' corresponde con el nivel de gravedad del incidente",
