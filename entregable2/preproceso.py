@@ -162,8 +162,9 @@ def fussion_df(df1, df2, columnas_clave, new_column):
         for key in columnas_clave:
             condition |= (df1[key] == row[key])
         #print(condition)
-
+        n_juegos = condition.sum()
         df1.loc[condition, new_column] = row["ID"] # rows de juegos
+        # df2.loc[i, "TOTAL_ELEM"] = n_juegos
         for c in df1.columns.tolist(): # copiar valores faltantes del uno al otro
             if c in df2.columns.tolist():
                 if row[c] is not None:
