@@ -148,7 +148,8 @@ def imput_missing_addr(df):
             df.loc[indice, ["NUM_VIA"]] = dir_aux["num_via"] if not num_via else num_via
 
 def fill_dates(df):
-    df.loc[(df["FECHA_INSTALACION"] == "fecha_incorrecta") | (df["FECHA_INSTALACION"].isna()), 'FECHA_INSTALACION'] = "01/01/1970"
+    df.loc[(df["FECHA_INSTALACION"] == "fecha_incorrecta") |
+    (df["FECHA_INSTALACION"].isna()), 'FECHA_INSTALACION'] = "1970-01-01T00:00:00Z"
 
 
 def fussion_df(df1, df2, columnas_clave, new_column):
@@ -164,13 +165,12 @@ def fussion_df(df1, df2, columnas_clave, new_column):
             if c in df2.columns.tolist():
                 if row[c] is not None:
                     with warnings.catch_warnings(record=True) as w:
-                        df1.loc[df1[new_column] == row["ID"], c] = row[c]
-                        if w:
-                            for warning in w:
-                                pass
+                        warnings.simplefilter("ignore")
+                        if pd.isna(df1.loc[condition, c]).all(): 
+                            df1.loc[df1[new_column] == row["ID"], c] = row[c]
                 else:
                     for j, r in df1.interrows():
-                        if r[c] is not None:
+                        if not pd.isna(r[c]) and pd.isna(df2.loc[i, c]):
                             df2.loc[i, c] = r[c] # actualizamos al primero
                             break
 
@@ -348,9 +348,10 @@ def preproceso_area(csv_input, csv_output):
     # Formateo de fechas            
     for indice, value in areas.iterrows():
         if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
-            areas.loc[indice, "FECHA_INSTALACION"] = "01/01/1970"
+            areas.loc[indice, "FECHA_INSTALACION"] = "1970-01-01T00:00:00Z"
     
-    areas["FECHA_INSTALACION"] = pd.to_datetime(areas["FECHA_INSTALACION"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+    areas["FECHA_INSTALACION"] = pd.to_datetime(areas["FECHA_INSTALACION"],
+    format="mixed", dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     # Formateo de codigo_interno
     areas["CODIGO_INTERNO"] = areas.apply(lambda row: fill_missing_tipo(row, "CODIGO_INTERNO", "CODIGO_DESCONOCIDO", "ID"), axis=1)
@@ -366,7 +367,7 @@ def encuestas_satisfaccion(source, dest):
 
     df = pd.read_csv(PATH)
 
-    df["FECHA"] = pd.to_datetime(df["FECHA"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+    df["FECHA"] = pd.to_datetime(df["FECHA"], utc=True, format="mixed", dayfirst=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     column = "COMENTARIOS"
     df[column] = df[column].str.upper()
     df.to_csv(PATH_OUT, index=False)
@@ -376,7 +377,8 @@ def preproceso_incidencias_usuario(csv_input, csv_output):
     csv_output = csv_output + "incidencias_usuarios_limpio.csv"
     df = pd.read_csv(csv_input)
     df["TIPO_INCIDENCIA"] = df["TIPO_INCIDENCIA"].str.upper()
-    df["FECHA_REPORTE"] = pd.to_datetime(df["FECHA_REPORTE"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+    df["FECHA_REPORTE"] = pd.to_datetime(df["FECHA_REPORTE"], format="mixed",
+    dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     df["ESTADO"] = df["ESTADO"].str.upper()
 
     df.to_csv(csv_output, index=False)
@@ -386,7 +388,8 @@ def preproceso_incidencias_seguridad(csv_input, csv_output):
     csv_output = csv_output + "incidentes_seguridad_limpio.csv"
 
     df = pd.read_csv(csv_input)
-    df["FECHA_REPORTE"] = pd.to_datetime(df["FECHA_REPORTE"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+    df["FECHA_REPORTE"] = pd.to_datetime(df["FECHA_REPORTE"],
+    format="mixed",utc=True, dayfirst=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     df["TIPO_INCIDENTE"] = df["TIPO_INCIDENTE"].str.upper().apply(change_accents)
     df["GRAVEDAD"] = df["GRAVEDAD"].str.upper().apply(change_accents)
 
@@ -398,7 +401,8 @@ def preproceso_mantenimiento(csv_input, csv_output):
 
     df = pd.read_csv(csv_input)
     df["TIPO_INTERVENCION"] = df["TIPO_INTERVENCION"].str.upper()
-    df["FECHA_INTERVENCION"] = pd.to_datetime(df["FECHA_INTERVENCION"], format="mixed", dayfirst=True).dt.strftime("%d-%m-%Y")
+    df["FECHA_INTERVENCION"] = pd.to_datetime(df["FECHA_INTERVENCION"],
+    format="mixed", dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     df["ESTADO_PREVIO"] = df["ESTADO_PREVIO"].str.upper()
     df["ESTADO_POSTERIOR"] = df["ESTADO_POSTERIOR"].str.upper()
 
