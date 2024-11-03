@@ -1,0 +1,65 @@
+db.createCollection("incidencias_usuario", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Incidencias Usuario Validator",
+            required: [
+                "id",
+                "tipo_incidencia",
+                "fecha_reporte",
+                "estado",
+                "usuario_id",
+                "mantenimiento",
+            ],
+            properties: {
+                id: {
+                    bsonType: "int",
+                    description: "número identificativo de la columna",
+                },
+                tipo_incidencia: {
+                    bsonType: "string",
+                    enum: ["DESGASTE", "ROTURA", "VANDALISMO", "MAL FUNCIONAMIENTO"],
+                    description: "tipo de incidencia reportada",
+                },
+                fecha_reporte: {
+                    bsonType: "date",
+                    description: "fecha en la que se reportó la incidencia",
+                },
+                estado: {
+                    bsonType: "string",
+                    enum: ["CERRADA", "ABIERTA"],
+                    description: "estado actual de la incidencia",
+                },
+                usuario_id: {
+                    bsonType: "array",
+                    description: "listado de usuarios",
+                    minItems: 1,
+                    uniqueItems: true,
+                    items: {
+                        bsonType: "object",
+                        description: "información de usuarios",
+                        required: ["nif", "nombre", "email", "telefono"],
+                        properties: {
+                            nif: {
+                                bsonType: "string",
+                                description: "número de identificación del usuario",
+                            },
+                            nombre: {
+                                bsonType: "string",
+                                description: "nombre del usuario",
+                            },
+                            email: {
+                                bsonType: "string",
+                                description: "email del usuario",
+                            },
+                            telefono: {
+                                bsonType: "string",
+                                description: "telefono del usuario",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+});
