@@ -31,33 +31,8 @@ db.createCollection("incidencias_usuario", {
                     description: "estado actual de la incidencia",
                 },
                 UsuarioID: {
-                    bsonType: "array",
+                    bsonType: ["string"],
                     description: "listado de usuarios",
-                    minItems: 1,
-                    uniqueItems: true,
-                    items: {
-                        bsonType: "object",
-                        description: "información de usuarios",
-                        required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
-                        properties: {
-                            NIF: {
-                                bsonType: "string",
-                                description: "número de identificación del usuario",
-                            },
-                            NOMBRE: {
-                                bsonType: "string",
-                                description: "nombre del usuario",
-                            },
-                            EMAIL: {
-                                bsonType: "string",
-                                description: "email del usuario",
-                            },
-                            TELEFONO: {
-                                bsonType: "string",
-                                description: "telefono del usuario",
-                            },
-                        },
-                    },
                 },
                 MantenimientoID: {
                     bsonType: ["string"],
