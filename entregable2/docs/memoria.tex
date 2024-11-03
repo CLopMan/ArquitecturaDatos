@@ -184,6 +184,9 @@ df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_D
 \subsection{Técnicas de preprocesado especificas}
 \label{subsec:preprocessespecifico}
 
+\subsubsection{Áreas}
+\label{subsubsec:preprocessarea}
+
 \subsubsection{Juegos}
 \label{subsubsec:preprocessjuego}
 Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
@@ -196,7 +199,7 @@ Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transfor
 
 \subsubsection{Meteo24}
 \label{subsubsec:preprocessmeteo}
-El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pedido, el proceso de reestructuración es el siguiente
+El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pedido, el proceso de reestructuración es el siguiente:
 
 \begin{enumerate}
     \item Se ha creado un nuevo dataframe con las siguientes columnas: \textit{Id}, \textit{Fecha}, \textit{Temperatura}, \textit{Precipitación}, \textit{Viento} y \textit{Estación}.
