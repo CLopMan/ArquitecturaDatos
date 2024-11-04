@@ -31,8 +31,13 @@ db.createCollection("incidencias_usuario", {
                     description: "estado actual de la incidencia",
                 },
                 UsuarioID: {
+<<<<<<< HEAD
                     bsonType: "string",
                     description: "listado de usuarios que han realizado el reporte"
+=======
+                    bsonType: ["string"],
+                    description: "listado de usuarios",
+>>>>>>> 42409968415df99838baafe3a6e0e05393fa2bc4
                 },
                 MantenimientoID: {
                     bsonType: ["string"],

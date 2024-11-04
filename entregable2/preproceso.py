@@ -3,6 +3,9 @@ import warnings
 import pandas as pd
 from datetime import datetime
 
+def delete_duplicates(df, id_column):
+    return df.drop_duplicates(subset=id_column, keep='first')
+
 def change_accents(word):
     if type(word) != str:
         #print("[WARNING] word no es una string", word)
@@ -159,8 +162,9 @@ def fussion_df(df1, df2, columnas_clave, new_column):
         for key in columnas_clave:
             condition |= (df1[key] == row[key])
         #print(condition)
-
+        n_juegos = condition.sum()
         df1.loc[condition, new_column] = row["ID"] # rows de juegos
+        # df2.loc[i, "TOTAL_ELEM"] = n_juegos
         for c in df1.columns.tolist(): # copiar valores faltantes del uno al otro
             if c in df2.columns.tolist():
                 if row[c] is not None:
@@ -210,8 +214,12 @@ def preproceso_juegos(source, dest):
     df_areas = fill_missing(df_areas, optionals)
     df = df.rename(columns={'ID':'_id'})
     df_areas = df_areas.rename(columns={'ID':'_id'})
-    df.to_csv(dest_csv, index=False)
+    
+    df = delete_duplicates(df, "_id")
+    df_areas = delete_duplicates(df_areas, "_id")
+
     df_areas.to_csv(dest + "areas_limpias.csv", index=False)
+    df.to_csv(dest_csv, index=False)
 
 def preproceso_area(csv_input, csv_output):
     csv_input = csv_input + "AreasSucio.csv"
@@ -385,6 +393,7 @@ def preproceso_incidencias_usuario(csv_input, csv_output):
     df["ESTADO"] = df["ESTADO"].str.upper()
     
     df = df.rename(columns={'ID':'_id'})
+    df = delete_duplicates(df, "_id")
     df.to_csv(csv_output, index=False)
 
 def preproceso_incidencias_seguridad(csv_input, csv_output):
@@ -398,6 +407,7 @@ def preproceso_incidencias_seguridad(csv_input, csv_output):
     df["GRAVEDAD"] = df["GRAVEDAD"].str.upper().apply(change_accents)
 
     df = df.rename(columns={'ID':'_id'})
+    df = delete_duplicates(df, "_id")
     df.to_csv(csv_output, index=False)
 
 def preproceso_mantenimiento(csv_input, csv_output):
@@ -417,8 +427,19 @@ def preproceso_mantenimiento(csv_input, csv_output):
     df["Comentarios"] = df["Comentarios"].str.upper()
     df["Comentarios"] = df.apply(lambda row: fill_missing_tipo(row, "Comentarios", "COMENTARIO_DESCONOCIDO", "ID"), axis=1)
 
+    for indice, value in df.iterrows():
+        id_antiguo = value["ID"]
+        indice_numero = id_antiguo.index(",")
+        indice_nuevo = id_antiguo[1: indice_numero]
+        while len(indice_nuevo) < 5:
+            indice_nuevo = "0" + indice_nuevo
+        df.loc[indice, "ID"] = "MNT-" + indice_nuevo
+
     df = df.rename(columns={'ID':'_id'})
+    df = delete_duplicates(df, "_id")
     df.to_csv(csv_output, index=False)
+
+    
 
 def preproceso_meteo24(csv_input, csv_output):
     meteo_csv = csv_input + "meteo24.csv"
@@ -460,6 +481,7 @@ def preproceso_meteo24(csv_input, csv_output):
 
     
     new_meteo = new_meteo.rename(columns={'ID':'_id'})
+    new_meteo = delete_duplicates(new_meteo, "_id")
     new_meteo.to_csv(csv_output,index=False)
 
 def preproceso_estaciones_meteo_codigo_postal(csv_input, csv_output):
@@ -493,6 +515,7 @@ def preproceso_usuarios(csv_input, csv_output):
     df["EMAIL"] = df.apply(lambda row: fill_missing_tipo(row, "EMAIL", "EMAIL_DESCONOCIDO", "NIF"), axis=1)
 
     df = df.rename(columns={'NIF':'_id'})
+    df = delete_duplicates(df, "_id")
     df.to_csv(csv_output,index=False)
 
 def info_msg(msg: str):
@@ -523,7 +546,7 @@ def main():
     preproceso_juegos(input_path, output_path)
     info_msg("executing preproceso_meteo24")
     preproceso_meteo24(input_path, output_path)
-    info_msg("executing preprocese_estaciones_meteo_codigo_postal")
+    info_msg("executing preproceso_estaciones_meteo_codigo_postal")
     preproceso_estaciones_meteo_codigo_postal(input_path,output_path)
     info_msg("FINISH")
 
