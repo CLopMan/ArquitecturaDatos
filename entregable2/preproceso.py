@@ -427,8 +427,15 @@ def preproceso_mantenimiento(csv_input, csv_output):
     df["Comentarios"] = df["Comentarios"].str.upper()
     df["Comentarios"] = df.apply(lambda row: fill_missing_tipo(row, "Comentarios", "COMENTARIO_DESCONOCIDO", "ID"), axis=1)
 
-    df = df.rename(columns={'ID':'_id'})
+    for indice, value in df.iterrows():
+        id_antiguo = value["ID"]
+        indice_numero = id_antiguo.index(",")
+        indice_nuevo = id_antiguo[1: indice_numero]
+        while len(indice_nuevo) < 5:
+            indice_nuevo = "0" + indice_nuevo
+        df.loc[indice, "ID"] = "MNT-" + indice_nuevo
 
+    df = df.rename(columns={'ID':'_id'})
     df = delete_duplicates(df, "_id")
     df.to_csv(csv_output, index=False)
 
