@@ -24,6 +24,40 @@ db.juegos.aggregate([
 
 db.incidencias_usuarios.aggregate([
     {
+        // Convertir el string 'UsuarioID' en un array de valores
+        $addFields: {
+            UsuarioID: { 
+                $split: [
+                    { 
+                      $replaceAll: {  
+                        input: {
+                            $replaceAll: { 
+                                input: {
+                                    $replaceAll: { 
+                                        input: 
+                                        {
+                                            $replaceAll: {
+                                                input: "$UsuarioID",
+                                                find: " ",
+                                                replacement: ""
+                                            }
+                                        }, 
+                                        find: "'", 
+                                        replacement: "" 
+                                    }
+                                },
+                                find: "]", 
+                                replacement: "" 
+                            }
+                        },
+                        find: "[", 
+                        replacement: "" 
+                    }
+                  },","]
+            }
+        }
+    },
+    {
         // Incidencias con usuario
         $lookup: {
             from: 'usuarios',
@@ -47,7 +81,7 @@ db.incidencias_usuarios.aggregate([
             },
             nivelEscalamiento: { 
                 $add: [
-                    {$floor: { $multiply: [{$rand: {}}, 100]}}, 
+                    {$floor: { $multiply: [{$rand: {}}, 10]}}, 
                     1
                 ]
             }
