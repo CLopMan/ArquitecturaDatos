@@ -4,7 +4,7 @@ db.createCollection("incidencias_usuario", {
             bsonType: "object",
             title: "Incidencias Usuario Validator",
             required: [
-                "ID",
+                "_id",
                 "TIPO_INCIDENCIA",
                 "FECHA_REPORTE",
                 "ESTADO",
@@ -12,7 +12,7 @@ db.createCollection("incidencias_usuario", {
                 "MantenimientoID",
             ],
             properties: {
-                ID: {
+                _id: {
                     bsonType: "int",
                     description: "número identificativo de la columna",
                 },
@@ -22,7 +22,7 @@ db.createCollection("incidencias_usuario", {
                     description: "tipo de incidencia reportada",
                 },
                 FECHA_REPORTE: {
-                    bsonType: "string",
+                    bsonType: ["string", "date"],
                     description: "fecha en la que se reportó la incidencia",
                 },
                 ESTADO: {
@@ -31,33 +31,8 @@ db.createCollection("incidencias_usuario", {
                     description: "estado actual de la incidencia",
                 },
                 UsuarioID: {
-                    bsonType: "array",
-                    description: "listado de usuarios",
-                    minItems: 1,
-                    uniqueItems: true,
-                    items: {
-                        bsonType: "object",
-                        description: "información de usuarios",
-                        required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
-                        properties: {
-                            NIF: {
-                                bsonType: "string",
-                                description: "número de identificación del usuario",
-                            },
-                            NOMBRE: {
-                                bsonType: "string",
-                                description: "nombre del usuario",
-                            },
-                            EMAIL: {
-                                bsonType: "string",
-                                description: "email del usuario",
-                            },
-                            TELEFONO: {
-                                bsonType: "string",
-                                description: "telefono del usuario",
-                            },
-                        },
-                    },
+                    bsonType: "string",
+                    description: "listado de usuarios que han realizado el reporte"
                 },
                 MantenimientoID: {
                     bsonType: ["string"],
