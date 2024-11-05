@@ -152,6 +152,7 @@ def imput_missing_addr(df):
 
 def fill_dates(df):
     df.loc[(df["FECHA_INSTALACION"] == "fecha_incorrecta") |
+    (df["FECHA_INSTALACION"] == "FECHA_INCORRECTA") |
     (df["FECHA_INSTALACION"].isna()), 'FECHA_INSTALACION'] = "1970-01-01T00:00:00Z"
 
 
@@ -202,6 +203,8 @@ def preproceso_juegos(source, dest):
            standarize_str(df, c)
     # Correcting dates
     fill_dates(df)
+    df["FECHA_INSTALACION"] = pd.to_datetime(df["FECHA_INSTALACION"],
+    format="mixed", dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     # imputacion de valores en el propio df
     imput_missing_district(df)
@@ -357,7 +360,9 @@ def preproceso_area(csv_input, csv_output):
 
     # Formateo de fechas            
     for indice, value in areas.iterrows():
-        if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
+        if not pd.notna(value["FECHA_INSTALACION"]) or \
+        value["FECHA_INSTALACION"] == "fecha_incorrecta" or \
+        value["FECHA_INSTALACION"] == "FECHA_INCORRECTA":
             areas.loc[indice, "FECHA_INSTALACION"] = "1970-01-01T00:00:00Z"
     
     areas["FECHA_INSTALACION"] = pd.to_datetime(areas["FECHA_INSTALACION"],
