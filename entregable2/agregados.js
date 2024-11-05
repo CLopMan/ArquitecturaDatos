@@ -1,106 +1,174 @@
-db.incidencias_usuarios.aggregate([
-    {
-        // Convertir el string 'UsuarioID' en un array de valores
-        $addFields: {
-            MantenimientoID: {
-                $split: [
-                    {
-                      $replaceAll: {
-                        input: {
-                            $replaceAll: {
-                                input: {
-                                    $replaceAll: {
-                                        input:
-                                        {
-                                            $replaceAll: {
-                                                input: "$MantenimeintoID",
-                                                find: " ",
-                                                replacement: ""
-                                            }
-                                        },
-                                        find: "'",
-                                        replacement: ""
-                                    }
-                                },
-                                find: "]",
-                                replacement: ""
-                            }
-                        },
-                        find: "[",
-                        replacement: ""
-                    }
-                  },","]
-            },
-            UsuarioID: { 
-                $split: [
-                    { 
-                      $replaceAll: {  
-                        input: {
-                            $replaceAll: { 
-                                input: {
-                                    $replaceAll: { 
-                                        input: 
-                                        {
-                                            $replaceAll: {
-                                                input: "$UsuarioID",
-                                                find: " ",
-                                                replacement: ""
-                                            }
-                                        }, 
-                                        find: "'", 
-                                        replacement: "" 
-                                    }
-                                },
-                                find: "]", 
-                                replacement: "" 
-                            }
-                        },
-                        find: "[", 
-                        replacement: "" 
-                    }
-                  },","]
-            }
-        }
-    },
-    {
-        $project: {
-            _id: 1,
-            TIPO_INCIDENCIA: 1,
-            FECHA_REPORTE: 1,
-            ESTADO: 1,
-            UsuarioID: 1,
-            MantenimientoID: 1
-        }
-    },
-    {
-        $out: {db: "entregable2", coll: "incidencias_usuarios"}
-    }
-])
+// --------- AGREGADO DE ÁREAS CON JUEGOS, METERO, INCIDENTES Y ENCUESTAS DE SATISFACCIÓN ---------
 
+
+// --------- AGREGADO DE JUEGOS CON MANTENIMIENTO E INCIDENCIAS ---------
+
+// Agregado de juego
 db.juegos.aggregate([
     {
         // Juegos con mantenimiento
         $lookup: {
-            from: 'juegos',
+            from: 'mantenimiento',
             localField: '_id',
             foreignField: 'JuegoID',
             as: 'ref_mantenimiento'
         }
     },
     {
-        // Juego con incidencias
         $lookup: {
-            from: 'incidencias_usuario',
-            localField: '_id',
-            foreignField: 'UsuarioID',
-            as: 'ref_incidentes_usuario'
+            from: "incidencias_usuarios",
+            localField: "ref_mantenimiento._id",
+            foreignField: "MantenimientoID",
+            as: "res_incidencias_usuarios"
         }
     },
+
     {
-        $out: {db:"entregable2", coll: "agregado_juego"}
+        $out: { db: "entregable2", coll: "agregado_juego" }
     }
 ]);
 
+// Cálculo de los atributos derivados: indicadorExposición, últimaFechaMantenimiento, tiempoResolución y desgaste acumulado
+db.agregado_juego.aggregate([
+    {
+        $addFields: {
+            "indicadorExposicion": {
+                $add: [
+                    {
+                        $floor: { 
+                            $multiply: [
+                                {$rand: {}}, 
+                                3
+                            ]
+                        }
+                    },
+                    1
+                ]
+            },
+            "ultimaFechaMantenimiento": {
+                $max: {
+                    $map: {
+                        input: "$ref_mantenimiento",
+                        as: "ref",
+                        in: {
+                            $dateFromString: {
+                                dateString: "$$ref.FECHA_INTERVENCION",
+                                format: "%Y-%m-%dT%H:%M:%SZ"
+                            }
+                        }
+                    }
+                }    
+            },
+            "res_incidencias_usuarios": {
+                $map: {
+                    input: "$res_incidencias_usuarios",
+                    as: "ref",
+                    in: {
+                        ID: "$$ref._id",
+                        TIPO_INCIDENCIA: "$$ref.TIPO_INCIDENCIA",
+                        FECHA_REPORTE: "$$ref.FECHA_REPORTE",
+                        ESTADO: "$$ref.ESTADO",
+                        tiempoResolucion: {
+                            $max: {
+                                $map: {
+                                    input: "$$ref.MantenimientoID",
+                                    as: "mantenimiento_id",
+                                    in: {
+                                        $subtract: [
+                                            {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $map: {
+                                                            input: {
+                                                                $filter: {
+                                                                    input: "$ref_mantenimiento",
+                                                                    as: "mantenimiento",
+                                                                    cond: { $eq: ["$$mantenimiento._id", "$$mantenimiento_id"] }
+                                                                }
+                                                            },
+                                                            as: "man",
+                                                            in: {
+                                                                $dateFromString: {
+                                                                    dateString: "$$man.FECHA_INTERVENCION",
+                                                                    format: "%Y-%m-%dT%H:%M:%SZ"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            },
+                                            {
+                                                $dateFromString: {
+                                                    dateString: "$$ref.FECHA_REPORTE",
+                                                    format: "%Y-%m-%dT%H:%M:%SZ"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ref_mantenimiento": {
+                $map: {
+                    input: "$ref_mantenimiento",
+                    in: "$$this._id"
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            "desgasteAcumulado": {
+                $max: [
+                    {
+                        $subtract: [
+                            {
+                                $multiply: [
+                                    {
+                                        $add: [
+                                            {
+                                                $floor: { 
+                                                    $multiply: [
+                                                        { $rand: {} }, 
+                                                        15
+                                                    ]
+                                                }
+                                            },
+                                            1
+                                        ]
+                                    },
+                                    "$indicadorExposicion"
+                                ]
+                            },
+                            {
+                                $multiply: [
+                                    { $size: "$ref_mantenimiento" },
+                                    5
+                                ]
+                            }
+                        ]
+                    },
+                    0
+                ]
+            }
+        }
+    },    
+    {
+        $out: {
+            db: "entregable2",
+            coll: "agregado_juego"
+        }
+    }
+]);
+
+
+// --------- AGREGADO DE INCIDENCIAS Y USUARIOS ---------
+
+// Creación del agregado con el resumen de usuarios y el dato agregado nivelEscalamiento
 db.incidencias_usuarios.aggregate([
     {
         // Incidencias con usuario
