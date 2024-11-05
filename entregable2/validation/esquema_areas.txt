@@ -3,9 +3,9 @@ db.createCollection("areas", {
         $jsonSchema: {
             bsonType: "object",
             title: "Areas Validator",
-            required: ["ID", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION"],
+            required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION"],
             properties: {
-                ID: {
+                _id: {
                     bsonType: "int",
                     description: "id del área"
                 },
@@ -68,9 +68,17 @@ db.createCollection("areas", {
                     description: "código postal de la zona postal en la que se encuentra el área"
                 },
                 FECHA_INSTALACION: {
-                    bsonType: "date",
+                    bsonType: ["date", "string"],
                     description: "fecha en la que se instaló el área"
                 },
+                TOTAL_ELEM: {
+                    bsonType: "int",
+                    description: "número de juegos"
+                },
+                tipo: {
+                    bsonType: "string",
+                    description: "tipo de área"
+                }
             }
         }
     }

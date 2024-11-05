@@ -4,9 +4,9 @@ db.createCollection("encuestas_satisfaccion", {
         $jsonSchema: {
             bsonType: "object",
             title: "encuestas_satisfaction_validation",
-            required: ["ID", "PUNTUACION_ACCESIBILIDAD", "PUNTUACION_CALIDAD", "COMENTARIOS", "FECHA", "AreaRecreativaID"],
+            required: ["_id", "PUNTUACION_ACCESIBILIDAD", "PUNTUACION_CALIDAD", "COMENTARIOS", "FECHA", "AreaRecreativaID"],
             properties: {
-                ID: {
+                _id: {
                     bsonType: "int",
                     description: "identificador de la encuesta"
                 },
@@ -23,7 +23,7 @@ db.createCollection("encuestas_satisfaccion", {
                     description: "comentarios adicionales de los usuarios"
                 },
                 FECHA: {
-                    bsonType: "string",
+                    bsonType: ["string", "date"],
                     description: "fecha de realización de la encuesta"
                 },
                 AeraRecreativaID: {
