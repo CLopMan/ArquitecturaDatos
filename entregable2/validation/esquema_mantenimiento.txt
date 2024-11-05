@@ -3,19 +3,19 @@ db.createCollection("mantenimiento", {
         $jsonSchema: {
             bsonType: "object",
             title: "Maintenance Validation",
-            required: [ "ID", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios" ],
+            required: ["ID", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios"],
             properties: {
                 ID: {
                     bsonType: "string",
                     description: "id del mantenimiento",
                 },
                 FECHA_INTERVENCION: {
-                    bsonType: "string",
+                    bsonType: ["string", "date"],
                     description: "fecha en la que se realizaón la intervención",
                 },
                 TIPO_INTERVENCION: {
                     bsonType: "string",
-                    enum: [ "CORRECTIVO", "EMERGENCIA", "PREVENTIVO" ],
+                    enum: ["CORRECTIVO", "EMERGENCIA", "PREVENTIVO"],
                     description: "tipo de la intervención realizada"
                 },
                 ESTADO_PREVIO: {

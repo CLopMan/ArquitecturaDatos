@@ -5,19 +5,19 @@ db.createCollection("usuarios", {
             title: "Users Validator",
             required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
             properties: {
-                nif: {
+                _id: {
                     bsonType: "string",
                     description: "número de identificación del usuario",
                 },
-                nombre: {
+                NOMBRE: {
                     bsonType: "string",
                     description: "nombre del usuario",
                 },
-                email: {
+                EMAIL: {
                     bsonType: "string",
                     description: "email del usuario",
                 },
-                telefono: {
+                TELEFONO: {
                     bsonType: "string",
                     description: "telefono del usuario",
                 },
