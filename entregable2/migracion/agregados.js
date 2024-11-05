@@ -15,10 +15,10 @@ db.areas.aggregate([
     { $unwind: "$aux_ref_juegos" },
     {
         $group: {
-            _id: {tipo:"$aux_ref_juegos.tipo_juego", area_id:"$_id" }, // agrupar areas y tipos
-            count:{$sum:1},
-            ref_juegos: {$push: {_id:"$aux_ref_juegos._id"}},
-            original: {$first: "$$ROOT"}
+            _id: { tipo: "$aux_ref_juegos.tipo_juego", area_id: "$_id" }, // agrupar areas y tipos
+            count: { $sum: 1 },
+            ref_juegos: { $push: { _id: "$aux_ref_juegos._id" } },
+            original: { $first: "$$ROOT" }
         }
     },
     {
@@ -26,23 +26,24 @@ db.areas.aggregate([
             _id: "$_id.area_id",
             cuenta: {
                 $push: {
-                k: "$_id.tipo", v:"$count"
-            }},
-            ref_juegos: {$push: "$ref_juegos"},
-            original: {$first:"$original"}
+                    k: "$_id.tipo", v: "$count"
+                }
+            },
+            ref_juegos: { $push: "$ref_juegos" },
+            original: { $first: "$original" }
         },
     },
     {
         $addFields: {
             "cantidad_juego_por_tipo": {
-                $arrayToObject: "$cuenta" 
-                
+                $arrayToObject: "$cuenta"
+
             },
             "ref_juegos": {
                 $reduce: {
-                    input: "$ref_juegos",          
-                    initialValue: [],          
-                    in: { $concatArrays: ["$$value", "$$this"] }  
+                    input: "$ref_juegos",
+                    initialValue: [],
+                    in: { $concatArrays: ["$$value", "$$this"] }
                 }
             }
         }
@@ -52,8 +53,8 @@ db.areas.aggregate([
             newRoot: {
                 $mergeObjects: [
                     "$original",
-                    {"cantidad_juego_por_tipo": "$cantidad_juego_por_tipo"},
-                    {"ref_juegos": "$ref_juegos"}
+                    { "cantidad_juego_por_tipo": "$cantidad_juego_por_tipo" },
+                    { "ref_juegos": "$ref_juegos" }
                 ]
             }
         }
@@ -99,7 +100,7 @@ db.areas.aggregate([
     {
         $set: {
             TOTAL_ELEM: { $size: "$ref_juegos" }
-        }   
+        }
     },
     {
         $addFields: {
@@ -129,9 +130,9 @@ db.areas.aggregate([
     {
         $addFields: {
             nota_total_area: {
-                $sum: 
+                $sum:
                     ["$nota_total_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
-                
+
             }
         }
     },
@@ -238,9 +239,9 @@ db.agregado_juego.aggregate([
             "indicadorExposicion": {
                 $add: [
                     {
-                        $floor: { 
+                        $floor: {
                             $multiply: [
-                                {$rand: {}}, 
+                                { $rand: {} },
                                 3
                             ]
                         }
@@ -260,7 +261,7 @@ db.agregado_juego.aggregate([
                             }
                         }
                     }
-                }    
+                }
             },
             "res_incidencias_usuarios": {
                 $map: {
@@ -334,9 +335,9 @@ db.agregado_juego.aggregate([
                                     {
                                         $add: [
                                             {
-                                                $floor: { 
+                                                $floor: {
                                                     $multiply: [
-                                                        { $rand: {} }, 
+                                                        { $rand: {} },
                                                         15
                                                     ]
                                                 }
@@ -359,7 +360,7 @@ db.agregado_juego.aggregate([
                 ]
             }
         }
-    },    
+    },
     {
         $out: {
             db: "entregable2",
@@ -384,20 +385,9 @@ db.incidencias_usuarios.aggregate([
     },
     {
         $addFields: {
-            USUARIOS: {
-                $map: {
-                    input: "$ref_usuarios",
-                    as: "usuario",
-                    in: {
-                        nombre: "$$usuario.NOMBRE",
-                        email: "$$usuario.EMAIL",
-                        telefono: "$$usuario.TELEFONO"
-                    }
-                }
-            },
-            nivelEscalamiento: { 
+            nivelEscalamiento: {
                 $add: [
-                    {$floor: { $multiply: [{$rand: {}}, 10]}}, 
+                    { $floor: { $multiply: [{ $rand: {} }, 10] } },
                     1
                 ]
             }
@@ -405,16 +395,11 @@ db.incidencias_usuarios.aggregate([
     },
     {
         $project: {
-            _id: 1,
-            TIPO_INCIDENCIA: 1,
-            FECHA_REPORTE: 1,
-            ESTADO: 1,
-            USUARIOS: 1,
-            MantenimeintoID: 1,
-            nivelEscalamiento: 1
+            UsuarioID: 0,
+            MantenimientoID: 0
         }
     },
     {
-        $out: {db:"entregable2", coll: "agregado_incidencia"}
+        $out: { db: "entregable2", coll: "agregado_incidencia" }
     }
 ]);
