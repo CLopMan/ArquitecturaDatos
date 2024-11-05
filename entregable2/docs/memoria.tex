@@ -281,4 +281,131 @@ db.createCollection("nombre\_de\_colección", {
     }
 })
 \end{lstlisting}
+
+\section{Creación de Agregados}
+\label{sec:creacion_agregados}
+Dada la propuesta de diseño de agregados se han relacionado las tablas originales para conseguir los agregados indicados, además de generar los atributos derivados con los datos originales.
+
+\subsection{Agregado de Area Recreativa Clima}
+\label{subsec:agregado_area}
+
+\subsubsection{Relaciones de Tablas con Áreas}
+\label{subsubsec:relaciones_area}
+
+Se han relacionado la tabla área con las tablas de \textit{juegos}, \textit{incidentes de seguridad}, \textit{encuestas satisfacción}, \textit{estaciones_meteo_codigo_postal} y \textit{meteo24}.
+Estas relaciones se han conseguido de la siguiente manera:
+\begin{lstlisting}
+{
+    $lookup: {
+        from: '<tabla_a_relacionar>',
+        localField: '<atributo_local_a_relacionar>',
+        foreignField: '<atributo_de_la_tabla_a_relacionar>',
+        as: '<atributo_resultante>'
+    }
+}
+\end{lstlisting}
+
+
+\subsubsection{Atributos Derivados}
+\label{subsubsec:derivados_area}
+
+En el agregado \textit{Area Recreativa Clima} se piden calcular los siguientes atributos:
+\begin{itemize}
+    \item \textbf{estadoGlobalArea}
+    
+    Este atributo debe de contener el resultado de un cálculo que utilice la cantidad de incidentes de seguridad que tiene un área, la cantidad de juegos en reparación que tiene dicha área y la satisfacción de los usuarios en las encuestas. Para su creación se han seguido los siguientes pasos
+    \begin{enumerate}
+        \item Cálculo de la nota de satisfacción
+        
+        \begin{lstlisting}
+            CODIGO DEL CALCULO
+        \end{lstlisting}
+
+        \item Cálculo del número de incidentes de seguridad
+        
+        \begin{lstlisting}
+numero_incidencias_ponderado: {
+    $multiply: [{ $size: "$ref_incidentes_seguridad" }, 3]
+}
+        \end{lstlisting}
+
+        Se calcula el numero de incidentes de seguridad y se multplica por 3 para darle más peso en el cálculo.
+
+        \item Cálculo del número de juegos en reparación 
+        
+        \begin{lstlisting}
+juegos_mantenimiento: {
+    $size: {
+        $filter: {
+            input: "$ref_juegos",
+            as: "juego",
+            cond: {
+                $eq: ["$$juego.ESTADO", "EN REPARACION"]
+            }
+        }
+    }
+}
+        \end{lstlisting}
+
+        Para conocer la cantidad de juegos en reparación de las distintas áreas se utiliza \textit{\$size} para conecer la lóngitud del array de devuelve el operador \textit{\$filter} tras filtrar por solo los juegos en reparación.
+
+        \item Suma de todos los valores calculados
+        
+        \begin{lstlisting}
+$addFields: {
+nota_total_area: {
+    $sum: 
+        ["$nota_total_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
+    
+    }
+}
+        \end{lstlisting}
+
+        \item Encontrar el valor máximo
+        
+        \begin{lstlisting}
+{
+    $group: {
+        _id: null,
+        max_nota_global: { $max: "$nota_total_area" },
+        areas: { $push: "$$ROOT" }
+    }
+},
+{
+    $unwind: "$areas"
+},
+{
+    $replaceRoot: {
+        newRoot: {
+            $mergeObjects: ["$areas", { max_nota: "$max_nota_global" }]
+        }
+    }
+}
+        \end{lstlisting}
+
+        Se busca obtener la nota máxima total de los juegos de todas las areas para estandarizar el atributo final
+    
+        \item Cálculo final del atributo \textbf{estadoGlobalArea}
+        
+        \begin{lstlisting}
+estado_global_area: {
+    $round: [
+        {
+            $multiply: [
+                { $divide: ["$nota_total_area", "$max_nota"] },
+                10
+            ]
+        },
+        2
+    ]
+}
+        \end{lstlisting}
+
+        Dividimos la nota total de cada area por la nota máxima calculada en el paso anterior para estandarizar el valor, lo que se nos permite obtener un valor entre 0 y 1. Este valor se multiplca por 10 para obtener una nota, y se redondea a 2 decimales.
+
+    \end{enumerate}
+\end{itemize}
+
+
+
 \end{document}
