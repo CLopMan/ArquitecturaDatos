@@ -9,7 +9,22 @@
 \usepackage{float}
 
 \definecolor{miverde}{rgb}{0,0.6,0}
-
+\definecolor{aqua}{rgb}{0.0, 0.5, 0.8}
+\definecolor{miotrootroverde}{rgb}{0.11, 0.40, 0.11}
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, $sum, $out, $size, $filter, $group, $addFields, $substract, $multiply, $divide, $round, $map, $reduce, $replaceRoot, $mergeObjects, $unwind, $dateFromString, $floor, $project, $jsonSchema, $lookup},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this, validator, db, createCollection, bsonType, description, title, required, properties},
+  ndkeywordstyle=\color{miotrootroverde}\bfseries,
+  identifierstyle=\color{aqua},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{red}\ttfamily,
+  stringstyle=\color{miverde}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
 % style for listings (código)
 \lstdefinestyle{python}{
     language=Python,
@@ -107,7 +122,8 @@ En este documento se recoge el desarrollo de la segunda práctica de la asignatu
 \lstset{style=python}
 \section{Preprocesado de Datos}
 \label{sec:preprocesado}
-En este apartado se describen las técnicas más comunes para el preprocesado de los datos sucios, así como las técnicas especificas para los csvs con datos menos genéricos. Para este preprocesado se ha usado la librería de Python \textit{Pandas}, siguiendo una metodología común para cada fichero que constaba de los siguientes pasos:
+En este apartado se describen las técnicas para el preprocesado de los datos con
+el fin de prepararlos para su inserción en \texttt{MongoDB}. Para este preprocesado se ha usado la librería de Python \textit{Pandas}, siguiendo una metodología común para cada fichero que constaba de los siguientes pasos:
 
 \begin{enumerate}
     \item Se carga el csv a limpiar en un \textit{dataframe} de \textit{Pandas}
@@ -124,7 +140,7 @@ Se han aplicado técnicas de preprocesado que son comunes a todos los ficheros, 
 
     Todos los datos categóricos han sido normalizados de manera que siempre estén en mayúscula y sin tildes. Esto se ha realizado empleando la siguiente función:
 
-    \begin{lstlisting}[language=Python]
+    \begin{lstlisting}[language=Python,caption=Eliminación de tildes]
 def change_accents(word):
     if type(word) != str:
         return
@@ -144,7 +160,7 @@ def change_accents(word):
 
     La cuál se llama de la siguiente manera:
 
-    \begin{lstlisting}
+    \begin{lstlisting}[caption=Capitalización de strings y eliminacion de tildes]
 dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAMBIAR"].upper())
     \end{lstlisting}
 
@@ -152,7 +168,7 @@ dataframe.loc[indice, "COLUMNA_A_CAMBIAR"] = change_accents(valor["COLUMNA_A_CAM
 
     Las fechas que tenían el valor ``fecha desconocida'' o que no tenían valor han sido rellenadas con el valor ``01/01/1970'' a través del siguiente código:
 
-    \begin{lstlisting}
+    \begin{lstlisting}[caption=Imputacion de fechas incorrectas o faltantes]
 for indice, value in dataframe.iterrows():
     if not pd.notna(value["FECHA_INSTALACION"]) or value["FECHA_INSTALACION"] == "fecha_incorrecta":
         dataframe.loc[indice, "FECHA_INSTALACION"] = "1970-01-01T00:00:00Z"
@@ -166,17 +182,17 @@ for indice, value in dataframe.iterrows():
 
     Todas las fechas han sido formateadas al formato de mongo a través del siguiente código:
 
-    \begin{lstlisting}
+    \begin{lstlisting}[caption=Formateo de fechas"]
 dataframe["COLUMNA_A_CAMBIAR"] = pd.to_datetime(dataframe["COLUMNA_A_CAMBIAR"], format="mixed", dayfirst=True, utc=True).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     \end{lstlisting}
 
     Se ha seleccionado este valor por tratarse de la \textit{fecha UNIX}. De
     esta forma es un valor fácilmente reconocible que no inclumple la validación
-    \item \textbf{Rellenado genérico de \textit{missing values}}
+    \item \textbf{Rellenado genérico de \textit{missing values}}. 
     
     Las columnas que tenían valores nulos que no ha sido posible imputar han sido rellenadas con un valor fácilmente indetificable que sigue el formato ``NOM-COL\_DESCONOCIDO\_ID-FILA'' mediante la siguiente función:
 
-    \begin{lstlisting}
+    \begin{lstlisting}[caption=Inputacion de valores faltantes desconocidos]
 def fill_missing_tipo(row,column,string_missing):
     if pd.isnull(row[column]):
         return f'{string_missing}_{row["ID"]}'
@@ -185,7 +201,7 @@ def fill_missing_tipo(row,column,string_missing):
 
     Esta función se llama de la siguiente manera:
 
-    \begin{lstlisting}
+    \begin{lstlisting}[caption=llamada a la función para rellenar valores faltantes]
 df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_DESCONOCIDO"), axis=1)
     \end{lstlisting}
 
@@ -255,11 +271,10 @@ El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pe
 \label{sec:validacion}
 Para la validación de esquemas, se han desarrollado unos esquemas para cada csv que ha sido limpiado en el apartado anterior. Para ello, todos han seguido una estructura similar a la siguiente:
 
-\lstset{style=python}
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript, caption=Estructura genérica de la validación de esquemas]
 db.createCollection("nombre\_de\_colección", {
     validator: {
-        \$jsonSchema: {
+        $jsonSchema: {
             bsonType: "object",
             title: "Nombre\_de\_colección Validation",
             required: ["param1", "param2", "paramN"],
@@ -292,9 +307,9 @@ Dada la propuesta de diseño de agregados se han relacionado las tablas original
 \subsubsection{Relaciones de Tablas con Áreas}
 \label{subsubsec:relaciones_area}
 
-Se han relacionado la tabla área con las tablas de \textit{juegos}, \textit{incidentes de seguridad}, \textit{encuestas satisfacción}, \textit{estaciones_meteo_codigo_postal} y \textit{meteo24}.
+Se han relacionado la tabla área con las tablas de \textit{juegos}, \textit{incidentes de seguridad}, \textit{encuestas satisfacción}, \textit{estaciones\_meteo\_codigo\_postal} y \textit{meteo24}.
 Estas relaciones se han conseguido de la siguiente manera:
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript, caption=Operadores para relacionar tablas en mongodb]
 {
     $lookup: {
         from: '<tabla_a_relacionar>',
@@ -317,15 +332,15 @@ En el agregado \textit{Area Recreativa Clima} se piden calcular los siguientes a
     \begin{enumerate}
         \item Cálculo de la nota de satisfacción
         
-        \begin{lstlisting}
+        \begin{lstlisting}[language=JavaScript, caption=Calculo del campo nota\_encuestas\_areas]
             CODIGO DEL CALCULO
         \end{lstlisting}
 
         \item Cálculo del número de incidentes de seguridad
         
-        \begin{lstlisting}
+        \begin{lstlisting}[language=JavaScript, caption=Ponderación del número de incidencias]
 numero_incidencias_ponderado: {
-    $multiply: [{ $size: "$ref_incidentes_seguridad" }, 3]
+    $multiply: [{ $size: "\$ref_incidentes_seguridad" }, 3]
 }
         \end{lstlisting}
 
@@ -333,7 +348,7 @@ numero_incidencias_ponderado: {
 
         \item Cálculo del número de juegos en reparación 
         
-        \begin{lstlisting}
+        \begin{lstlisting}[caption=Calculo del número de juegos en reparación, language=JavaScript]
 juegos_mantenimiento: {
     $size: {
         $filter: {
@@ -347,11 +362,13 @@ juegos_mantenimiento: {
 }
         \end{lstlisting}
 
-        Para conocer la cantidad de juegos en reparación de las distintas áreas se utiliza \textit{\$size} para conecer la lóngitud del array de devuelve el operador \textit{\$filter} tras filtrar por solo los juegos en reparación.
+        Para conocer la cantidad de juegos en reparación de las distintas áreas
+        se utiliza \textit{\$size} para conecer la lóngitud del array de
+        devuelve el operador \textit{\$filter} tras filtrar por solo los juegos en reparación.
 
         \item Suma de todos los valores calculados
         
-        \begin{lstlisting}
+        \begin{lstlisting}[language=JavaScript, caption=Calculo de not\_total\_area]
 $addFields: {
 nota_total_area: {
     $sum: 
@@ -363,7 +380,7 @@ nota_total_area: {
 
         \item Encontrar el valor máximo
         
-        \begin{lstlisting}
+        \begin{lstlisting}[language=JavaScript, caption=Agrupación de áreas previa a la normalización]
 {
     $group: {
         _id: null,
@@ -387,7 +404,7 @@ nota_total_area: {
     
         \item Cálculo final del atributo \textbf{estadoGlobalArea}
         
-        \begin{lstlisting}
+        \begin{lstlisting}[language=JavaScript, caption=Cálculo de estado\_global\_area]
 estado_global_area: {
     $round: [
         {
