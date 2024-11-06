@@ -1,4 +1,4 @@
-use entregable2_aux;
+use entregable2_old;
 // ---------------- CAST --------------
 
 db.areas.aggregate([
@@ -54,7 +54,7 @@ db.areas.aggregate([
     },
     {
         $out: {
-            db: "entregable2_aux",
+            db: "entregable2_old",
             coll: "areas"
         }
     }
@@ -112,7 +112,7 @@ db.juegos.aggregate([
         }
     },
     {$out: {
-        db: "entregable2_aux", coll:"juegos"
+        db: "entregable2_old", coll:"juegos"
     }}
 ]);
 
@@ -131,16 +131,28 @@ db.encuestas_satisfaccion.aggregate([
     },
     {
         $addFields: {
-            FECHA: {
+            fecha: {
                 $dateFromString: {
-                    dateString: "$FECHA",
+                    dateString: "$fecha",
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
         } 
     },
+    {
+        $addFields: {
+            AreaRecreativaID: {
+                $convert: {
+                    input: "$AreaRecreativaID",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        } 
+    },
     {$out: {
-        db: "entregable2_aux", coll:"encuestas_satisfaccion"
+        db: "entregable2_old", coll:"encuestas_satisfaccion"
     }}
 ]);
 
@@ -168,7 +180,7 @@ db.incidentes_seguridad.aggregate([
         } 
     },
     {$out: {
-        db: "entregable2_aux", coll:"encuestas_satisfaccion"
+        db: "entregable2_old", coll:"encuestas_satisfaccion"
     }}
 ]);
 
@@ -187,7 +199,7 @@ db.usuarios.aggregate([
     },
     {
         $out: {
-            db: "entregable2_aux",
+            db: "entregable2_old",
             coll: "usuarios"
         }
     }
@@ -206,7 +218,7 @@ db.mantenimiento.aggregate([
     },
     {
         $out: {
-            db: "entregable2_aux",
+            db: "entregable2_old",
             coll: "usuarios"
         }
     }
@@ -236,7 +248,7 @@ db.incidentes_seguridad.aggregate([
         } 
     },
     {$out: {
-        db: "entregable2_aux", coll:"encuestas_satisfaccion"
+        db: "entregable2_old", coll:"encuestas_satisfaccion"
     }}
 ]);
 
@@ -317,6 +329,6 @@ db.incidencias_usuarios.aggregate([
         }
     },
     {
-        $out: { db: "entregable2", coll: "incidencias_usuarios" }
+        $out: { db: "entregable2_old", coll: "incidencias_usuarios" }
     }
 ]);
