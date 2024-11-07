@@ -129,7 +129,7 @@ db.juegos.aggregate([
             },
             MODELO: {
                 $convert: {
-                    input: "$LONGITUD",
+                    input: "$MODELO",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -137,7 +137,7 @@ db.juegos.aggregate([
             },
             ACCESIBLE: {
                 $convert: {
-                    input: "$LONGITUD",
+                    input: "$ACCESIBLE",
                     to: "bool",
                     onError: null,
                     onNull: null
