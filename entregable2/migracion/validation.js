@@ -209,11 +209,11 @@ db.runCommand({
                     description: "estado actual de la incidencia",
                 },
                 UsuarioID: {
-                    bsonType: ["string"],
+                    bsonType: ["array"],
                     description: "listado de usuarios",
                 },
                 MantenimientoID: {
-                    bsonType: ["string"],
+                    bsonType: ["array"],
                     description: "id de mantenimiento",
                 }
             },
