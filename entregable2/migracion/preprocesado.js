@@ -15,6 +15,26 @@ db.areas.aggregate([
         }
     },
     {
+        $addFields: {
+            COD_POSTAL: {
+                $convert: {
+                    input: "$COD_POSTAL",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            COD_DISTRITO: {
+                $convert: {
+                    input: "$COD_DISTRITO",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
         $addFields:{
             LATITUD: {
                 $convert: {

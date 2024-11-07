@@ -13,7 +13,7 @@ db.runCommand({collMod: "areas",
                 },
                 DESC_CLASIFICACION: {
                     bsonType: "string",
-                    enum: ["AREAS DE JUEGO/ESPECIAL", "AREAS DE MAYORES", "AREAS INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
+                    enum: ["AREA DE JUEGO/ESPECIAL", "AREA DE MAYORES", "AREA INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
                     description: "descripción del tipo de área recreativa"
                 },
                 COD_BARRIO: {
