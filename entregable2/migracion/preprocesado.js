@@ -185,13 +185,13 @@ db.encuestas_satisfaccion.aggregate([
     },
     {
         $addFields: {
-            fecha: {
+            FECHA: {
                 $dateFromString: {
-                    dateString: "$fecha",
+                    dateString: "$FECHA",
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        }
+        } 
     },
     {
         $addFields: {
@@ -203,13 +203,11 @@ db.encuestas_satisfaccion.aggregate([
                     onNull: null
                 }
             }
-        }
+        } 
     },
-    {
-        $out: {
-            db: "entregable2_old", coll: "encuestas_satisfaccion"
-        }
-    }
+    {$out: {
+        db: "entregable2_old", coll:"encuestas_satisfaccion"
+    }}
 ]);
 
 db.incidentes_seguridad.aggregate([
@@ -233,13 +231,11 @@ db.incidentes_seguridad.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        }
+        } 
     },
-    {
-        $out: {
-            db: "entregable2_old", coll: "encuestas_satisfaccion"
-        }
-    }
+    {$out: {
+        db: "entregable2_old", coll:"incidentes_seguridad"
+    }}
 ]);
 
 db.usuarios.aggregate([
@@ -307,17 +303,17 @@ db.mantenimiento.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        }
+        } 
     },
     {
         $out: {
             db: "entregable2_old",
-            coll: "usuarios"
+            coll: "mantenimiento"
         }
     }
 ]);
 
-db.incidentes_seguridad.aggregate([
+db.incidencias_usuarios.aggregate([
     {
         $addFields: {
             _id: {
@@ -338,15 +334,12 @@ db.incidentes_seguridad.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        }
+        } 
     },
-    {
-        $out: {
-            db: "entregable2_old", coll: "encuestas_satisfaccion"
-        }
-    }
+    {$out: {
+        db: "entregable2_old", coll:"incidencias_usuarios"
+    }}
 ]);
-
 // ------------- PARSER -----------------
 
 db.incidencias_usuarios.aggregate([
