@@ -277,6 +277,34 @@ db.mantenimiento.aggregate([
         }
     }
 ]);
+
+db.incidencias_usuarios.aggregate([
+    {
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            FECHA_REPORTE: {
+                $dateFromString: {
+                    dateString: "$FECHA_REPORTE",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        } 
+    },
+    {$out: {
+        db: "entregable2_old", coll:"incidencias_usuarios"
+    }}
+]);
 // ------------- PARSER -----------------
 
 db.incidencias_usuarios.aggregate([
