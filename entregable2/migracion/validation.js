@@ -1,6 +1,7 @@
 use entregable2_old;
 // crear esquema de validacion
-db.runCommand({collMod: "areas", 
+db.runCommand({
+    collMod: "areas",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -86,7 +87,8 @@ db.runCommand({collMod: "areas",
     }
 });
 
-db.runCommand({collMod: "encuestas_satisfaccion", 
+db.runCommand({
+    collMod: "encuestas_satisfaccion",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -122,7 +124,8 @@ db.runCommand({collMod: "encuestas_satisfaccion",
     }
 });
 
-db.runCommand({collMod: "incidentes_seguridad", 
+db.runCommand({
+    collMod: "incidentes_seguridad",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -172,7 +175,8 @@ db.runCommand({collMod: "incidentes_seguridad",
     },
 });
 
-db.runCommand({ collMod: "incidencias_usuarios", 
+db.runCommand({
+    collMod: "incidencias_usuarios",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -217,101 +221,41 @@ db.runCommand({ collMod: "incidencias_usuarios",
     },
 });
 
-db.runCommand({ collMod: "juegos", 
+db.runCommand({
+    collMod: "juegos",
     validator: {
         $jsonSchema: {
             bsonType: "object",
-            title: "juegos Validator",
-            required: ["ID", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION", "MODELO", "tipo_juego", "ACCESIBLE", "AREA"],
+            required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION", "MODELO", "tipo_juego", "ACCESIBLE", "AREA"],
             properties: {
-                _id: {
-                    bsonType: "string",
-                    description: "id del juego"
-                },
-                DESC_CLASIFICACION: {
-                    bsonType: "string",
-                    enum: ["AREAS DE JUEGO/ESPECIAL", "AREAS DE MAYORES", "AREAS INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
-                    description: "descripción del tipo de juego recreativa"
-                },
-                COD_BARRIO: {
-                    bsonType: "int",
-                    description: "código del barrio al que pertenece el juego"
-                },
-                BARRIO: {
-                    bsonType: "string",
-                    description: "barrio al que pertenece el juego"
-                },
-                COD_DISTRITO: {
-                    bsonType: "int",
-                    description: "código del distrito al que pertenece el juego"
-                },
-                DISTRITO: {
-                    bsonType: "string",
-                    description: "distrito al que pertenece el juego"
-                },
-                ESTADO: {
-                    bsonType: "string",
-                    enum: ["OPERATIVO"],
-                    description: "estado del juego"
-                },
-                COORD_GIS_X: {
-                    bsonType: "number",
-                    description: "coordenadas en el eje X del juego"
-                },
-                COORD_GIS_Y: {
-                    bsonType: "number",
-                    description: "coordenadas en el eje Y del juego"
-                },
-                LATITUD: {
-                    bsonType: "string",
-                    description: "latitud del juego"
-                },
-                LONGITUD: {
-                    bsonType: "string",
-                    description: "longitud del juego"
-                },
-                TIPO_VIA: {
-                    bsonType: "string",
-                    description: "tipo del vía donde se encuentra el juego"
-                },
-                NOM_VIA: {
-                    bsonType: "string",
-                    description: "nombre de la vía donde se encuentra el juego"
-                },
-                NUM_VIA: {
-                    bsonType: "string",
-                    description: "número de la vía donde se encuentra el juego"
-                },
-                COD_POSTAL: {
-                    bsonType: "int",
-                    description: "código postal de la zona postal en la que se encuentra el juego"
-                },
-                FECHA_INSTALACION: {
-                    bsonType: "date",
-                    description: "fecha en la que se instaló el juego"
-                },
-                MODELO: {
-                    bsonType: "string",
-                    description: "modelo de juego"
-                },
-                tipo_juego: {
-                    bsonType: "string",
-                    description: "tipo de juego"
-                },
-                ACCESIBLE: {
-                    bsonType: "bool",
-                    description: "indica si el juego es accesible"
-                },
-                AREA: {
-                    bsonType: ["int", "string"],
-                    description: "area al que pertenece el juego"
-                }
+                _id: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                DESC_CLASIFICACION: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COD_BARRIO: { bsonType: "int", description: "debe ser un entero y es obligatorio" },
+                BARRIO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COD_DISTRITO: { bsonType: "int", description: "debe ser un entero y es obligatorio" },
+                DISTRITO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                ESTADO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COORD_GIS_X: { bsonType: ["double", "string"], description: "debe ser un número y es obligatorio" },
+                COORD_GIS_Y: { bsonType: ["double", "string"], description: "debe ser un número y es obligatorio" },
+                LATITUD: { bsonType: "string", description: "corresponde a la latidud y es obligatorio" },
+                LONGITUD: { bsonType: "string", description: "corresponde a la longitud y es obligatorio" },
+                TIPO_VIA: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                NOM_VIA: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                NUM_VIA: { bsonType: "string", description: "debe ser un entero y es obligatorio" },
+                COD_POSTAL: { bsonType: "string", description: "debe ser un entero y es obligatorio" },
+                FECHA_INSTALACION: { bsonType: "date", description: "debe ser una fecha y es obligatorio" },
+                MODELO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                tipo_juego: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                ACCESIBLE: { bsonType: "bool", description: "debe ser un booleano y es obligatorio" },
+                AREA: { bsonType: ["string", "int"], description: "corresponde con el id del área la que pertence y es obligatorio" }
             }
         }
-    }
+    },
+    validationLevel: "strict"
 });
 
-db.runCommand({collMod: "mantenimiento",
+db.runCommand({
+    collMod: "mantenimiento",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -358,7 +302,8 @@ db.runCommand({collMod: "mantenimiento",
     }
 });
 
-db.runCommand({collMod: "meteo24",
+db.runCommand({
+    collMod: "meteo24",
     validator: {
         $jsonSchema: {
             bsonType: "object",
@@ -390,7 +335,8 @@ db.runCommand({collMod: "meteo24",
     }
 });
 
-db.runCommand({collMod: "usuarios",
+db.runCommand({
+    collMod: "usuarios",
     validator: {
         $jsonSchema: {
             bsonType: "object",
