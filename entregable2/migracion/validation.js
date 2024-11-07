@@ -14,7 +14,7 @@ db.runCommand({
                 },
                 DESC_CLASIFICACION: {
                     bsonType: "string",
-                    enum: ["AREA DE JUEGO/ESPECIAL", "AREA DE MAYORES", "AREA INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
+                    enum: ["AREA DE JUEGOS/ESPECIAL", "AREA DE MAYORES", "AREA INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
                     description: "descripción del tipo de área recreativa"
                 },
                 COD_BARRIO: {
@@ -131,14 +131,14 @@ db.runCommand({
             bsonType: "object",
             title: "Incidencias Seguridad Validator",
             required: [
-                "ID",
+                "_id",
                 "FECHA_REPORTE",
                 "TIPO_INCIDENTE",
                 "GRAVEDAD",
                 "AreaRecreativaID",
             ],
             properties: {
-                ID: {
+                _id: {
                     bsonType: "string",
                     description: "'id' es el identificador de la fila",
                 },
@@ -166,7 +166,7 @@ db.runCommand({
                         "'gravedad' corresponde con el nivel de gravedad del incidente",
                 },
                 AreaRecreativaID: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description:
                         "'area_recreativa_id' corresponde con el identificador del área a la que corresponde el reporte del incidente",
                 },
@@ -308,22 +308,22 @@ db.runCommand({
         $jsonSchema: {
             bsonType: "object",
             title: "meteo validator",
-            required: ["_id", "FECHA", "TEMPERATURA", "PRECIPITACION", "VIENTO", "PUNTO_MUESTREO"],
+            required: ["FECHA", "TEMPERATURA", "PRECIPITACION", "VIENTO", "PUNTO_MUESTREO"],
             properties: {
                 FECHA: {
                     bsonType: "date",
                     description: "fecha en la que se recoge el clima"
                 },
                 TEMPERATURA: {
-                    bsonType: ["number", "string"],
+                    bsonType: "number",
                     description: "temperatura"
                 },
                 PRECIPITACION: {
-                    bsonType: ["number", "string"],
+                    bsonType: "number",
                     description: "cantidad de precipitación"
                 },
                 VIENTO: {
-                    bsonType: 'bool',
+                    bsonType: 'int',
                     description: "indica si ha habido vientos fuertes"
                 },
                 PUNTO_MUESTREO: {
@@ -341,7 +341,7 @@ db.runCommand({
         $jsonSchema: {
             bsonType: "object",
             title: "Users Validator",
-            required: ["NIF", "NOMBRE", "EMAIL", "TELEFONO"],
+            required: ["_id", "NOMBRE", "EMAIL", "TELEFONO"],
             properties: {
                 _id: {
                     bsonType: "string",
@@ -356,7 +356,7 @@ db.runCommand({
                     description: "email del usuario",
                 },
                 TELEFONO: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description: "telefono del usuario",
                 },
             },
@@ -365,12 +365,32 @@ db.runCommand({
 });
 
 // comprobar esquema
-console.log(db.areas.validate())
-console.log(db.juegos.validate())
-console.log(db.encuestas_satisfaccion.validate())
-console.log(db.estaciones_meteo_codigo_postal.validate())
-console.log(db.incidencias_usuarios.validate())
-console.log(db.incidentes_seguridad.validate())
-console.log(db.mantenimiento.validate())
-console.log(db.meteo24.validate())
+// console.log(db.areas.validate())
+// console.log(db.juegos.validate())
+// console.log(db.encuestas_satisfaccion.validate())
+// console.log(db.estaciones_meteo_codigo_postal.validate())
+// console.log(db.incidencias_usuarios.validate())
+// console.log(db.incidentes_seguridad.validate())
+// console.log(db.mantenimiento.validate())
+// console.log(db.meteo24.validate())
 console.log(db.usuarios.validate())
+
+db.usuarios.aggregate ([
+  {
+    $project: {
+      ID:                       {$type: "$_id"},
+      NOMBRE:                   {$type: "$NOMBRE"},
+      EMAIL:                    {$type: "$EMAIL"},
+      TELEFONO:                 {$type: "$TELEFONO"},
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      ID:               {$addToSet: "$ID"},
+      NOMBRE:           {$addToSet: "$NOMBRE"},
+      EMAIL:            {$addToSet: "$EMAIL"},
+      TELEFONO:         {$addToSet: "$TELEFONO"}
+    }
+  }
+]);
