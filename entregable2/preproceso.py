@@ -450,10 +450,7 @@ def preproceso_meteo24(csv_input, csv_output):
     meteo_csv = csv_input + "meteo24.csv"
     csv_output = csv_output + "meteo24_limpio.csv"
 
-    areas_csv = csv_input + "AreasSucio.csv"
-
     meteo = pd.read_csv(meteo_csv, delimiter=';')
-    areas = pd.read_csv(areas_csv)
     
     new_meteo = pd.DataFrame(columns=["ID","FECHA","TEMPERATURA","PRECIPITACION","VIENTO","PUNTO_MUESTREO"])
 
@@ -467,6 +464,14 @@ def preproceso_meteo24(csv_input, csv_output):
             dia = 1
             estacion = row["PUNTO_MUESTREO"]
             for dia in range(1,32):
+
+                try:
+                    # Intentar crear un objeto de fecha
+                    fecha = datetime(año, mes, dia)
+                except ValueError:
+                    # Si la fecha es inválida, saltar la iteración
+                    continue
+
                 valor = row.iloc[7 + (dia - 1) * 2]
                 fecha = f"{dia:02d}-{mes:02d}-{año}"
 

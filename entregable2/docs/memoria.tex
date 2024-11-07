@@ -272,11 +272,11 @@ El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pe
 Para la validación de esquemas, se han desarrollado unos esquemas para cada csv que ha sido limpiado en el apartado anterior. Para ello, todos han seguido una estructura similar a la siguiente:
 
 \begin{lstlisting}[language=JavaScript, caption=Estructura genérica de la validación de esquemas]
-db.createCollection("nombre\_de\_colección", {
+db.createCollection("nombre_de_colección", {
     validator: {
         $jsonSchema: {
             bsonType: "object",
-            title: "Nombre\_de\_colección Validation",
+            title: "Nombre_de_colección Validation",
             required: ["param1", "param2", "paramN"],
             properties: {
                 param1: {
@@ -307,7 +307,7 @@ Dada la propuesta de diseño de agregados se han relacionado las tablas original
 \subsubsection{Relaciones de Tablas con Áreas}
 \label{subsubsec:relaciones_area}
 
-Se han relacionado la tabla área con las tablas de \textit{juegos}, \textit{incidentes de seguridad}, \textit{encuestas satisfacción}, \textit{estaciones\_meteo\_codigo\_postal} y \textit{meteo24}.
+Se han relacionado la tabla \textit{Área} con las tablas de \textit{juegos}, \textit{incidentes de seguridad}, \textit{encuestas satisfacción}, \textit{estaciones\_meteo\_codigo\_postal} y \textit{meteo24}.
 Estas relaciones se han conseguido de la siguiente manera:
 \begin{lstlisting}[language=JavaScript, caption=Operadores para relacionar tablas en mongodb]
 {
@@ -320,7 +320,7 @@ Estas relaciones se han conseguido de la siguiente manera:
 }
 \end{lstlisting}
 
-
+Es importante destacar que al final de la \textit{pipeline} se transformarán las relaciones de \textit{Juegos}, \textit{Encuestas Satisifacción} y \textit{estaciones\_mete\_codigo\_postal} en tan solo su id a través de un proyecto, y para el caso de la relación con la tabla \textit{Incidentes de Seguridad} se mostrarán atributos adicionales al id para completar el resumen.
 \subsubsection{Atributos Derivados}
 \label{subsubsec:derivados_area}
 
@@ -333,14 +333,37 @@ En el agregado \textit{Area Recreativa Clima} se piden calcular los siguientes a
         \item Cálculo de la nota de satisfacción
         
         \begin{lstlisting}[language=JavaScript, caption=Calculo del campo nota\_encuestas\_areas]
-            CODIGO DEL CALCULO
+{
+    $addFields: {
+        encuestas_accesibilidad_transformado: {
+            $map: {
+                input: "$ref_encuestas_satisfaccion.PUNTUACION_ACCESIBILIDAD",
+                as: "puntuacion",
+                in: { $subtract: [6, "$$puntuacion"] }
+            }
+        },
+        encuestas_calidad_transformado: {
+            $map: {
+                input: "$ref_encuestas_satisfaccion.PUNTUACION_CALIDAD",
+                as: "puntuacion",
+                in: { $subtract: [6, "$$puntuacion"] }
+            }
+        },
+        nota_encuestas_area: {
+            $sum: {
+                $concatArrays: ["$encuestas_accesibilidad_transformado", "$encuestas_calidad_transformado"]
+            }
+        }
+    }
+}
+
         \end{lstlisting}
 
         \item Cálculo del número de incidentes de seguridad
         
         \begin{lstlisting}[language=JavaScript, caption=Ponderación del número de incidencias]
 numero_incidencias_ponderado: {
-    $multiply: [{ $size: "\$ref_incidentes_seguridad" }, 3]
+    $multiply: [{ $size: "$ref_incidentes_seguridad" }, 3]
 }
         \end{lstlisting}
 
@@ -363,8 +386,8 @@ juegos_mantenimiento: {
         \end{lstlisting}
 
         Para conocer la cantidad de juegos en reparación de las distintas áreas
-        se utiliza \textit{\$size} para conecer la lóngitud del array de
-        devuelve el operador \textit{\$filter} tras filtrar por solo los juegos en reparación.
+        se utiliza \texttt{\$size} para conecer la lóngitud del array de
+        devuelve el operador \texttt{\$filter} tras filtrar por solo los juegos en reparación.
 
         \item Suma de todos los valores calculados
         
@@ -372,7 +395,7 @@ juegos_mantenimiento: {
 $addFields: {
 nota_total_area: {
     $sum: 
-        ["$nota_total_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
+        ["$nota_encuestas_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
     
     }
 }
@@ -415,14 +438,225 @@ estado_global_area: {
         },
         2
     ]
+},
+estado_global_area: {
+                $subtract: [10, "$estado_global_area"]
 }
         \end{lstlisting}
 
         Dividimos la nota total de cada area por la nota máxima calculada en el paso anterior para estandarizar el valor, lo que se nos permite obtener un valor entre 0 y 1. Este valor se multiplca por 10 para obtener una nota, y se redondea a 2 decimales.
 
     \end{enumerate}
+
+    \item \textbf{cantidadJuegosPorTipo}
+    
+    Este atributo debe de contener el número de juegos que tiene cada área según al tipo al que correspondan.
+
+    \item \textbf{capacidadMax}
+    
+    Este atributo debe de ser la cantidad máxima de juegos que un área es capaz de soportar. Para ello simplemente tomamos como máxima capacidad el número de juegos actual del área.
+    \begin{lstlisting}[language=JavaScript, caption=Cálculo de la capacidad máxima]
+$addFields:{
+    capacidadMax: "$TOTAL_ELEM"
+}
+    \end{lstlisting}
 \end{itemize}
 
+\subsection{Agregado de Juegos}
+\label{subsec:agregado_juego}
 
+\subsubsection{Relaciones de Tablas con Juegos}
+\label{subsubsec:relaciones_juego}
+
+Se han relacionado con la tabla de \textit{juegos} las tablas \textit{incidencias de usuarios} y \textit{mantenimiento}. Esto se ha conseguido al igual que en la anterior sección a través del operador \texttt{\$lookup}.
+
+Al final de la \textit{pipeline} se transformarán las relación con \textit{Mantenimiento} para solo mostrar sus id's y para el caso de la relación con \textit{Incidencia} se mostrarán, además de sus id's, aquellos atributos que conformen el resumen. 
+
+\subsubsection{Atributos Derivados}
+\label{subsubsec:derivados_juego}
+
+En el agregado \textit{Juegos} se pide calcular los siguientes:
+\begin{itemize}
+    \item \textbf{indicadorExposicion}
+    
+    Este atributo debe de ser un enumerado que corresponda con el nivel de exposición a los factores climatológicos del juego en concreto. Para ello se asignará a cada juego un valor aleatorio entre los valores 1, 2 y 3.
+    \begin{lstlisting}[caption=Cálculo de indicadorExposicion, language=JavaScript]
+$addFields: {
+    "indicadorExposicion": {
+        $add: [
+            {
+                $floor: {
+                    $multiply: [
+                        { $rand: {} },
+                        3
+                    ]
+                }
+            },
+            1
+        ]
+    }
+}
+    \end{lstlisting}
+
+    \item \textbf{desgasteAcumulado}
+    
+    Este atributo hará uso del anterior atributo \textbf{indicadorExposicion} para calcular el nivel de desgaste de cada juego. Para ello se aplicará la siguiente fórmula: $( tiempo_de_uso \cdot indicadorExposicion) - (numero_de_mantenimientos \cdot 100)$
+
+    \begin{lstlisting}[caption=Cálculo de desgasteAcumulado, language=JavaScript]
+{
+    $addFields: {
+        "desgasteAcumulado": {
+            $max: [
+                {
+                    $subtract: [
+                        {
+                            $multiply: [
+                                {
+                                    $add: [
+                                        {
+                                            $floor: {
+                                                $multiply: [
+                                                    { $rand: {} },
+                                                    15
+                                                ]
+                                            }
+                                        },
+                                        1
+                                    ]
+                                },
+                                "$indicadorExposicion"
+                            ]
+                        },
+                        {
+                            $multiply: [
+                                { $size: "$ref_mantenimiento" },
+                                5
+                            ]
+                        }
+                    ]
+                },
+                0
+            ]
+        }
+    }
+}
+    \end{lstlisting}
+
+    \item \textbf{ultimaFechaMantenimiento}
+    
+    Este atributo debe de registrar la última fecha en la que se realizó un interveción en dicho juego. Para ello se toma la fecha máxima para cada juego.
+
+    \begin{lstlisting}[caption=Cálculo de ultimaFechaMantenimiento, language=JavaScript]
+$addFields: {
+    "ultimaFechaMantenimiento": {
+        $max: {
+            $map: {
+                input: "$ref_mantenimiento",
+                as: "ref",
+                in: "$$ref.FECHA_INTERVENCION"
+            }
+        }
+    }
+}
+    \end{lstlisting}
+
+    \item \textbf{tiempoResolucion}
+    
+    Este atributo debe ser un valor entero que representa el tiempo que ha durado el proceso de mantenimiento. Consideramos que este atributo no debe de ubicarse en los juegos, dado que existe un tiempo de resolución de la incidencia para cada una de las incidencias, por lo que lo ubicaremos en el resumen que contiene juego para cada una de las incidencias.
+
+    Para la creación de este atributo se han seguido los siguientes pasos:
+    \begin{enumerate}
+        \item Mientras se crea el resumen, en el cual se itera por cada incidencia, se calcula el atributo derivado
+        
+        \begin{lstlisting}[caption=Iterar por cada incidencia durante la creación del resumen, language=JavaScript]
+"res_incidencias_usuarios": {
+    $map: {
+        input: "$res_incidencias_usuarios",
+        as: "ref",
+        in: {
+            ID: "$$ref._id",
+            TIPO_INCIDENCIA: "$$ref.TIPO_INCIDENCIA",
+            FECHA_REPORTE: "$$ref.FECHA_REPORTE",
+            ESTADO: "$$ref.ESTADO",
+            tiempoResolucion: {...}
+        }
+    }
+}
+        \end{lstlisting}
+
+        \item Se toma el máximo de todas las duraciones calculadas a través de la diferencia entre la fecha de la incidencia y las distintas fechas de cada uno de los mantenimientos.
+        
+        \begin{lstlisting}[language=JavaScript, caption=Máximo de las duraciones calculadas]
+$max: {
+        $map: {
+            input: "$$ref.MantenimientoID",
+            as: "mantenimiento_id",
+            in: {
+                $subtract: [
+                    { ... },
+                    {
+                        $$ref.FECHA_REPORTE
+                    }
+                ]
+            }
+        }
+    }
+        \end{lstlisting}
+
+        \item Finalmente se necesita obtener las fechas de los mantenimientos a los que se referencia en la incidencia.
+        
+        \begin{lstlisting}[language=JavaScript, caption=Obtención de fechas de mantenimiento relacionadas con la incidencia]
+$arrayElemAt: [
+                {
+                    $map: {
+                        input: {
+                            $filter: {
+                                input: "$ref_mantenimiento",
+                                as: "mantenimiento",
+                                cond: { $eq: ["$$mantenimiento._id", "$$mantenimiento_id"] }
+                            }
+                        },
+                        as: "man",
+                        in: {
+                            "$$man.FECHA_INTERVENCION"
+                        }
+                    }
+                },
+                0
+            ]
+        \end{lstlisting}
+    \end{enumerate}
+\end{itemize}
+
+\subsection{Agregado de Incidencias}
+\label{subsec:agregado_incidencias}
+
+\subsubsection{Relaciones de Tablas con Incidencias}
+\label{subsubsec:relaciones_incidencias}
+
+Este agregado relaciona la tabla de \textit{Incidencias de Usuario} con la tabla de \textit{Usuarios}. Para ello como para el resto de agregados se utilizará el operador \texttt{\$lookup}.
+
+En este caso no será necesario modificar los atributos que se muestran de la relación con \textit{Usuarios} dado que la relación es embebida.
+
+\subsubsection{Creación de Atributo Derivados}
+\label{subsubsec:derivados_incidencias}
+
+En el agregado \textit{Incidencia} se pide calcular el siguiente atributo:
+\begin{itemize}
+    \item \textbf{nivelEscalamiento}
+    
+    Este atributo debe de categorizar la urgencia de las incidencias. Para ello se generará un número aleatorio del 1 al 10 que corresponderá a este valor.
+
+    \begin{lstlisting}[language=JavaScript, caption={Cálculo de nivelEscalamiento}]
+$addFields: {
+    nivelEscalamiento: {
+        $add: [
+            { $floor: { $multiply: [{ $rand: {} }, 10] } },
+            1
+        ]
+    }
+}
+    \end{lstlisting}
+\end{itemize}
 
 \end{document}

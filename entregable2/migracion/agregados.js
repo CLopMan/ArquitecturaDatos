@@ -104,10 +104,28 @@ db.areas.aggregate([
     },
     {
         $addFields: {
+            encuestas_accesibilidad_transformado: {
+                $map: {
+                    input: "$ref_encuestas_satisfaccion.PUNTUACION_ACCESIBILIDAD",
+                    as: "puntuacion",
+                    in: { $subtract: [6, "$$puntuacion"] }
+                }
+            },
+            encuestas_calidad_transformado: {
+                $map: {
+                    input: "$ref_encuestas_satisfaccion.PUNTUACION_CALIDAD",
+                    as: "puntuacion",
+                    in: { $subtract: [6, "$$puntuacion"] }
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
             capacidadMax: "$TOTAL_ELEM",
-            nota_total_area: {
+            nota_encuestas_area: {
                 $sum: {
-                    $concatArrays: ["$ref_encuestas_satisfaccion.PUNTUACION_ACCESIBILIDAD", "$ref_encuestas_satisfaccion.PUNTUACION_CALIDAD"]
+                    $concatArrays: ["$encuestas_accesibilidad_transformado", "$encuestas_calidad_transformado"]
                 }
             },
 
@@ -131,7 +149,7 @@ db.areas.aggregate([
         $addFields: {
             nota_total_area: {
                 $sum:
-                    ["$nota_total_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
+                    ["$nota_encuestas_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
 
             }
         }
@@ -171,6 +189,13 @@ db.areas.aggregate([
         }
     },
     {
+        $addFields: {
+            estado_global_area: {
+                $subtract: [10, "$estado_global_area"]
+            }
+        }
+    },
+    {
         $project: {
             _id: 1,
             SISTEMA_COORD: 1,
@@ -195,8 +220,7 @@ db.areas.aggregate([
             },
             ref_estaciones_meteo_codigo_postal: {
                 _id: 1
-            }
-            // nota_total_area: 1
+            },
         }
     },
     {
