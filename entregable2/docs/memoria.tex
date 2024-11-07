@@ -207,9 +207,19 @@ df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_D
 
 \end{itemize}
 
-\subsection{Preprocesado de los csvs}
+\subsection{Preprocesado de los csvs en Python}
 \label{subsec:preprocessespecifico}
-En este apartado se explican las técnicas y procedimientos para el preprocesado de cada uno de los csvs sucios.
+En este apartado se explican las técnicas y procedimientos para el preprocesado de cada uno de los csvs sucios desarrollado en Pyhon usando la libería \textit{pandas}.
+
+\subsubsection{Juegos}
+\label{subsubsec:preprocessjuego}
+Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
+
+\begin{enumerate}
+    \item Imputación de valores en \textit{DISTRITO} y \textit{CODIGO\_DISTRITO}: se han relacionado valores de distrito con códigos de forma unívoca, rellenando los valores faltantes en caso necesario. Esto se hace mediante la llamada a la función \texttt{imput\_missing\_district}.
+    \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible.
+    \item Fusión con \textit{areas\_limpias.csv}: se han asociado los juegos a un área mediante los campos \textit{CODIGO\_INTERNO} y \textit{NDP}. Esto se ha traducido en una columna nueva en la tabla de \textit{juegos} con el ID del área al que pertenece. Adicionalmente se ha completado la información faltante de cada tabla con información del otro en los casos posibles.
+\end{enumerate}
 
 \subsubsection{Áreas}
 \label{subsubsec:preprocessarea}
@@ -238,16 +248,6 @@ Para el fichero \textit{AreasSucio.csv} se ha aplicado el siguiente proceso:
     \item Imputación de valores faltantes en \textit{CODIGO\_INTERNO}: mediante el rellenado de estos datos con los valores ``CÓDIGO\_INTERNO\_ID\_DESCONOCIDO''.
     \item Normalización de la columna \textit{tipo}: mediante el paso a mayúsculas y eliminación de los acentos de toda la columna
     \item Escritura del csv limpio final
-\end{enumerate}
-
-\subsubsection{Juegos}
-\label{subsubsec:preprocessjuego}
-Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
-
-\begin{enumerate}
-    \item Imputación de valores en \textit{DISTRITO} y \textit{CODIGO\_DISTRITO}: se han relacionado valores de distrito con códigos de forma unívoca, rellenando los valores faltantes en caso necesario. Esto se hace mediante la llamada a la función \texttt{imput\_missing\_district}.
-    \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible.
-    \item Fusión con \textit{areas\_limpias.csv}: se han asociado los juegos a un área mediante los campos \textit{CODIGO\_INTERNO} y \textit{NDP}. Esto se ha traducido en una columna nueva en la tabla de \textit{juegos} con el ID del área al que pertenece. Adicionalmente se ha completado la información faltante de cada tabla con información del otro en los casos posibles.
 \end{enumerate}
 
 \subsubsection{Meteo24}
@@ -297,6 +297,7 @@ db.createCollection("nombre_de_colección", {
 })
 \end{lstlisting}
 
+\newpage
 \section{Creación de Agregados}
 \label{sec:creacion_agregados}
 Dada la propuesta de diseño de agregados se han relacionado las tablas originales para conseguir los agregados indicados, además de generar los atributos derivados con los datos originales.
