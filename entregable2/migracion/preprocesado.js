@@ -257,7 +257,42 @@ db.usuarios.aggregate([
             coll: "usuarios"
         }
     }
-])
+]);
+db.meteo24.aggregate([
+    {
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            FECHA: {
+                $dateFromString: {
+                    dateString: "$FECHA",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            },
+            VIENTO: {
+                $convert: {
+                    input: "$VIENTO",
+                    to: "bool",
+                    onError: null,
+                    onNull: null
+                }
+            }
+
+        }
+    },
+    {
+        $out: {
+            db: "entregable2_old",
+            coll: "meteo24"
+        }
+    }
+]);
 
 db.mantenimiento.aggregate([
     {
