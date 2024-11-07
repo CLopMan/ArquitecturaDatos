@@ -473,8 +473,7 @@ def preproceso_meteo24(csv_input, csv_output):
                     continue
 
                 valor = row.iloc[7 + (dia - 1) * 2]
-                fecha = f"{dia:02d}-{mes:02d}-{año}"
-
+                fecha = fecha.strftime('%Y-%m-%dT%H:%M:%SZ')
                 # Verificar si ya existe una fila con la misma fecha e ID_AREA
                 if not ((new_meteo["FECHA"] == fecha) & (new_meteo["PUNTO_MUESTREO"] == str(estacion)[:8])).any():
                     # Crear una nueva fila

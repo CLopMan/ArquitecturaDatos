@@ -260,9 +260,9 @@ db.runCommand({
         $jsonSchema: {
             bsonType: "object",
             title: "Maintenance Validation",
-            required: ["ID", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios"],
+            required: ["_id", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios"],
             properties: {
-                ID: {
+                _id: {
                     bsonType: "string",
                     description: "id del mantenimiento",
                 },

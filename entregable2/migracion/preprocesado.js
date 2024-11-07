@@ -191,7 +191,7 @@ db.encuestas_satisfaccion.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        } 
+        }
     },
     {
         $addFields: {
@@ -203,11 +203,13 @@ db.encuestas_satisfaccion.aggregate([
                     onNull: null
                 }
             }
-        } 
+        }
     },
-    {$out: {
-        db: "entregable2_old", coll:"encuestas_satisfaccion"
-    }}
+    {
+        $out: {
+            db: "entregable2_old", coll: "encuestas_satisfaccion"
+        }
+    }
 ]);
 
 db.incidentes_seguridad.aggregate([
@@ -231,11 +233,13 @@ db.incidentes_seguridad.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        } 
+        }
     },
-    {$out: {
-        db: "entregable2_old", coll:"incidentes_seguridad"
-    }}
+    {
+        $out: {
+            db: "entregable2_old", coll: "incidentes_seguridad"
+        }
+    }
 ]);
 
 db.usuarios.aggregate([
@@ -297,13 +301,13 @@ db.meteo24.aggregate([
 db.mantenimiento.aggregate([
     {
         $addFields: {
-            FECHA_REPORTE: {
+            FECHA_INTERVENCION: {
                 $dateFromString: {
-                    dateString: "$FECHA_REPORTE",
+                    dateString: "$FECHA_INTERVENCION",
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        } 
+        }
     },
     {
         $out: {
@@ -334,11 +338,13 @@ db.incidencias_usuarios.aggregate([
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
-        } 
+        }
     },
-    {$out: {
-        db: "entregable2_old", coll:"incidencias_usuarios"
-    }}
+    {
+        $out: {
+            db: "entregable2_old", coll: "incidencias_usuarios"
+        }
+    }
 ]);
 // ------------- PARSER -----------------
 
