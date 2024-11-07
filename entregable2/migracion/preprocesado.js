@@ -15,10 +15,30 @@ db.areas.aggregate([
         }
     },
     {
-        $addFields:{
+        $addFields: {
+            COD_POSTAL: {
+                $convert: {
+                    input: "$COD_POSTAL",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            COD_DISTRITO: {
+                $convert: {
+                    input: "$COD_DISTRITO",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
             LATITUD: {
                 $convert: {
-                    input:"$LATITUD",
+                    input: "$LATITUD",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -26,7 +46,7 @@ db.areas.aggregate([
             },
             LONGITUD: {
                 $convert: {
-                    input:"$LONGITUD",
+                    input: "$LONGITUD",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -34,7 +54,7 @@ db.areas.aggregate([
             },
             NUM_VIA: {
                 $convert: {
-                    input:"$NUM_VIA",
+                    input: "$NUM_VIA",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -74,10 +94,26 @@ db.juegos.aggregate([
         }
     },
     {
-        $addFields:{
+        $addFields: {
+            COD_DISTRITO: {
+                $convert: {
+                    input: "$COD_DISTRITO",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            COD_POSTAL: {
+                $convert: {
+                    input: "$COD_POSTAL",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
             LATITUD: {
                 $convert: {
-                    input:"$LATITUD",
+                    input: "$LATITUD",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -85,15 +121,31 @@ db.juegos.aggregate([
             },
             LONGITUD: {
                 $convert: {
-                    input:"$LONGITUD",
+                    input: "$LONGITUD",
                     to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            MODELO: {
+                $convert: {
+                    input: "$LONGITUD",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            ACCESIBLE: {
+                $convert: {
+                    input: "$LONGITUD",
+                    to: "bool",
                     onError: null,
                     onNull: null
                 }
             },
             NUM_VIA: {
                 $convert: {
-                    input:"$NUM_VIA",
+                    input: "$NUM_VIA",
                     to: "string",
                     onError: null,
                     onNull: null
@@ -111,9 +163,11 @@ db.juegos.aggregate([
             }
         }
     },
-    {$out: {
-        db: "entregable2_old", coll:"juegos"
-    }}
+    {
+        $out: {
+            db: "entregable2_old", coll: "juegos"
+        }
+    }
 ]);
 
 db.encuestas_satisfaccion.aggregate([
@@ -131,9 +185,9 @@ db.encuestas_satisfaccion.aggregate([
     },
     {
         $addFields: {
-            fecha: {
+            FECHA: {
                 $dateFromString: {
-                    dateString: "$fecha",
+                    dateString: "$FECHA",
                     format: "%Y-%m-%dT%H:%M:%SZ"
                 }
             }
@@ -180,7 +234,7 @@ db.incidentes_seguridad.aggregate([
         } 
     },
     {$out: {
-        db: "entregable2_old", coll:"encuestas_satisfaccion"
+        db: "entregable2_old", coll:"incidentes_seguridad"
     }}
 ]);
 
@@ -219,12 +273,12 @@ db.mantenimiento.aggregate([
     {
         $out: {
             db: "entregable2_old",
-            coll: "usuarios"
+            coll: "mantenimiento"
         }
     }
 ]);
 
-db.incidentes_seguridad.aggregate([
+db.incidencias_usuarios.aggregate([
     {
         $addFields: {
             _id: {
@@ -248,10 +302,9 @@ db.incidentes_seguridad.aggregate([
         } 
     },
     {$out: {
-        db: "entregable2_old", coll:"encuestas_satisfaccion"
+        db: "entregable2_old", coll:"incidencias_usuarios"
     }}
 ]);
-
 // ------------- PARSER -----------------
 
 db.incidencias_usuarios.aggregate([
