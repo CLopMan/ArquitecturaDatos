@@ -315,15 +315,15 @@ db.runCommand({
                     description: "fecha en la que se recoge el clima"
                 },
                 TEMPERATURA: {
-                    bsonType: "number",
+                    bsonType: ["number", "string"],
                     description: "temperatura"
                 },
                 PRECIPITACION: {
-                    bsonType: "number",
+                    bsonType: ["number", "string"],
                     description: "cantidad de precipitación"
                 },
                 VIENTO: {
-                    bsonType: 'int',
+                    bsonType: 'bool',
                     description: "indica si ha habido vientos fuertes"
                 },
                 PUNTO_MUESTREO: {
