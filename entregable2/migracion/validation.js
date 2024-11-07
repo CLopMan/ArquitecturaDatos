@@ -1,4 +1,4 @@
-use entregable2_old;
+use entregable;
 // crear esquema de validacion
 db.runCommand({
     collMod: "areas",

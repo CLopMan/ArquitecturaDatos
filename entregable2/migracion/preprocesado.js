@@ -1,4 +1,4 @@
-use entregable2_old;
+use entregable;
 // ---------------- CAST --------------
 
 db.areas.aggregate([
@@ -74,7 +74,7 @@ db.areas.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old",
+            db: "entregable",
             coll: "areas"
         }
     }
@@ -165,7 +165,7 @@ db.juegos.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old", coll: "juegos"
+            db: "entregable", coll: "juegos"
         }
     }
 ]);
@@ -207,7 +207,7 @@ db.encuestas_satisfaccion.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old", coll: "encuestas_satisfaccion"
+            db: "entregable", coll: "encuestas_satisfaccion"
         }
     }
 ]);
@@ -237,7 +237,7 @@ db.incidentes_seguridad.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old", coll: "incidentes_seguridad"
+            db: "entregable", coll: "incidentes_seguridad"
         }
     }
 ]);
@@ -257,7 +257,7 @@ db.usuarios.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old",
+            db: "entregable",
             coll: "usuarios"
         }
     }
@@ -292,7 +292,7 @@ db.meteo24.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old",
+            db: "entregable",
             coll: "meteo24"
         }
     }
@@ -311,7 +311,7 @@ db.mantenimiento.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old",
+            db: "entregable",
             coll: "mantenimiento"
         }
     }
@@ -342,7 +342,7 @@ db.incidencias_usuarios.aggregate([
     },
     {
         $out: {
-            db: "entregable2_old", coll: "incidencias_usuarios"
+            db: "entregable", coll: "incidencias_usuarios"
         }
     }
 ]);
@@ -423,6 +423,6 @@ db.incidencias_usuarios.aggregate([
         }
     },
     {
-        $out: { db: "entregable2_old", coll: "incidencias_usuarios" }
+        $out: { db: "entregable", coll: "incidencias_usuarios" }
     }
 ]);
