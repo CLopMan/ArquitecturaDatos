@@ -398,17 +398,15 @@ Una vez que el grueso de la limpieza se ha realizado en Python, todavía existen
 Algunos de los atributos de los csvs tienen un tipado incorrecto cuando se insertan en MongoDB. Es por ello que, tras su inserción, se le cambia el tipo a todos los atributos que lo necesiteb. Esto se realiza con el operador \textit{addFields}, añadiendo una nueva columna con el mismo nombre que la que queremos cambiar de tipo. Luego, se emplea el operador \textit{convert} para cambiar al tipo que se desee. Este proceso se ve en el siguiente código:
 
 \begin{lstlisting}[language=JavaScript, caption=Cambio de tipo genérico]
-{
-    $addFields: {
-        _id: {
-            $convert: {
-                input: "$_id",
-                to: "string",
-                onError: null,
-                onNull: null
-            }
+$addFields: {
+    COD_DISTRITO: {
+        $convert: {
+            input: "$COD_DISTRITO",
+            to: "int",
+            onError: null,
+            onNull: null
         }
-    }
+    },
 }
 \end{lstlisting}
 
@@ -419,14 +417,12 @@ Todos los atributos que han necesitado un cambio son:
     \begin{tabular}{| c | l | c |}
         \hline
         CSV & Atributo & Tipo nuevo \\ \hline 
-        Áreas & \_id & string\\ 
         Áreas & COD\_POSTAL & int\\ 
         Áreas & COD\_DISTRITO & int\\ 
         Áreas & LATITUD & string\\ 
         Áreas & LONGITUD & string\\
         Áreas & NUM\_VIA & string\\ 
         Áreas & NUM\_VIA & string\\ 
-        Juegos & \_id & string\\ 
         Juegos & COD\_DISTRITO & int\\ 
         Juegos & COD\_POSTAL & string\\ 
         Juegos & LATITUD & string\\ 
@@ -434,13 +430,10 @@ Todos los atributos que han necesitado un cambio son:
         Juegos & MODELO & string\\ 
         Juegos & ACCESIBLE & bool\\ 
         Juegos & NUM\_VIA & string\\ 
-        Encuestas Satisfaccion & \_id & string\\
         Encuestas Satisfaccion & AreaRecreativaID & string\\ 
-        Incidentes Seguridad & \_id & string\\ 
         Usuarios & \_id & string\\ 
         meteo24 & \_id & string\\ 
         meteo24 & VIENTO & bool\\
-        Incidencias Usuarios & \_id & string\\ 
         \hline
     \end{tabular}
     \caption{Atributos y sus nuevos tipos}
@@ -509,6 +502,22 @@ db.createCollection("nombre_de_colección", {
     }
 })
 \end{lstlisting}
+
+Hemos aplicado un esquema adaptado a cada una de las tablas con el fin de asegurar que cada dato tiene la estructura y tipos adecuados.
+
+Destacan el caso de \textit{\_id}, que se han decidido mantener como entero para la mayoría de las tablas ya que este tipo permite la generación de \textit{UUIDs} de forma nativa desde \texttt{Mongo}. Esto facilitará futuras inserciones. Las únicas tablas que necesitan mantener el \textit{\_id} como string son \textit{Usuarios} y \textit{Mantenimiento}. 
+
+Para cada tabla, se especifican a continuación los tipos esperados. Algunos deben contemplar también la existencia de \textit{strings} debido a que son datos desconocidos que han sido rellenados durante el preprocesado (mirar sección \ref{sec:preprocesado}).
+
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    Atributo & Tipo(s)\\
+    \hline
+    
+
+\end{tabular}
+\end{center}
 
 \newpage
 \section{Creación de Agregados}
