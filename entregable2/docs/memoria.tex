@@ -116,7 +116,34 @@
 \newpage
 \section{Introducción}
 \label{sec:introduccion}
-En este documento se recoge el desarrollo de la segunda práctica de la asignatura Arquitectura de datos. A continuación, se especifica el preprocesado de los datos usando la biblioteca \textit{Pandas} de Python, la realización de la validación de esquemas de mongoDB y la carga de los csvs limpios a esta herramienta.
+En este documento se recoge el desarrollo de la segunda práctica de la asignatura
+Arquitectura de datos. A continuación, se especifica el preprocesado de los datos usando
+la biblioteca \textit{Pandas} de Python, la realización de la validación de esquemas de
+mongoDB y la carga de los csvs limpios a esta herramienta.
+
+Para el desarrollo de la práctica, se migrará una base de datos para la gestión de áreas
+recreativas a un modelo no relacional a través de \texttt{MongoDB}. De esta
+forma se podrán aprovechar las ventajas de este tipo de bases de datos en flexibilidad,
+escalabilidad horinzontal y velocidad.
+
+Durante el proceso de migración se seguirá la siguiente metodología:
+\begin{enumerate}
+    \item \textbf{Limpieza de los datos}: la base de datos previa a la migración está
+    contenida en ficheros \texttt{csv}. Esto nos permite usar la herramienta
+    \textit{Pandas} y el lenguaje de programación \texttt{Python} para preprocesar y
+    limpiar los datos.
+    \item \textbf{Importación y trasnformación en \texttt{MongoDB}}: Se importarán los
+    datos a \texttt{Mongo} y se harán las transformaciones necesarias para que los datos
+    tengan el tipo correcto.
+    \item \textbf{Validación de esquemas}: Se aplicará un esquema de validación a cada uno
+    de los documentos para asegurar que los datos tienen el formato correcto.
+    \item \textbf{Creación de agregados}: Se crearán los agregados especificados en el
+    enunciado, calculando todos los atributos derivados necesarios.
+\end{enumerate}
+
+Con todo lo anterior, la migración será completa y los datos estarán listos para su uso.
+Posteriormente, se desarrollará una estructura de \textit{cluster} para una gestión más
+eficiente de los datos y las consultas.
 
 \newpage
 \lstset{style=python}
