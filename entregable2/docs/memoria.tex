@@ -207,6 +207,7 @@ df["COLUMNA"] = df.apply(lambda row: fill_missing_tipo(row, "COLUMA", "COLUMNA_D
 
 \end{itemize}
 
+\newpage
 \subsection{Preprocesado de los csvs en Python}
 \label{subsec:preprocessespecifico}
 En este apartado se explican las técnicas y procedimientos para el preprocesado de cada uno de los csvs sucios desarrollado en Pyhon usando la libería \textit{pandas}.
@@ -216,6 +217,7 @@ En este apartado se explican las técnicas y procedimientos para el preprocesado
 Para el fichero \textit{JuegosSucio.csv} se han aplicado las siguientes transformaciones:
 
 \begin{enumerate}
+    \item Apertura y carga de valores en dataframe
     \item Imputación de valores en \textit{DISTRITO} y \textit{CODIGO\_DISTRITO}: se han relacionado valores de distrito con códigos de forma unívoca, rellenando los valores faltantes en caso necesario. Esto se hace mediante la llamada a la función \texttt{imput\_missing\_district}.
     \item Imputación de valores en \textit{TIPO\_VIA}, \textit{NOMBRE\_VIA}, y \textit{NUM\_VIA}: se ha extraído toda la información posible de \textit{DIRECCION\_AUX} y rellenado los campos anteriores en caso posible.
     \item Fusión con \textit{areas\_limpias.csv}: se han asociado los juegos a un área mediante los campos \textit{CODIGO\_INTERNO} y \textit{NDP}. Esto se ha traducido en una columna nueva en la tabla de \textit{juegos} con el ID del área al que pertenece. Adicionalmente se ha completado la información faltante de cada tabla con información del otro en los casos posibles.
@@ -250,6 +252,74 @@ Para el fichero \textit{AreasSucio.csv} se ha aplicado el siguiente proceso:
     \item Escritura del csv limpio final
 \end{enumerate}
 
+\subsubsection{Encuestas satisfacción}
+\label{subsubsec:preprocesssatisfaccion}
+Para el fichero \textit{EncuestasSatisfaccion.csv} se ha aplicado el siguiente proceso:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Formateo de \textit{FECHA}: mediante el paso de la fecha al formato de mongo
+    \item Normalización de la columna \textit{COMENTARIOS}: mediante el paso a mayúsculas de todos los valores
+    \item Renombrado de la columna \textit{ID} a ``\_id`` para su posterior inserción en mongo
+    \item Escritura del csv limpio final
+\end{enumerate}
+
+\subsubsection{Incidencias Usuario}
+\label{subsubsec:preprocessincidenciasusuario}
+Para el fichero \textit{IncidenciasUsuariosSucio.csv} se ha aplicado el siguiente proceso:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Normalización de la columna \textit{TIPO\_INCIDENCIA}: mediante el paso a mayúsculas de todos los valores
+    \item Formateo de \textit{FECHA\_REPORTE}: mediante el paso de la fecha al formato de mongo
+    \item Normalización de la columna \textit{ESTADO}: mediante el paso a mayúsculas de todos los valores
+    \item Renombrado de la columna \textit{ID} a ``\_id`` para su posterior inserción en mongo
+    \item Eliminación de los usuarios replicados: debido a que existen usuarios con la misma información, salvo el correo, se ha decidido eliminar los usuarios duplicados
+    \item Escritura del csv limpio final
+\end{enumerate}
+
+\subsubsection{Incidencias Seguridad}
+\label{subsubsec:preprocessincidenciasseguridad}
+Para el fichero \textit{IncidentesSeguridadSucio.csv} se ha aplicado el siguiente proceso:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Formateo de \textit{FECHA\_REPORTE}: mediante el paso de la fecha al formato de mongo
+    \item Normalización de la columna \textit{TIPO\_INCIDENTE}: mediante el paso a mayúsculas y la eliminación de los acentos de toda la columna
+    \item Normalización de la columna \textit{GRAVEDAD}: mediante el paso a mayúsculas y la eliminación de los acentos de toda la columna
+    \item Renombrado de la columna \textit{ID} a ``\_id`` para su posterior inserción en mongo
+    \item Escritura del csv limpio final
+\end{enumerate}
+
+\subsubsection{Mantenimiento}
+\label{subsubsec:preprocessmantenimiento}
+Para el fichero \textit{MantenimientoSucio.csv} se ha aplicado el siguiente proceso:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Normalización de la columna \textit{TIPO\_INTERVENCION}: mediante el paso a mayúsculas de todos los valores
+    \item Formateo de \textit{FECHA\_INTERVENCION}: mediante el paso de la fecha al formato de mongo
+    \item Normalización de la columna \textit{ESTADO\_PREVIO}: mediante el paso a mayúsculas de todos los valores
+    \item Normalización de la columna \textit{ESTADO\_POSTERIOR}: mediante el paso a mayúsculas de todos los valores
+    \item Normalización de la columna \textit{Tipo}: mediante el rellenado de los missing values con el valor ``TIPO\_ID\_DESCONOCIDO'' y su paso a mayúsculas de todos los valores
+    \item Normalización de la columna \textit{Comentarios}: mediante el rellenado de los missing values con el valor ``COMENTARIO\_ID\_DESCONOCIDO'' y su paso a mayúsculas de todos los valores
+    \item Cambio de la columna \textit{ID} para su posterior uso en los agregado en mongo. Esto se hace mediante la extracción el número del id y su concatenación a la cadena ``MNT-'', rellenando con ceros hasta que el número tenga cinco dígitos. Esto se realiza de la siguiente manera:
+
+\begin{lstlisting}
+for indice, value in df.iterrows():
+    id_antiguo = value["ID"]
+    indice_numero = id_antiguo.index(",")
+    indice_nuevo = id_antiguo[1: indice_numero]
+    while len(indice_nuevo) < 5:
+        indice_nuevo = "0" + indice_nuevo
+    df.loc[indice, "ID"] = "MNT-" + indice_nuevo
+\end{lstlisting}
+
+    \item Renombrado de la columna \textit{ID} a ``\_id`` para su posterior inserción en mongo
+    \item Eliminación de los mantenimientos replicados: debido a que existen mantenimientos con el mismo ``\_id``, se ha decidido eliminar los valores duplicados
+    \item Escritura del csv limpio final
+\end{enumerate}
+
 \subsubsection{Meteo24}
 \label{subsubsec:preprocessmeteo}
 El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pedido, el proceso de reestructuración es el siguiente:
@@ -265,6 +335,122 @@ El fichero \textit{meteo24.csv} se ha restructurado para conseguir el formato pe
     \end{itemize}
     \item Tras pasar por todas las filas de \textit{meteo24.csv} se transforma la columna \textit{Viento} a un booleano, dado que la magnitud que se nos pide es si el viento es fuerte o no, sin embargo a través de meteo conocemos la velocidad de este.
 \end{enumerate}
+
+\subsubsection{Usuarios}
+\label{subsubsec:preprocessusuarios}
+El fichero \textit{UsuariosSucio.csv} se ha restructurado para conseguir el formato pedido, el proceso de reestructuración es el siguiente:
+
+\begin{enumerate}
+    \item Apertura y carga de valores en dataframe
+    \item Normalización de la columna \textit{NOMBRE}: mediante el paso a mayúsculas de todos los valores
+    \item Normalización de la columna \textit{EMAIL}: mediante el paso a mayúsculas de todos los valores y el relleno de los missing values con el valor ``EMAIL\_ID\_DESCONOCIDO''
+    \item Normalización de la columna \textit{TELEFONO} mediante la eliminación del prefijo y de los espacios en blanco. Esto se realiza con la siguiente función:
+
+\begin{lstlisting}
+def format_phone_number(phone):
+    phone = phone.replace(" ", "")
+    if phone.startswith("+34"):
+        phone = phone[3:]
+    if phone.startswith("34"):
+        phone = phone[2:]
+    return phone
+\end{lstlisting}
+
+    \item Renombrado de la columna \textit{NIF} a ``\_id`` para su posterior inserción en mongo
+    \item Escritura del csv limpio final
+\end{enumerate}
+
+\newpage
+\subsection{Preprocesado en MongoDB}
+\label{subsec:preprocessmongo}
+Una vez que el grueso de la limpieza se ha realizado en Python, todavía existen algunos atributos con problemas que hay que resolver antes de se inserción en MongoDB. Es por ello que en este apartado se explica el preprocesado realizado en MongoDB.
+
+\subsubsection{Cambio de tipo}
+\label{subsubsec:preprocessmongocambiodetipo}
+
+Algunos de los atributos de los csvs tienen un tipado incorrecto cuando se insertan en MongoDB. Es por ello que, tras su inserción, se le cambia el tipo a todos los atributos que lo necesiteb. Esto se realiza con el operador \textit{addFields}, añadiendo una nueva columna con el mismo nombre que la que queremos cambiar de tipo. Luego, se emplea el operador \textit{convert} para cambiar al tipo que se desee. Este proceso se ve en el siguiente código:
+
+\begin{lstlisting}[language=JavaScript, caption=Cambio de tipo genérico]
+{
+    $addFields: {
+        _id: {
+            $convert: {
+                input: "$_id",
+                to: "string",
+                onError: null,
+                onNull: null
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+Todos los atributos que han necesitado un cambio son:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{| c | l | c |}
+        \hline
+        CSV & Atributo & Tipo nuevo \\ \hline 
+        Áreas & \_id & string\\ 
+        Áreas & COD\_POSTAL & int\\ 
+        Áreas & COD\_DISTRITO & int\\ 
+        Áreas & LATITUD & string\\ 
+        Áreas & LONGITUD & string\\
+        Áreas & NUM\_VIA & string\\ 
+        Áreas & NUM\_VIA & string\\ 
+        Juegos & \_id & string\\ 
+        Juegos & COD\_DISTRITO & int\\ 
+        Juegos & COD\_POSTAL & string\\ 
+        Juegos & LATITUD & string\\ 
+        Juegos & LONGITUD & string\\
+        Juegos & MODELO & string\\ 
+        Juegos & ACCESIBLE & bool\\ 
+        Juegos & NUM\_VIA & string\\ 
+        Encuestas Satisfaccion & \_id & string\\
+        Encuestas Satisfaccion & AreaRecreativaID & string\\ 
+        Incidentes Seguridad & \_id & string\\ 
+        Usuarios & \_id & string\\ 
+        meteo24 & \_id & string\\ 
+        meteo24 & VIENTO & bool\\
+        Incidencias Usuarios & \_id & string\\ 
+        \hline
+    \end{tabular}
+    \caption{Atributos y sus nuevos tipos}
+\end{table}
+
+\subsubsection{Obtención de fechas a través de strings}
+De la misma manera, todas las fechas de todos los csvs son interpretadas erróneamenta al introducir los datos en mongo. Todas las fechas se interpretan como strings, así que deben ser cambiadas al tipo \textit{Date}. Esto se realiza con el operador \textit{addFields} que, de manera similar al apartado anterior, sustituye el atributo antiguo por el homónimo nuevo con su tipo corregido. También se usa el operador \textit{dateFromString}, que devuelve una fecha ajustada al formato especificado. Todo esto se realiza mediante el siguiente código:
+
+\begin{lstlisting}[language=JavaScript, caption=Cambio a date de las fechas]
+$addFields: {
+    FECHA_REPORTE: {
+        $dateFromString: {
+            dateString: "$FECHA_REPORTE",
+            format: "%Y-%m-%dT%H:%M:%SZ"
+        }
+    }
+}
+\end{lstlisting}
+
+Todos los atributos que han necesitado un cambio al tipo \textit{date} son:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{| c | l | }
+        \hline
+        CSV & Atributo \\ \hline
+        Áreas & FECHA\_INSTALACION \\
+        Juego & FECHA\_INSTALACION \\ 
+        Encuestas Satisfaccion & FECHA\\ 
+        Incidentes Seguridad & FECHA\_REPORTE \\ 
+        meteo24 & FECHA\\ 
+        Mantenimiento & FECHA\_INTERVENCION\\ 
+        Incidencias Usuarios & FECHA\_REPORTE\\ 
+        \hline
+    \end{tabular}
+    \caption{Atributos cambiados al tipo \textit{date}}
+\end{table}
 
 \newpage
 \section{Validación de Esquemas}
