@@ -263,7 +263,7 @@ db.runCommand({
             required: ["_id", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios"],
             properties: {
                 _id: {
-                    bsonType: "int",
+                    bsonType: "string",
                     description: "id del mantenimiento",
                 },
                 FECHA_INTERVENCION: {
@@ -344,7 +344,7 @@ db.runCommand({
             required: ["_id", "NOMBRE", "EMAIL", "TELEFONO"],
             properties: {
                 _id: {
-                    bsonType: "int",
+                    bsonType: "string",
                     description: "número de identificación del usuario",
                 },
                 NOMBRE: {
@@ -379,9 +379,11 @@ db.usuarios.aggregate([
     {
         $project: {
             ID: { $type: "$_id" },
-            NOMBRE: { $type: "$NOMBRE" },
-            EMAIL: { $type: "$EMAIL" },
-            TELEFONO: { $type: "$TELEFONO" },
+            desc_clasificacion: { $type: "$DESC_CLASIFICATION" },
+            cod_barrio: { $type: "$COD_BARRIO" },
+            barrio: { $type: "$BARRIO" },
+            cod_distrito: { $type: "$COD_DISTRITO" },
+            distrito: { $type: "$DISTRITO" },
         }
     },
     {

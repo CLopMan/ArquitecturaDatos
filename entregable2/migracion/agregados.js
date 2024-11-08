@@ -279,12 +279,7 @@ db.agregado_juego.aggregate([
                     $map: {
                         input: "$ref_mantenimiento",
                         as: "ref",
-                        in: {
-                            $dateFromString: {
-                                dateString: "$$ref.FECHA_INTERVENCION",
-                                format: "%Y-%m-%dT%H:%M:%SZ"
-                            }
-                        }
+                        in: "$$ref.FECHA_INTERVENCION" 
                     }
                 }
             },
@@ -316,23 +311,13 @@ db.agregado_juego.aggregate([
                                                                 }
                                                             },
                                                             as: "man",
-                                                            in: {
-                                                                $dateFromString: {
-                                                                    dateString: "$$man.FECHA_INTERVENCION",
-                                                                    format: "%Y-%m-%dT%H:%M:%SZ"
-                                                                }
-                                                            }
+                                                            in: "$$man.FECHA_INTERVENCION"
                                                         }
                                                     },
                                                     0
                                                 ]
-                                            },
-                                            {
-                                                $dateFromString: {
-                                                    dateString: "$$ref.FECHA_REPORTE",
-                                                    format: "%Y-%m-%dT%H:%M:%SZ"
-                                                }
-                                            }
+                                            }, 
+                                            "$$ref.FECHA_REPORTE"
                                         ]
                                     }
                                 }
