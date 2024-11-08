@@ -7,7 +7,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
-
+\usepackage{booktabs}
 \definecolor{miverde}{rgb}{0,0.6,0}
 \definecolor{aqua}{rgb}{0.0, 0.5, 0.8}
 \definecolor{miotrootroverde}{rgb}{0.11, 0.40, 0.11}
@@ -116,12 +116,44 @@
 \newpage
 \section{Introducción}
 \label{sec:introduccion}
-En este documento se discutirá del diseño de los clusters de la base de datos sobre las areas recreativas de Madrid. Para este diseño se hablarán de las diferentes posibilidades que se pueden conseguir a través de la \textbf{fragmentación} y de la \textbf{replicación}, además de analizar sus consecuencias tanto en el contexto de nuestra base de datos como en contextos parecidos.
-\newpage
-\lstset{style=python}
+En este documento se discutirá del diseño de los clusters de la base de datos sobre las areas recreativas de Madrid. Un correcto diseño de \textit{clustering} dotará al sistema de una mayor eficiencia, además de sus ventajas de tolerancia a fallos y accesibilidad. 
+
+Para cada agregado, se discutirán distintas claves y estrategias de particionamiento para lograr una mejor eficiencia en la base de datos, tanto en la actualidad como para soportar escalabilidad sin sacrificar rendimiento. Además, se discutirán distintas estrategias de replicación de los datos con el fin de contar con un respaldo frente a caídas y brindar una mayor disponibilidad de la información.
+
+%Para este diseño se hablarán de las diferentes posibilidades que se pueden conseguir a través de la \textbf{fragmentación} y de la \textbf{replicación}, además de analizar sus consecuencias tanto en el contexto de nuestra base de datos como en contextos parecidos.
+
 \section{Fragmentación}
 \label{sec:fragmentacion}
 En este apartado se analizarán las diferentes estrategias con las que se podrán abordar para cada una de las colecciones de los distintos agregados.
+
+\subsection{\texttt{Agregado\_area\_recreativa\_clima}}
+\label{subec:areas}
+Este agregado cuenta con diferentes datos en relación a un área. Los más relevantes son los siguientes:
+\begin{itemize}
+    \item Condiciones climáticas: se trata de una \textbf{referencia} a la información meteorológica en un área (y todas las que compartan \textit{código postal}).
+    \item Incidentes de Seguridad: se trata de una \textbf{referencia con resumen}, en la que se incluye el tipo de incidente, su gravedad y la fecha de reporte.
+    \item Lista de juegos: se trata de una lista de \textbf{referencias} a la información de cada juego presente en el área.
+    \item Encuestas de usuario: se trata de una lista de \textbf{referencias} a los registros sobre las encuestas hechas a cada usuario sobre el área.
+\end{itemize}
+
+Tal y cómo sugiere el enunciado, se trabajará sobre el supuesto de que tanto la lectura como la escritura son operaciones frecuentes. La primera, consultando sobre todo el estado de áreas y juegos; y la segunda, actualizando los registros relativos a \textit{encuestas de usuario} e \textit{información meteorológica (meteo24)}.
+
+\subsubsection{Clave de partición}
+\label{subsubsec:particion_areas}
+
+Para las colecciones \textit{areas}, \textit{juegos}, \textit{encuestas\_satisfaccion} e \textit{incidentes\_seguridad} se fragmentará por la clave \textbf{AreaRecreativaID} (\textbf{\_id} en el caso de areas). De esta forma se optimizarán las consultas sobre estos documentos para la misma área. 
+
+En cambio, para la colección \textit{meteo} se propone fragmentar por un atributo derivado de \textbf{punto\_muestreo} que contenga los cinco primeros dígitos. Estos dígitos se corresponden con un \textbf{código postal}. Así, la información meteorlógica relativa a una misma zona geográfica (donde las todas las áreas tienen el mismo clima)  quedará póxima en los \textit{shards}; facilitando su consulta y actualización, a la vez que optimizando la consistencia de los datos.
+
+\subsubsection{Estrategia de fragmentación}
+\label{subsubsec:fragmentacion_areas}
+
+Para asegurar una distribución balanceada y evitar sobre cargas, se implementan las siguientes estrategias de sharding:
+\begin{itemize}
+    \item Pre-Splitting: se realizará pre-spliting sobre el campo \textit{AreaRecreativaID} para evitar la sobre carga (\textit{hotspot}) sobre el nodo primario en la primera carga de datos. Además, esto garantiza una distribución uniforme de los registros.
+    \item Zonas de Sharding: se definen zonas de sharding para agrupar los datos de \textit{meteo24} por código postal y garantizar una localidad espacial de los datos. % zonas de sharding: mongo se asegura de que los datos de un cierto rango de valores se mantengan siempre en el mismo shard y no se muevan por balanceo u otros factores.
+\end{itemize}
+
 
 \subsection{Clave de Fragmentación}
 \label{subsec:fragmmentacion}
@@ -226,8 +258,22 @@ Para este agregado las propuestas para la clave de partición son las siguientes
 \end{itemize}
 
 
+\subsection{Elección de claves}
+\label{subsec:eleccion}
 
+Con todo lo anterior, se concluye que las claves de fragmentación para cada agregado serán las siguientes: 
 
+\begin{center}
+\begin{tabular}{@{}cc@{}}
+    \toprule
+    Agregado & Clave de partición\\
+    \midrule
+    \texttt{area\_recreativa\_clima} & \textit{Cod\_Postal}\\
+    \texttt{area\_juego} & \textit{Cod\_Distrito}\\
+    \texttt{area\_incidencia} & \textit{TIPO\_INCIDENCIA}\\
+    \bottomrule
+\end{tabular}
+\end{center}
 
 
 
