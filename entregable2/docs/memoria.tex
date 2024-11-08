@@ -503,21 +503,8 @@ db.createCollection("nombre_de_colección", {
 })
 \end{lstlisting}
 
-Hemos aplicado un esquema adaptado a cada una de las tablas con el fin de asegurar que cada dato tiene la estructura y tipos adecuados.
+Hemos aplicado un esquema adaptado a cada uno de los documentos con el fin de asegurar que cada dato tiene la estructura y tipos adecuados. Para ello se ha seguido el modelo porporcionado en el enunciado. Destacan el caso de \textit{\_id}, que se han decidido mantener como entero para la mayoría de las tablas ya que este tipo permite la generación de \textit{UUIDs} de forma nativa desde \texttt{Mongo}. Esto facilitará futuras inserciones. Las únicas tablas que necesitan mantener el \textit{\_id} como string son \textit{Usuarios} y \textit{Mantenimiento}. 
 
-Destacan el caso de \textit{\_id}, que se han decidido mantener como entero para la mayoría de las tablas ya que este tipo permite la generación de \textit{UUIDs} de forma nativa desde \texttt{Mongo}. Esto facilitará futuras inserciones. Las únicas tablas que necesitan mantener el \textit{\_id} como string son \textit{Usuarios} y \textit{Mantenimiento}. 
-
-Para cada tabla, se especifican a continuación los tipos esperados. Algunos deben contemplar también la existencia de \textit{strings} debido a que son datos desconocidos que han sido rellenados durante el preprocesado (mirar sección \ref{sec:preprocesado}).
-
-\begin{center}
-\begin{tabular}{|c|c|}
-    \hline
-    Atributo & Tipo(s)\\
-    \hline
-    
-
-\end{tabular}
-\end{center}
 
 \newpage
 \section{Creación de Agregados}
@@ -673,7 +660,77 @@ estado_global_area: {
 
     \item \textbf{cantidadJuegosPorTipo}
     
-    Este atributo debe de contener el número de juegos que tiene cada área según al tipo al que correspondan.
+    Este atributo debe de contener el número de juegos que tiene cada área según al tipo al que correspondan. Para su obtención se han seguido los siguientes pasos: 
+    \begin{enumerate}
+        \item Relacionamos los documentos de juegos y areas a través del campo \textit{Area}. Además se separa el \textit{array} de juegos en diferentes documentos para poder realizar las agrupaciones.
+\begin{lstlisting}[caption=Relación de juegos y áreas, language=JavaScript]
+{
+    // Areas con juegos
+    $lookup: {
+        from: 'juegos',
+        localField: '_id',
+        foreignField: 'AREA',
+        as: 'aux_ref_juegos'
+    }
+},
+{ $unwind: "$aux_ref_juegos" }, 
+
+\end{lstlisting}
+        \item Agrupamos los juegos por tipo. Esto lo hacemos a través de 2 operaciones \texttt{\$group}.
+\begin{lstlisting}[caption=Agrupacion de juegos por tipo, language=JavaScript]
+{
+    $group: {
+        _id: { tipo: "$aux_ref_juegos.tipo_juego", area_id: "$_id" }, // agrupar areas y tipos
+        count: { $sum: 1 },
+        ref_juegos: { $push: { _id: "$aux_ref_juegos._id" } },
+        original: { $first: "$$ROOT" }
+    }
+},
+{
+    $group: { // Crear para cada área un array de {tipo, count}, {tipo, count}
+        _id: "$_id.area_id",
+        cuenta: {
+            $push: {
+                k: "$_id.tipo", v: "$count"
+            }
+        },
+        ref_juegos: { $push: "$ref_juegos" },
+        original: { $first: "$original" }
+    },
+}
+\end{lstlisting}
+        \item Creación del nuevo campo e inclusión en el documento original.
+
+\begin{lstlisting}[caption=Creación de nuevo campo en el documento original, language=JavaScript]
+{
+    $addFields: {
+        "cantidad_juego_por_tipo": {
+            $arrayToObject: "$cuenta"
+
+        },
+        "ref_juegos": {
+            $reduce: {
+                input: "$ref_juegos",
+                initialValue: [],
+                in: { $concatArrays: ["$$value", "$$this"] }
+            }
+        }
+    }
+},
+{
+    $replaceRoot: {
+        newRoot: {
+            $mergeObjects: [
+                "$original",
+                { "cantidad_juego_por_tipo": "$cantidad_juego_por_tipo" },
+                { "ref_juegos": "$ref_juegos" }
+            ]
+        }
+    }
+},
+
+\end{lstlisting}
+    \end{enumerate}
 
     \item \textbf{capacidadMax}
     
@@ -723,7 +780,7 @@ $addFields: {
 
     \item \textbf{desgasteAcumulado}
     
-    Este atributo hará uso del anterior atributo \textbf{indicadorExposicion} para calcular el nivel de desgaste de cada juego. Para ello se aplicará la siguiente fórmula: $( tiempo_de_uso \cdot indicadorExposicion) - (numero_de_mantenimientos \cdot 100)$
+    Este atributo hará uso del anterior atributo \textbf{indicadorExposicion} para calcular el nivel de desgaste de cada juego. Para ello se aplicará la siguiente fórmula: $( tiempo\_de\_uso \cdot indicadorExposicion) - (numero\_de\_mantenimientos \cdot 100)$
 
     \begin{lstlisting}[caption=Cálculo de desgasteAcumulado, language=JavaScript]
 {
