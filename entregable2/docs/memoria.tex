@@ -939,4 +939,16 @@ $addFields: {
     \end{lstlisting}
 \end{itemize}
 
+\section{Conclusiones}
+\label{sec:conclusiones}
+
+Durante esta parte de la práctica nos hemos enfrentado a distintas problemáticas como son la limpieza de los datos de manera efectiva y el uso de \texttt{MongoDB} para la transformación de los datos y la construcción de agregados. Consumiendo estas partes el mayor tiempo de desarrollo de la práctica.
+
+La limpieza de los datos ha sido, sin lugar a dudas, la parte más costosa en términos de tiempo. Los documentos csv contaban con numerosas instancias mal formateadas, gran cantidad de valores faltantes y campos muy poco explicativos. Esto ha llevado a numerosas iteraciones sobre el código para poder corregir correctamente los datos, además de dificultades en la relación de documentos como áreas y juegos; ya que estos no contaban con ningún campo que los relacionase explicitamente. Por otro lado, la imputación de valores faltantes como cadenas de caracteres ha generado más de una problemática durante la migración \texttt{Mongo}.
+
+En cuanto a la migración, la principal dificultad ha sido la poca familiaridad con la operatividad de \texttt{MongoDB}. Pese a su parecido con lenguajes de programación tradicionales como \texttt{JavaScript} el uso de agregados incentiva un sobre anidamiento de operaciones que dificulta la legibilidad del código.
+
+Con todo lo anterior, concluímos que esta práctica nos ha permitido experimentar y familizarizarnos con el entorno de \texttt{MongoDB}.
+
+
 \end{document}
