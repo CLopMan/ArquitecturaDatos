@@ -1,4 +1,4 @@
-use entregable;
+use entregable2;
 // crear esquema de validacion
 db.runCommand({
     collMod: "areas",
@@ -9,7 +9,7 @@ db.runCommand({
             required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION"],
             properties: {
                 _id: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description: "id del área"
                 },
                 DESC_CLASIFICACION: {
@@ -96,7 +96,7 @@ db.runCommand({
             required: ["_id", "PUNTUACION_ACCESIBILIDAD", "PUNTUACION_CALIDAD", "COMENTARIOS", "FECHA", "AreaRecreativaID"],
             properties: {
                 _id: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description: "identificador de la encuesta"
                 },
                 PUNTUACION_ACCESIBILIDAD: {
@@ -139,7 +139,7 @@ db.runCommand({
             ],
             properties: {
                 _id: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description: "'id' es el identificador de la fila",
                 },
                 FECHA_REPORTE: {
@@ -191,7 +191,7 @@ db.runCommand({
             ],
             properties: {
                 _id: {
-                    bsonType: "string",
+                    bsonType: "int",
                     description: "número identificativo de la columna",
                 },
                 TIPO_INCIDENCIA: {
@@ -228,7 +228,7 @@ db.runCommand({
             bsonType: "object",
             required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION", "MODELO", "tipo_juego", "ACCESIBLE", "AREA"],
             properties: {
-                _id: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                _id: { bsonType: "int", description: "debe ser una cadena y es obligatorio" },
                 DESC_CLASIFICACION: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
                 COD_BARRIO: { bsonType: "int", description: "debe ser un entero y es obligatorio" },
                 BARRIO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
@@ -379,9 +379,11 @@ db.usuarios.aggregate([
     {
         $project: {
             ID: { $type: "$_id" },
-            NOMBRE: { $type: "$NOMBRE" },
-            EMAIL: { $type: "$EMAIL" },
-            TELEFONO: { $type: "$TELEFONO" },
+            desc_clasificacion: { $type: "$DESC_CLASIFICATION" },
+            cod_barrio: { $type: "$COD_BARRIO" },
+            barrio: { $type: "$BARRIO" },
+            cod_distrito: { $type: "$COD_DISTRITO" },
+            distrito: { $type: "$DISTRITO" },
         }
     },
     {
