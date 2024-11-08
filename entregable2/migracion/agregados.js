@@ -1,3 +1,4 @@
+use entregable2;
 // --------- AGREGADO DE ÁREAS CON JUEGOS, METERO, INCIDENTES Y ENCUESTAS DE SATISFACCIÓN ---------
 
 // Agregado de áreas con los datos agregados: estadoGlobalArea, capacidadMáxima y cantidadJuegosPorTipo

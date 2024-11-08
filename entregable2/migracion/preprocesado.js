@@ -2,7 +2,7 @@ use entregable;
 // ---------------- CAST --------------
 
 db.areas.aggregate([
-    {
+    /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -13,7 +13,7 @@ db.areas.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $addFields: {
             COD_POSTAL: {
@@ -81,7 +81,7 @@ db.areas.aggregate([
 ]);
 
 db.juegos.aggregate([
-    {
+    /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -92,7 +92,7 @@ db.juegos.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $addFields: {
             COD_DISTRITO: {
@@ -171,7 +171,7 @@ db.juegos.aggregate([
 ]);
 
 db.encuestas_satisfaccion.aggregate([
-    {
+    /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -182,7 +182,7 @@ db.encuestas_satisfaccion.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $addFields: {
             FECHA: {
@@ -213,7 +213,7 @@ db.encuestas_satisfaccion.aggregate([
 ]);
 
 db.incidentes_seguridad.aggregate([
-    {
+    /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -224,7 +224,7 @@ db.incidentes_seguridad.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $addFields: {
             FECHA_REPORTE: {
@@ -243,7 +243,7 @@ db.incidentes_seguridad.aggregate([
 ]);
 
 db.usuarios.aggregate([
-    {
+    /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -254,7 +254,7 @@ db.usuarios.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $out: {
             db: "entregable",
@@ -265,14 +265,14 @@ db.usuarios.aggregate([
 db.meteo24.aggregate([
     {
         $addFields: {
-            _id: {
+           /* _id: {
                 $convert: {
                     input: "$_id",
                     to: "string",
                     onError: null,
                     onNull: null
                 }
-            },
+            },*/
             FECHA: {
                 $dateFromString: {
                     dateString: "$FECHA",
@@ -318,7 +318,7 @@ db.mantenimiento.aggregate([
 ]);
 
 db.incidencias_usuarios.aggregate([
-    {
+   /*{
         $addFields: {
             _id: {
                 $convert: {
@@ -329,7 +329,7 @@ db.incidencias_usuarios.aggregate([
                 }
             }
         }
-    },
+    },*/
     {
         $addFields: {
             FECHA_REPORTE: {
