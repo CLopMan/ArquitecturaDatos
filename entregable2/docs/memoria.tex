@@ -145,6 +145,24 @@ Con todo lo anterior, la migración será completa y los datos estarán listos p
 Posteriormente, se desarrollará una estructura de \textit{cluster} para una gestión más
 eficiente de los datos y las consultas.
 
+A continuación se expone cómo ejecutar el preprocesado correctamente.
+
+\subsection{Cómo ejecutar el preprocesado}
+\label{subsec:usoscript}
+Para facilitar la ejecución del preprocesado se ha desarrollado un \textit{script} que limpia los datos y realiza la migración completa a \texttt{MongoDB}. Este \textit{script} está contenido en el archivo \texttt{import\_data.sh} y se debe llamar desde la carpeta donde está contenido: 
+
+\lstset{style=python}
+\begin{lstlisting}[language=bash, caption=Comando para realizar el preprocesado]
+# Desde la carpeta entregable2
+bash import_data.sh
+\end{lstlisting}
+
+Es importante descatar que para el correcto funcionamiento de este script deben existir dos carpetas: 
+\begin{itemize}
+\item \texttt{csvs}: esta carpeta debe contener los ficheros con los datos en sucio.
+\item \texttt{output}: en esta carpeta se almacenarán los datos en limpio para su posterior inserción en \texttt{Mongo}.
+\end{itemize}
+
 \newpage
 \lstset{style=python}
 \section{Preprocesado de Datos}
