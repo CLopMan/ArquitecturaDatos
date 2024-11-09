@@ -143,17 +143,79 @@ Tal y cómo sugiere el enunciado, se trabajará sobre el supuesto de que tanto l
 
 Para las colecciones \textit{areas}, \textit{juegos}, \textit{encuestas\_satisfaccion} e \textit{incidentes\_seguridad} se fragmentará por la clave \textbf{AreaRecreativaID} (\textbf{\_id} en el caso de areas). De esta forma se optimizarán las consultas sobre estos documentos para la misma área. 
 
-En cambio, para la colección \textit{meteo} se propone fragmentar por un atributo derivado de \textbf{punto\_muestreo} que contenga los cinco primeros dígitos. Estos dígitos se corresponden con un \textbf{código postal}. Así, la información meteorlógica relativa a una misma zona geográfica (donde las todas las áreas tienen el mismo clima)  quedará póxima en los \textit{shards}; facilitando su consulta y actualización, a la vez que optimizando la consistencia de los datos.
+En cambio, para la colección \textit{meteo} se propone fragmentar por \textbf{punto\_muestreo} que identifica la estación, la cual está asociada siempre al mismo código postal. Así, la información meteorlógica relativa a una misma zona geográfica (donde las todas las áreas tienen el mismo clima)  quedará póxima en los \textit{shards}; facilitando su consulta y actualización, a la vez que optimizando la consistencia de los datos.
 
 \subsubsection{Estrategia de fragmentación}
 \label{subsubsec:fragmentacion_areas}
 
 Para asegurar una distribución balanceada y evitar sobre cargas, se implementan las siguientes estrategias de sharding:
 \begin{itemize}
-    \item Pre-Splitting: se realizará pre-spliting sobre el campo \textit{AreaRecreativaID} para evitar la sobre carga (\textit{hotspot}) sobre el nodo primario en la primera carga de datos. Además, esto garantiza una distribución uniforme de los registros.
-    \item Zonas de Sharding: se definen zonas de sharding para agrupar los datos de \textit{meteo24} por código postal y garantizar una localidad espacial de los datos. % zonas de sharding: mongo se asegura de que los datos de un cierto rango de valores se mantengan siempre en el mismo shard y no se muevan por balanceo u otros factores.
+    \item \textit{Pre-Splitting}: se realizará pre-spliting sobre el campo \textit{AreaRecreativaID} para evitar la sobre carga (\textit{hotspot}) sobre el nodo primario en la primera carga de datos. Además, esto garantiza una distribución uniforme de los registros.
+    \item Zonas de \textit{Sharding}: se definen zonas de sharding para agrupar los datos de \textit{meteo24} por código postal y garantizar una localidad espacial de los datos. % zonas de sharding: mongo se asegura de que los datos de un cierto rango de valores se mantengan siempre en el mismo shard y no se muevan por balanceo u otros factores.
 \end{itemize}
 
+
+\subsection{\texttt{Agregado\_Juego}}
+\label{subsec:juegos}
+Este agregado consta de las siguientes relaciones:
+\begin{itemize}
+    \item Listado de Mantenimientos sobre un Juego: se trata de una lista de \textbf{referencias} a la información sobre los mantenimientos de un juego en concreto.
+    \item Incidencias reportadas por lo usuarios: se trata de una \textbf{refencia con resumen}, en la que se incluye el tipo de incidencia, la fecha de reporte y el estado actual de la incidencia.
+\end{itemize}
+
+En el enunciado se indica que tanto las lecturas como las escrituras son operaciones frecuentes. La primera de ellas ocurre sobre todo para consultar el estado de los juegos y su historial de mantenimiento; la segunda de ellas es común para gestionar el mantenimiento de los juegos y actualizar el estado de las incidencias.
+
+\subsubsection{Clave de partición}
+\label{subsubsec:particion_juegos}
+
+Para las colecciones \textit{juegos} y \textit{mantenimiento} se fragmentará por la clave \textbf{JuegoID} (\textbf{\_id} en el caso de juegos). De esta manera se optimizarán las consultas sobre estos documentos para el mismo juego.
+Para el caso de \textit{incidencias}, dado que a priori no se conoce a qué juego pertenece la incidencia se busca fragmentar estos documentos según al mantenimiento al que pertenecen a través de la clave \textbf{MantenimientoID}, de esta manera se facilitarán las escrituras cuando ocurran finalizaciones de mantenimientos que resuelvan una incidencia, actualizando el estado de esta última. Además es conveniente usar \textit{FECHA\_REPORTE} para poder agrupar en cada shard las fechas más cercanas. Así mismo se fragmentará la colección de incidencias a través de una clave compuesta por \textit{MantenimientoID} y \textit{FECHA\_REPORTE}.
+
+\subsubsection{Estrategia de fragmentacion}
+\label{subsubsec:fragmentacion_juegos}
+
+Para asegurar una distribución balanceada y evitar una sobrecarga, se implementan las siguientes estrategias de sharding:
+\begin{itemize}
+    \item \textit{Pre-Splitting}: se realizará pre-splitting sobre el campo \textit{JuegoID} para evitar la sobre carga sobre el nodo primario en la primera carga de datos.
+    \item Zonas de \textit{Sharding}: se definen zonas de sharding para agrupar los datos de \textit{incidencias} por \textit{MantenimientoID} y de esta manera garantizar la localidad espacial de los datos.
+\end{itemize}
+
+\subsection{\texttt{Agregado\_Incidencias}}
+\label{subsec:incidencias}
+Este agregado tiene relación con Usuarios de forma \textbf{embebida}, por lo que no es necesario aplicar ninguna estrategia de fragmentacion a usuarios, ya que se encuentra dentro del agregado.
+
+Tal y como se indica en el enunciado, en este agregado son frecuentes tanto las lecturas como las escrituras para gestionar las incidencias reportadas por los usuarios.
+\subsubsection{Clave de partición}
+\label{subsubsec:particion_incidencias}
+Para la colección de \textit{incidencias}, que ya contiene a los usuarios, se fragmentará por una clave compuesta por \textit{FECHA\_REPORTE} y \textit{nivelEscalamiento}, esta clave permite agrupar en el mismo shard las incidencias cercanas temporalmente y que además tengan un mismo nivel de prioridad. Además que esta configuración soluciona el problema que tienen las fechas al ser \textbf{claves ascendientes}, que las inserciones siempre ocurrirán en el último \textit{shard} aumentando la carga de este.
+
+\subsubsection{Estrategia de fragmentación}
+\label{subsubsec:fragmentacion_incidencias}
+
+Para asegurar una distribución balanceada y evitar una sobrecarga, se implementan las siguientes estrategias de sharding:
+\begin{itemize}
+    \item \textit{Pre-Splitting}: se realizará pre-splitting sobre los campos \textit{FECHA\_REPORTE} y \textit{nivelEscalamiento} para evitra la sobre carga sobre el nodo primaio en la primera carga de datos.
+\end{itemize}
+
+\subsection{Otras características}
+\label{subsec:others}
+
+Otras características que no entran son especificas de cada agregado, sino que afectan a la base de datos completa son las siguientes:
+\begin{itemize}
+    \item \textbf{Balanceador de Carga}: El balanceador de carga es un proceso que siempre está activo y permite ajustar automáticamente la distribución de información entre los diferentes \textit{shards}, sin embargo el balancer puede tener un gran impacto en el rendimiento del sistema, sobre todo para situaciones de alta carga en el sistema. Por estas razones se tendrá un balanceador de carga pero se desactivará de forma temporal en momentos de alta carga y se realizarán las respectivas distribuciones en ventanas de baja carga.
+    \item \textbf{Número de \textit{Shards}}: Se ha decidido tener 6 fragmentos, dado que se tiene un número moderado de datos y se espera una escalabilidad del sistema. Sin embargo para escenarios con más datos, como información a nivel nacional o internacional sería recomendable tener 10 fragmentos por país.
+    \item \textbf{Número de enrutadores}: Se ha decidido tener 3 enrutadores, lo que nos permite dividir Madrid en tres zonas: sur, noreste y noroeste. En caso de que algun enrutador pueda fallar o tenga demasida carga se redirigirá su carga entre los otros dos restantes. Para escenarios con más carga de trabajo se recomendaría tener 6 enrutadores por país.
+    \item \textbf{Número de servidrores de configuración}: Se ha decidido usar 3 servidores de configuración, lo que permitirá tener tolerancia a fallos.
+\end{itemize}
+
+\section{Replicación}
+\label{sec:replicacion}
+
+La replicación es una técnica que mejora la disponibilidad y tolerancia a fallos del sistema, en nuestro caso de la base de datos, además de reducir la carga de las lecturas. Esto se consigue replicando exactamente la misma información en diferentes \textit{clusters}, lo que permite seguir operando en el sistema aunque alguno de los nodos falle.
+
+El sistema de gestión de las Áreas recreativas de Madrid no es un sistema crítico ni en los casos de uso se indica que la disponibilidad del sistema sea una de las características principales, por lo que se optará por un factor de 2.
+
+\newpage
 
 \subsection{Clave de Fragmentación}
 \label{subsec:fragmmentacion}
@@ -203,7 +265,7 @@ Dada las características del agregado de \texttt{Area\_Recreativa\_Clima} propo
 \end{itemize}
 
 \subsubsection{Agregado Juegos}
-\label{subsubsec:fragmentacion_juegos}
+\label{subsubsec:fragmentacion_juego}
 
 Como en el agregado de \textit{Juegos} tenemos las mismas columnas que en el agregado de \textit{Areas} podemos proponer las mismas claves de partición en para el anterior agregado. En este caso desecharemos las claves de partición para \textit{\_id} y \textit{Fecha\_Instalación}, dado que consideramos que las claves aleatorias y ascendentes no se ajustan a las características de nuestros casos de uso. A continuación analizaremos las columnas \textit{Cod\_Barrio}, \textit{Cod\_Distrito} y \textit{Cod\_Postal}.
 
@@ -233,7 +295,7 @@ Como en el agregado de \textit{Juegos} tenemos las mismas columnas que en el agr
 \end{itemize}
 
 \subsubsection{Agregado Incidencias de Usuario}
-\label{subsubsec:fragmentacion_incidencias}
+\label{subsubsec:fragmentacion_incidencia}
 
 Para este agregado las propuestas para la clave de partición son las siguientes:
 
