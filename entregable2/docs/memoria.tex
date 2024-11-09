@@ -489,6 +489,43 @@ Todos los atributos que han necesitado un cambio al tipo \textit{date} son:
     \caption{Atributos cambiados al tipo \textit{date}}
 \end{table}
 
+\subsubsection{Paso a array de strings}
+El último paso del preprocesado en mongo pasa por la conversión de dos atributos específicos, \textit{MantenimientoID} y \textit{UsuarioID}, ambos pertenecientes a la colección \textit{Incidencias Usuarios}. Ambos atributos se insertan inicialmente en mongo como un string con la siguiente forma: ``['valor1', 'valor2']''. Estos atributos son mal interpretados por mongo, ya que deberían ser arrays de strings, en vez de strings. Por este motivo, ambos atributos son preprocesados con el siguiente código:
+
+\begin{lstlisting}
+$addFields: {
+    Columna: {
+        $split: [
+            {
+                $replaceAll: {
+                    input: {
+                        $replaceAll: {
+                            input: {
+                                $replaceAll: {
+                                    input:
+                                        {
+                                            $replaceAll: {
+                                                input: "$Columna",
+                                                find: " ",
+                                                replacement: ""
+                                        }
+                                    },
+                                    find: "'",
+                                    replacement: ""
+                                }
+                            },
+                            find: "]",
+                            replacement: ""
+                    }
+                },
+                find: "[",
+                replacement: ""
+            }
+        }, ","]
+    },
+\end{lstlisting}
+
+El código anterior simplemente reemplaza la columna por una nueva que está bien preprocesada. Este cambio de tipo se consigue a través del reemplazo de todos los valores problemáticos, como los espacios en blanco, las dobles comillas y los corchetes. Luego, este valor procesado se pasa a un operador \textit{split} que se encarga de devolver un array de strings.
 \newpage
 \section{Validación de Esquemas}
 \label{sec:validacion}
