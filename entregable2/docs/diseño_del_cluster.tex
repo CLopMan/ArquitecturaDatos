@@ -138,6 +138,8 @@ Este agregado cuenta con diferentes datos en relación a un área. Los más rele
 
 Tal y cómo sugiere el enunciado, se trabajará sobre el supuesto de que tanto la lectura como la escritura son operaciones frecuentes. La primera, consultando sobre todo el estado de áreas y juegos; y la segunda, actualizando los registros relativos a \textit{encuestas de usuario} e \textit{información meteorológica (meteo24)}.
 
+
+
 \subsubsection{Clave de partición}
 \label{subsubsec:particion_areas}
 
@@ -169,7 +171,7 @@ En el enunciado se indica que tanto las lecturas como las escrituras son operaci
 \label{subsubsec:particion_juegos}
 
 Para las colecciones \textit{juegos} y \textit{mantenimiento} se fragmentará por la clave \textbf{JuegoID} (\textbf{\_id} en el caso de juegos). De esta manera se optimizarán las consultas sobre estos documentos para el mismo juego.
-Para el caso de \textit{incidencias}, dado que a priori no se conoce a qué juego pertenece la incidencia se busca fragmentar estos documentos según al mantenimiento al que pertenecen a través de la clave \textbf{MantenimientoID}, de esta manera se facilitarán las escrituras cuando ocurran finalizaciones de mantenimientos que resuelvan una incidencia, actualizando el estado de esta última. Además es conveniente usar \textit{FECHA\_REPORTE} para poder agrupar en cada shard las fechas más cercanas. Así mismo se fragmentará la colección de incidencias a través de una clave compuesta por \textit{MantenimientoID} y \textit{FECHA\_REPORTE}.
+Para el caso de \textit{incidencias}, dado que a priori no se conoce a qué juego pertenece la incidencia se busca fragmentar estos documentos según al mantenimiento al que pertenecen a través de la clave \textbf{MantenimientoID}, de esta manera se facilitarán las escrituras cuando ocurran finalizaciones de mantenimientos que resuelvan una incidencia, actualizando el estado de esta última. Además es conveniente usar \textit{FECHA\_REPORTE} para poder agrupar en cada shard las fechas más cercanas. Así mismo se fragmentará la colección de incidencias a través de una clave compuesta por \textit{MantenimientoID} y \textit{FECHA\_REPORTE}. De esta forma, pese a que la fecha sea una clave secuencial se repatirá la carga por los \textit{shards} evitando una sobrecarga del último fragmento.
 
 \subsubsection{Estrategia de fragmentacion}
 \label{subsubsec:fragmentacion_juegos}
@@ -187,7 +189,7 @@ Este agregado tiene relación con Usuarios de forma \textbf{embebida}, por lo qu
 Tal y como se indica en el enunciado, en este agregado son frecuentes tanto las lecturas como las escrituras para gestionar las incidencias reportadas por los usuarios.
 \subsubsection{Clave de partición}
 \label{subsubsec:particion_incidencias}
-Para la colección de \textit{incidencias}, que ya contiene a los usuarios, se fragmentará por una clave compuesta por \textit{FECHA\_REPORTE} y \textit{nivelEscalamiento}, esta clave permite agrupar en el mismo shard las incidencias cercanas temporalmente y que además tengan un mismo nivel de prioridad. Además que esta configuración soluciona el problema que tienen las fechas al ser \textbf{claves ascendientes}, que las inserciones siempre ocurrirán en el último \textit{shard} aumentando la carga de este.
+Para la colección de \textit{incidencias}, que ya contiene a los usuarios, se fragmentará por una clave compuesta por \textit{FECHA\_REPORTE} y \textit{nivelEscalamiento}, esta clave permite agrupar en el mismo shard las incidencias cercanas temporalmente y que además tengan un mismo nivel de prioridad. Además que esta configuración soluciona el problema que tienen las fechas al ser \textbf{claves ascendientes}, ya que al combinar la clave ascenente \textit{FECHA\_REPORTE} con un \textit{nivelEscalamiento} se evitará un \textit{hotspot} en el \textit{shard} correspondiente al último rango de valores. 
 
 \subsubsection{Estrategia de fragmentación}
 \label{subsubsec:fragmentacion_incidencias}
@@ -205,7 +207,7 @@ Otras características que no entran son especificas de cada agregado, sino que 
     \item \textbf{Balanceador de Carga}: El balanceador de carga es un proceso que siempre está activo y permite ajustar automáticamente la distribución de información entre los diferentes \textit{shards}, sin embargo el balancer puede tener un gran impacto en el rendimiento del sistema, sobre todo para situaciones de alta carga en el sistema. Por estas razones se tendrá un balanceador de carga pero se desactivará de forma temporal en momentos de alta carga y se realizarán las respectivas distribuciones en ventanas de baja carga.
     \item \textbf{Número de \textit{Shards}}: Se ha decidido tener 6 fragmentos, dado que se tiene un número moderado de datos y se espera una escalabilidad del sistema. Sin embargo para escenarios con más datos, como información a nivel nacional o internacional sería recomendable tener 10 fragmentos por país.
     \item \textbf{Número de enrutadores}: Se ha decidido tener 3 enrutadores, lo que nos permite dividir Madrid en tres zonas: sur, noreste y noroeste. En caso de que algun enrutador pueda fallar o tenga demasida carga se redirigirá su carga entre los otros dos restantes. Para escenarios con más carga de trabajo se recomendaría tener 6 enrutadores por país.
-    \item \textbf{Número de servidrores de configuración}: Se ha decidido usar 3 servidores de configuración, lo que permitirá tener tolerancia a fallos.
+    \item \textbf{Número de servidrores de configuración}: Se ha decidido usar 3 servidores de configuración. Este número de servidores es suficiente ya que aporta disponibilidad, al poder repartir la carga entre varios servidores; a la vez que tolerancia a fallos, ya que aunque caiga un nodo el sistema contará con la mayoría de los mismos para mantener el sistema hasta que se recupere.
 \end{itemize}
 
 \section{Replicación}
@@ -213,133 +215,14 @@ Otras características que no entran son especificas de cada agregado, sino que 
 
 La replicación es una técnica que mejora la disponibilidad y tolerancia a fallos del sistema, en nuestro caso de la base de datos, además de reducir la carga de las lecturas. Esto se consigue replicando exactamente la misma información en diferentes \textit{clusters}, lo que permite seguir operando en el sistema aunque alguno de los nodos falle.
 
-El sistema de gestión de las Áreas recreativas de Madrid no es un sistema crítico ni en los casos de uso se indica que la disponibilidad del sistema sea una de las características principales, por lo que se optará por un factor de 2.
-
+El sistema de gestión de las Áreas recreativas de Madrid no es un sistema crítico ni en los casos de uso se indica que la disponibilidad del sistema sea una de las características principales, por lo que se optará por un factor de 2. Esto permitirá tener una réplica de soporte para cada conjunto de datos, de forma que la caída de cualquier nodo puede ser contrarestada mediante su copia.
 \newpage
 
-\subsection{Clave de Fragmentación}
-\label{subsec:fragmmentacion}
+\section{Conclusiones}
+\label{sec:conclusiones}
 
-\subsubsection{Agregado Area\_Recreativa\_Clima}
-\label{subsubsec:fragmentacion_area}
-Dada las características del agregado de \texttt{Area\_Recreativa\_Clima} proponemos 5 posibles claves de fragmentación que nos permitan repartir de la carga de los casos de uso: \textit{\_id}, \textit{Cod\_Barrio}, \textit{Cod\_Distrito}, \textit{Cod\_Postal} y \textit{Fecha\_Instalacion}. A continuación se analizarán las propuestas de clave de fragmentación.
+Un correcto diseño de \textit{cluster} permite a las aplicaciones contar con características fundamentales como son la disponibilidad y la tolerancia a fallos. Esta práctica nos ha permitido experimentar y realizar un análisis profundo sobre un conjunto relativamente grande de datos, acerándonos a un problema similar al que encontraríamos en un entorno laboral.
 
-\begin{itemize}
-    \item \textbf{\textit{\_id}}
-    
-    Esta clave de fragmentación correponde con el tipo de \textbf{clave aleatoria}, debido a que sus valores no siguen ningún tipo de patrón, ni su valor está relacionado con otra columna. Esta condición permite que los datos se distribuyan de manera uniforme, sin embargo, esto también puede causar que los datos ubicados en cada \textit{shard} no tengan una relación entre ellos, lo que aumentaría la carga de lecturas de datos por intervalos.
-
-    \item \textbf{\textit{Cod\_Barrio}} y \textbf{\textit{Cod\_Distrito}}
-    
-    Analizamos estas claves por igual ya que son tienen las mismas características y por ello los mismos resultados. Estas claves de fragmentacion corresponden con el tipo de \textbf{clave basada en la localización}, lo que distribuirá los datos con las mismas ubicaciones en los mismos shards, sin embargo es necesario conocer cómo se distribuyen los datos, para asegurarse que no existen desbalanceos. A continuación podemos ver la distribución de los datos para estas claves.
-
-    \begin{figure}[H]
-        \includegraphics[width=0.45\linewidth]{Distribucion_Cod_Barrio.png}
-        \includegraphics[width=0.45\linewidth]{Distribucion_Cod_Distrito.png}
-        \caption{Distribución de los datos para ambas claves}
-    \end{figure}
-
-    \item \textbf{\textit{DESC\_CLASIFICACION}}
-    
-    Al igual que las anteriores, esta columna funciona como \textbf{clave basada en localización}, por lo que tiene las mismas ventajas y desventajas que \textit{Cod\_Barrio} y \textit{Cod\_Distrito}. A continuación mostramos la distribución de los datos con esta clave.
-
-    \begin{figure}[H]
-        \includegraphics[width=0.90\linewidth]{Distribucion_DESC_CLASIFICACION.png}
-        \caption{Distribución de los datos para la clave \textit{DESC\_CLASIFICACION}}
-    \end{figure}
-
-    \item \textbf{\textit{Cod\_Postal}}
-    
-    Al igual que para las anteriores claves, esta clave es del tipo \textbf{clave basada en la localización}, por lo que aquellas áreas con el mismo código postal se ubicarán en los mismos shards, lo que reducirá la carga de las lecturas en intervalos o en grupos. A diferencia de \textit{Cod\_Barrio} y \textit{Cod\_Distrito}, las áreas de un mismo shard siempre tendrán el mismo clima, dada la naturaleza de la relación entre la tabla \textit{area} y la tabla \textit{meteo}. A continuación podemos ver la distribución de los datos para esta clave.
-    \begin{figure}[H]
-        \includegraphics[width=0.90\linewidth]{Distribucion_Cod_Postal.png}
-        \caption{Distribución de los datos para la clave \textit{Cod\_Postal}}
-    \end{figure}
-
-    \item \textbf{\textit{Fecha\_Instalación}}
-    
-    Esta clave de fragmentacion corresponde con el tipo de \textbf{claves ascendientes}, dado que es un valor que aumenta de forma secuencial y nuevas instancias tomarán siempre valores más grandes que los ya existentes. Esta característica hará que aquellas fechas más cercanas se encuentren en el mismo shard, lo que facilita la lectura por intervalos de fecha. Sin embargo, perjudicará a las escrituras, ya que todas las nuevas instanias irán a parar al último \textit{shard}, lo que aumentará la carga de este.
-
-    
-    
-\end{itemize}
-
-\subsubsection{Agregado Juegos}
-\label{subsubsec:fragmentacion_juego}
-
-Como en el agregado de \textit{Juegos} tenemos las mismas columnas que en el agregado de \textit{Areas} podemos proponer las mismas claves de partición en para el anterior agregado. En este caso desecharemos las claves de partición para \textit{\_id} y \textit{Fecha\_Instalación}, dado que consideramos que las claves aleatorias y ascendentes no se ajustan a las características de nuestros casos de uso. A continuación analizaremos las columnas \textit{Cod\_Barrio}, \textit{Cod\_Distrito} y \textit{Cod\_Postal}.
-
-\begin{itemize}
-    \item \textbf{\textit{Cod\_Barrio}} y \textbf{\textit{Cod\_Distrito}}
-    
-    Como hemos mencionado en la anterior sección estas claves corresponden con el tipo de \textbf{clave basada en la localización}, lo que permite tener en un mismo fragmento aquellos datos que se encuentren en ubicaciones cercanas, reduciendo la carga de las lecturas en grupos. Sin embargo, puede ocurrir que existan fragmentos con mucha más carga que otros dada la distribución de los datos. Para ello visualizaremos las distribuiciones de los datos para ambas claves de partición.
-
-    \begin{figure}[H]
-        \includegraphics[width=0.45\linewidth]{Distribucion_Juegos_Cod_Barrio.png}
-        \includegraphics[width=0.45\linewidth]{Distribucion_Juegos_Cod_Distrito.png}
-        \caption{Distribución de los datos para ambas claves}
-    \end{figure}
-
-    \item \textbf{\textit{DESC\_CLASIFICACION}}
-    
-    Al igual que las anteriores, esta columna funciona como \textbf{clave basada en localización}, por lo que tiene las mismas ventajas y desventajas que \textit{Cod\_Barrio} y \textit{Cod\_Distrito}. A continuación mostramos la distribución de los datos con esta clave.
-
-    \begin{figure}[H]
-        \includegraphics[width=0.90\linewidth]{Distribucion_Juegos_DESC_CLASIFICACION.png}
-        \caption{Distribución de los datos para la clave \textit{DESC\_CLASIFICACION}}
-    \end{figure}
-
-    \item \textbf{\textit{Cod\_Postal}}
-    
-    Al igual que para el anterior agregado \textit{Cod\_Postal} funciona como \textbf{clave basada en la localización}, sin embargo en este caso existen \textit{missing values}, por lo que no nos sirve como clave de partición debido a que no todos los registros podrán identificarse en un \textit{shard}.
-\end{itemize}
-
-\subsubsection{Agregado Incidencias de Usuario}
-\label{subsubsec:fragmentacion_incidencia}
-
-Para este agregado las propuestas para la clave de partición son las siguientes:
-
-\begin{itemize}
-    \item \textbf{\textit{\_id}}
-    
-    La clave \textit{\_id} es del tipo \textbf{clave ascendiente}, como para el resto de casos no es una buena clave de fragmentacion dadas las características de los casos de uso.
-
-    \item \textbf{\textit{TIPO\_INCIDENCIA}}
-    
-    La clave \textit{TIPO\_INCIDENCIA} es del tipo \textbf{clave basada en la localización}, y para evaluar la calidad de esta clave visualizaremos la distribución de los datos.
-
-    \begin{figure}[H]
-        \includegraphics[width=0.90\linewidth]{Distribucion_Incidencias_TIPO_INCIDENCIA.png}
-        \caption{Distribución de los datos para la clave \textit{TIPO\_INCIDENCIA}}
-    \end{figure}
-
-    \item \textbf{\textit{FECHA\_REPORTE}}
-    
-    La clave \textit{FECHA\_REPORTE} es del tipo \textbf{clave ascendente}, como para el resto de casos no es una buena clave de fragmentacion dadas las características de los casos de uso.
-
-\end{itemize}
-
-
-\subsection{Elección de claves}
-\label{subsec:eleccion}
-
-Con todo lo anterior, se concluye que las claves de fragmentación para cada agregado serán las siguientes: 
-
-\begin{center}
-\begin{tabular}{@{}cc@{}}
-    \toprule
-    Agregado & Clave de partición\\
-    \midrule
-    \texttt{area\_recreativa\_clima} & \textit{Cod\_Postal}\\
-    \texttt{area\_juego} & \textit{Cod\_Distrito}\\
-    \texttt{area\_incidencia} & \textit{TIPO\_INCIDENCIA}\\
-    \bottomrule
-\end{tabular}
-\end{center}
-
-
-
-
-
+Destacamos como la principal dificultad de esta parte la elección de claves de fragmentación para cada una de las colecciones. Tratar de de contemplar la mayor parte de los casos de uso en esta elección para optimizar lo máximo posible el rendimiento de la base de datos es de vital importancia para distrbuir correctamente los datos y permitir un mejor desempeño de las consultas.
 
 \end{document}
