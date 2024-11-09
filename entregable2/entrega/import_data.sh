@@ -1,3 +1,4 @@
+python3 preproceso_python.txt csvs/ output/ 
 
 mongosh --eval "use entregable2" --eval "db.dropDatabase()"
 
@@ -11,7 +12,4 @@ mongoimport --db entregable2 --collection mantenimiento --type csv --file ../out
 mongoimport --db entregable2 --collection meteo24 --type csv --file ../output/meteo24_limpio.csv --headerline
 mongoimport --db entregable2 --collection usuarios --type csv --file ../output/usuarios_limpios.csv --headerline
 
-mongosh < ./preprocesado.js
-mongosh < ./validation.js
-mongosh < ./agregados.js
-
+mongosh --quiet < migracion_mongo.txt

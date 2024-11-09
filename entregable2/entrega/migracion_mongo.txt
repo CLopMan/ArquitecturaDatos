@@ -1,0 +1,1209 @@
+use entregable2;
+// ---------------- CAST --------------
+
+db.areas.aggregate([
+    /*{
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },*/
+    {
+        $addFields: {
+            COD_POSTAL: {
+                $convert: {
+                    input: "$COD_POSTAL",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            COD_DISTRITO: {
+                $convert: {
+                    input: "$COD_DISTRITO",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            LATITUD: {
+                $convert: {
+                    input: "$LATITUD",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            LONGITUD: {
+                $convert: {
+                    input: "$LONGITUD",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            NUM_VIA: {
+                $convert: {
+                    input: "$NUM_VIA",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            FECHA_INSTALACION: {
+                $dateFromString: {
+                    dateString: "$FECHA_INSTALACION",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2",
+            coll: "areas"
+        }
+    }
+]);
+
+db.juegos.aggregate([
+    /*{
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },*/
+    {
+        $addFields: {
+            COD_DISTRITO: {
+                $convert: {
+                    input: "$COD_DISTRITO",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            COD_POSTAL: {
+                $convert: {
+                    input: "$COD_POSTAL",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            LATITUD: {
+                $convert: {
+                    input: "$LATITUD",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            LONGITUD: {
+                $convert: {
+                    input: "$LONGITUD",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            MODELO: {
+                $convert: {
+                    input: "$MODELO",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            ACCESIBLE: {
+                $convert: {
+                    input: "$ACCESIBLE",
+                    to: "bool",
+                    onError: null,
+                    onNull: null
+                }
+            },
+            NUM_VIA: {
+                $convert: {
+                    input: "$NUM_VIA",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            FECHA_INSTALACION: {
+                $dateFromString: {
+                    dateString: "$FECHA_INSTALACION",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2", coll: "juegos"
+        }
+    }
+]);
+
+db.encuestas_satisfaccion.aggregate([
+    /*{
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },*/
+    {
+        $addFields: {
+            FECHA: {
+                $dateFromString: {
+                    dateString: "$FECHA",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            AreaRecreativaID: {
+                $convert: {
+                    input: "$AreaRecreativaID",
+                    to: "int",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2", coll: "encuestas_satisfaccion"
+        }
+    }
+]);
+
+db.incidentes_seguridad.aggregate([
+    /*{
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },*/
+    {
+        $addFields: {
+            FECHA_REPORTE: {
+                $dateFromString: {
+                    dateString: "$FECHA_REPORTE",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2", coll: "incidentes_seguridad"
+        }
+    }
+]);
+
+db.usuarios.aggregate([
+    /*{
+        $addFields: {
+            _id: {
+                $convert: {
+                    input: "$_id",
+                    to: "string",
+                    onError: null,
+                    onNull: null
+                }
+            }
+        }
+    },*/
+    {
+        $out: {
+            db: "entregable2",
+            coll: "usuarios"
+        }
+    }
+]);
+db.meteo24.aggregate([
+    {
+        $addFields: {
+            /* _id: {
+                 $convert: {
+                     input: "$_id",
+                     to: "string",
+                     onError: null,
+                     onNull: null
+                 }
+             },*/
+            FECHA: {
+                $dateFromString: {
+                    dateString: "$FECHA",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            },
+            VIENTO: {
+                $convert: {
+                    input: "$VIENTO",
+                    to: "bool",
+                    onError: null,
+                    onNull: null
+                }
+            }
+
+        }
+    },
+    {
+        $out: {
+            db: "entregable2",
+            coll: "meteo24"
+        }
+    }
+]);
+
+db.mantenimiento.aggregate([
+    {
+        $addFields: {
+            FECHA_INTERVENCION: {
+                $dateFromString: {
+                    dateString: "$FECHA_INTERVENCION",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2",
+            coll: "mantenimiento"
+        }
+    }
+]);
+
+db.incidencias_usuarios.aggregate([
+    /*{
+         $addFields: {
+             _id: {
+                 $convert: {
+                     input: "$_id",
+                     to: "string",
+                     onError: null,
+                     onNull: null
+                 }
+             }
+         }
+     },*/
+    {
+        $addFields: {
+            FECHA_REPORTE: {
+                $dateFromString: {
+                    dateString: "$FECHA_REPORTE",
+                    format: "%Y-%m-%dT%H:%M:%SZ"
+                }
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2", coll: "incidencias_usuarios"
+        }
+    }
+]);
+// ------------- PARSER -----------------
+
+db.incidencias_usuarios.aggregate([
+    {
+        // Convertir el string 'UsuarioID' en un array de valores
+        $addFields: {
+            MantenimientoID: {
+                $split: [
+                    {
+                        $replaceAll: {
+                            input: {
+                                $replaceAll: {
+                                    input: {
+                                        $replaceAll: {
+                                            input:
+                                            {
+                                                $replaceAll: {
+                                                    input: "$MantenimeintoID",
+                                                    find: " ",
+                                                    replacement: ""
+                                                }
+                                            },
+                                            find: "'",
+                                            replacement: ""
+                                        }
+                                    },
+                                    find: "]",
+                                    replacement: ""
+                                }
+                            },
+                            find: "[",
+                            replacement: ""
+                        }
+                    }, ","]
+            },
+            UsuarioID: {
+                $split: [
+                    {
+                        $replaceAll: {
+                            input: {
+                                $replaceAll: {
+                                    input: {
+                                        $replaceAll: {
+                                            input:
+                                            {
+                                                $replaceAll: {
+                                                    input: "$UsuarioID",
+                                                    find: " ",
+                                                    replacement: ""
+                                                }
+                                            },
+                                            find: "'",
+                                            replacement: ""
+                                        }
+                                    },
+                                    find: "]",
+                                    replacement: ""
+                                }
+                            },
+                            find: "[",
+                            replacement: ""
+                        }
+                    }, ","]
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            TIPO_INCIDENCIA: 1,
+            FECHA_REPORTE: 1,
+            ESTADO: 1,
+            UsuarioID: 1,
+            MantenimientoID: 1
+        }
+    },
+    {
+        $out: { db: "entregable2", coll: "incidencias_usuarios" }
+    }
+]);
+
+
+// -------------------------- Aplicar Esquemas de Validación ---------------------------
+db.runCommand({
+    collMod: "areas",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Areas Validator",
+            required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION"],
+            properties: {
+                _id: {
+                    bsonType: "int",
+                    description: "id del área"
+                },
+                DESC_CLASIFICACION: {
+                    bsonType: "string",
+                    enum: ["AREA DE JUEGOS/ESPECIAL", "AREA DE MAYORES", "AREA INFANTIL", "CIRCUITO DEPORTIVO ELEMENTAL"],
+                    description: "descripción del tipo de área recreativa"
+                },
+                COD_BARRIO: {
+                    bsonType: "int",
+                    description: "código del barrio al que pertenece el área"
+                },
+                BARRIO: {
+                    bsonType: "string",
+                    description: "barrio al que pertenece el área"
+                },
+                COD_DISTRITO: {
+                    bsonType: "int",
+                    description: "código del distrito al que pertenece el área"
+                },
+                DISTRITO: {
+                    bsonType: "string",
+                    description: "distrito al que pertenece el área"
+                },
+                ESTADO: {
+                    bsonType: "string",
+                    enum: ["OPERATIVO"],
+                    description: "estado del área"
+                },
+                COORD_GIS_X: {
+                    bsonType: "number",
+                    description: "coordenadas en el eje X del área"
+                },
+                COORD_GIS_Y: {
+                    bsonType: "number",
+                    description: "coordenadas en el eje Y del área"
+                },
+                LATITUD: {
+                    bsonType: "string",
+                    description: "latitud del área"
+                },
+                LONGITUD: {
+                    bsonType: "string",
+                    description: "longitud del área"
+                },
+                TIPO_VIA: {
+                    bsonType: "string",
+                    description: "tipo del vía donde se encuentra el área"
+                },
+                NOM_VIA: {
+                    bsonType: "string",
+                    description: "nombre de la vía donde se encuentra el área"
+                },
+                NUM_VIA: {
+                    bsonType: "string",
+                    description: "número de la vía donde se encuentra el área"
+                },
+                COD_POSTAL: {
+                    bsonType: "int",
+                    description: "código postal de la zona postal en la que se encuentra el área"
+                },
+                FECHA_INSTALACION: {
+                    bsonType: "date",
+                    description: "fecha en la que se instaló el área"
+                },
+                TOTAL_ELEM: {
+                    bsonType: "int",
+                    description: "número de juegos"
+                },
+                tipo: {
+                    bsonType: "string",
+                    description: "tipo de área"
+                }
+            }
+        }
+    }
+});
+
+db.runCommand({
+    collMod: "encuestas_satisfaccion",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "encuestas_satisfaction_validation",
+            required: ["_id", "PUNTUACION_ACCESIBILIDAD", "PUNTUACION_CALIDAD", "COMENTARIOS", "FECHA", "AreaRecreativaID"],
+            properties: {
+                _id: {
+                    bsonType: "int",
+                    description: "identificador de la encuesta"
+                },
+                PUNTUACION_ACCESIBILIDAD: {
+                    bsonType: "int",
+                    description: "puntuación de la accesibilidad del area asociada a la encuesta"
+                },
+                PUNTACION_CALIDAD: {
+                    bsonType: "int",
+                    description: "puntuación de la calidad del area asociada a la encuesta"
+                },
+                COMENTARIOS: {
+                    bsonType: "string",
+                    description: "comentarios adicionales de los usuarios"
+                },
+                FECHA: {
+                    bsonType: "date",
+                    description: "fecha de realización de la encuesta"
+                },
+                AeraRecreativaID: {
+                    bsonType: "int",
+                    description: "identificador del área recreativa evaluada"
+                }
+            }
+        }
+    }
+});
+
+db.runCommand({
+    collMod: "incidentes_seguridad",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Incidencias Seguridad Validator",
+            required: [
+                "_id",
+                "FECHA_REPORTE",
+                "TIPO_INCIDENTE",
+                "GRAVEDAD",
+                "AreaRecreativaID",
+            ],
+            properties: {
+                _id: {
+                    bsonType: "int",
+                    description: "'id' es el identificador de la fila",
+                },
+                FECHA_REPORTE: {
+                    bsonType: "date",
+                    description:
+                        "'fecha_reporte' corresponde con la fecha en la que se realizó el reporte",
+                },
+                tipo_incidente: {
+                    bsonType: "string",
+                    enum: [
+                        "ROBO",
+                        "VANDALISMO",
+                        "ACCIDENTE",
+                        "CAIDA",
+                        "DAÑO ESTRUCTURAL"
+                    ],
+                    description:
+                        "'tipo_incidente' corresponde con el tipo de incidente reportado",
+                },
+                gravedad: {
+                    bsonType: "string",
+                    enum: ["CRITICA", "ALTA", "MEDIA", "BAJA"],
+                    description:
+                        "'gravedad' corresponde con el nivel de gravedad del incidente",
+                },
+                AreaRecreativaID: {
+                    bsonType: "int",
+                    description:
+                        "'area_recreativa_id' corresponde con el identificador del área a la que corresponde el reporte del incidente",
+                },
+            },
+        },
+    },
+});
+
+db.runCommand({
+    collMod: "incidencias_usuarios",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Incidencias Usuario Validator",
+            required: [
+                "_id",
+                "TIPO_INCIDENCIA",
+                "FECHA_REPORTE",
+                "ESTADO",
+                "UsuarioID",
+                "MantenimientoID",
+            ],
+            properties: {
+                _id: {
+                    bsonType: "int",
+                    description: "número identificativo de la columna",
+                },
+                TIPO_INCIDENCIA: {
+                    bsonType: "string",
+                    enum: ["DESGASTE", "ROTURA", "VANDALISMO", "MAL FUNCIONAMIENTO"],
+                    description: "tipo de incidencia reportada",
+                },
+                FECHA_REPORTE: {
+                    bsonType: "date",
+                    description: "fecha en la que se reportó la incidencia",
+                },
+                ESTADO: {
+                    bsonType: "string",
+                    enum: ["CERRADA", "ABIERTA"],
+                    description: "estado actual de la incidencia",
+                },
+                UsuarioID: {
+                    bsonType: ["array"],
+                    description: "listado de usuarios",
+                },
+                MantenimientoID: {
+                    bsonType: ["array"],
+                    description: "id de mantenimiento",
+                }
+            },
+        },
+    },
+});
+
+db.runCommand({
+    collMod: "juegos",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: ["_id", "DESC_CLASIFICACION", "COD_BARRIO", "BARRIO", "COD_DISTRITO", "DISTRITO", "ESTADO", "COORD_GIS_X", "COORD_GIS_Y", "LATITUD", "LONGITUD", "TIPO_VIA", "NOM_VIA", "NUM_VIA", "COD_POSTAL", "FECHA_INSTALACION", "MODELO", "tipo_juego", "ACCESIBLE", "AREA"],
+            properties: {
+                _id: { bsonType: "int", description: "debe ser una cadena y es obligatorio" },
+                DESC_CLASIFICACION: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COD_BARRIO: { bsonType: "int", description: "debe ser un entero y es obligatorio" },
+                BARRIO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COD_DISTRITO: { bsonType: "int", description: "debe ser un entero y es obligatorio" },
+                DISTRITO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                ESTADO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                COORD_GIS_X: { bsonType: ["double", "string"], description: "debe ser un número y es obligatorio" },
+                COORD_GIS_Y: { bsonType: ["double", "string"], description: "debe ser un número y es obligatorio" },
+                LATITUD: { bsonType: "string", description: "corresponde a la latidud y es obligatorio" },
+                LONGITUD: { bsonType: "string", description: "corresponde a la longitud y es obligatorio" },
+                TIPO_VIA: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                NOM_VIA: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                NUM_VIA: { bsonType: "string", description: "debe ser un entero y es obligatorio" },
+                COD_POSTAL: { bsonType: "string", description: "debe ser un entero y es obligatorio" },
+                FECHA_INSTALACION: { bsonType: "date", description: "debe ser una fecha y es obligatorio" },
+                MODELO: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                tipo_juego: { bsonType: "string", description: "debe ser una cadena y es obligatorio" },
+                ACCESIBLE: { bsonType: "bool", description: "debe ser un booleano y es obligatorio" },
+                AREA: { bsonType: ["string", "int"], description: "corresponde con el id del área la que pertence y es obligatorio" }
+            }
+        }
+    },
+    validationLevel: "strict"
+});
+
+db.runCommand({
+    collMod: "mantenimiento",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Maintenance Validation",
+            required: ["_id", "FECHA_INTERVENCION", "TIPO_INTERVENCION", "ESTADO_PREVIO", "ESTADO_POSTERIOR", "JuegoID", "Tipo", "Comentarios"],
+            properties: {
+                _id: {
+                    bsonType: "string",
+                    description: "id del mantenimiento",
+                },
+                FECHA_INTERVENCION: {
+                    bsonType: "date",
+                    description: "fecha en la que se realizaón la intervención",
+                },
+                TIPO_INTERVENCION: {
+                    bsonType: "string",
+                    enum: ["CORRECTIVO", "EMERGENCIA", "PREVENTIVO"],
+                    description: "tipo de la intervención realizada"
+                },
+                ESTADO_PREVIO: {
+                    bsonType: "string",
+                    enum: ["MALO", "REGULAR", "BUENO"],
+                    description: "estado previo a la revisión"
+                },
+                ESTADO_POSTERIOR: {
+                    bsonType: "string",
+                    enum: ["MALO", "REGULAR", "BUENO"],
+                    description: "estado posterior a la revisión",
+                },
+                JuegoID: {
+                    bsonType: "int",
+                    description: "identificador del juego al que se le realizó el mantenimiento",
+                },
+                Tipo: {
+                    bsonType: "string",
+                    description: "tipo de mantenimiento",
+                },
+                Comentarios: {
+                    bsonType: "string",
+                    description: "comentario realizado sobre el mantimiento",
+                },
+            }
+        }
+    }
+});
+
+db.runCommand({
+    collMod: "meteo24",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "meteo validator",
+            required: ["FECHA", "TEMPERATURA", "PRECIPITACION", "VIENTO", "PUNTO_MUESTREO"],
+            properties: {
+                FECHA: {
+                    bsonType: "date",
+                    description: "fecha en la que se recoge el clima"
+                },
+                TEMPERATURA: {
+                    bsonType: ["number", "string"],
+                    description: "temperatura"
+                },
+                PRECIPITACION: {
+                    bsonType: ["number", "string"],
+                    description: "cantidad de precipitación"
+                },
+                VIENTO: {
+                    bsonType: 'bool',
+                    description: "indica si ha habido vientos fuertes"
+                },
+                PUNTO_MUESTREO: {
+                    bsonType: "int",
+                    description: "area asociada"
+                }
+            }
+        }
+    }
+});
+
+db.runCommand({
+    collMod: "usuarios",
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Users Validator",
+            required: ["_id", "NOMBRE", "EMAIL", "TELEFONO"],
+            properties: {
+                _id: {
+                    bsonType: "string",
+                    description: "número de identificación del usuario",
+                },
+                NOMBRE: {
+                    bsonType: "string",
+                    description: "nombre del usuario",
+                },
+                EMAIL: {
+                    bsonType: "string",
+                    description: "email del usuario",
+                },
+                TELEFONO: {
+                    bsonType: "int",
+                    description: "telefono del usuario",
+                },
+            },
+        },
+    },
+});
+
+// --------- AGREGADO DE ÁREAS CON JUEGOS, METERO, INCIDENTES Y ENCUESTAS DE SATISFACCIÓN ---------
+
+// Agregado de áreas con los datos agregados: estadoGlobalArea, capacidadMáxima y cantidadJuegosPorTipo
+db.areas.aggregate([
+    {
+        // Areas con juegos
+        $lookup: {
+            from: 'juegos',
+            localField: '_id',
+            foreignField: 'AREA',
+            as: 'aux_ref_juegos'
+        }
+    },
+    // juegos por tipo:
+    { $unwind: "$aux_ref_juegos" },
+    {
+        $group: {
+            _id: { tipo: "$aux_ref_juegos.tipo_juego", area_id: "$_id" }, // agrupar areas y tipos
+            count: { $sum: 1 },
+            ref_juegos: { $push: { _id: "$aux_ref_juegos._id" } },
+            original: { $first: "$$ROOT" }
+        }
+    },
+    {
+        $group: { // Crear para cada área un array de {tipo, count}, {tipo, count}
+            _id: "$_id.area_id",
+            cuenta: {
+                $push: {
+                    k: "$_id.tipo", v: "$count"
+                }
+            },
+            ref_juegos: { $push: "$ref_juegos" },
+            original: { $first: "$original" }
+        },
+    },
+    {
+        $addFields: {
+            "cantidad_juego_por_tipo": {
+                $arrayToObject: "$cuenta"
+
+            },
+            "ref_juegos": {
+                $reduce: {
+                    input: "$ref_juegos",
+                    initialValue: [],
+                    in: { $concatArrays: ["$$value", "$$this"] }
+                }
+            }
+        }
+    },
+    {
+        $replaceRoot: {
+            newRoot: {
+                $mergeObjects: [
+                    "$original",
+                    { "cantidad_juego_por_tipo": "$cantidad_juego_por_tipo" },
+                    { "ref_juegos": "$ref_juegos" }
+                ]
+            }
+        }
+    },
+
+    {
+        // Areas con incidentes_seguridad
+        $lookup: {
+            from: 'incidentes_seguridad',
+            localField: '_id',
+            foreignField: 'AreaRecreativaID',
+            as: 'ref_incidentes_seguridad'
+        }
+    },
+
+    {
+        // Areas con encuestas_satisfaccion
+        $lookup: {
+            from: 'encuestas_satisfaccion',
+            localField: '_id',
+            foreignField: 'AreaRecreativaID',
+            as: 'ref_encuestas_satisfaccion'
+        }
+    },
+    {
+        // Areas con estaciones_meteo_codigo_postal
+        $lookup: {
+            from: 'estaciones_meteo_codigo_postal',
+            localField: 'COD_POSTAL',
+            foreignField: 'Codigo Postal',
+            as: 'ref_estaciones_meteo_codigo_postal'
+        }
+    },
+    {
+        // estaciones_meteo_codigo_postal con meteo24
+        $lookup: {
+            from: 'meteo24',
+            localField: 'ref_estaciones_meteo_codigo_postal.CÓDIGO',
+            foreignField: 'PUNTO_MUESTREO',
+            as: 'ref_estaciones_meteo_codigo_postal.ref_meteo'
+        }
+    },
+    {
+        $set: {
+            TOTAL_ELEM: { $size: "$ref_juegos" }
+        }
+    },
+    {
+        $addFields: {
+            encuestas_accesibilidad_transformado: {
+                $map: {
+                    input: "$ref_encuestas_satisfaccion.PUNTUACION_ACCESIBILIDAD",
+                    as: "puntuacion",
+                    in: { $subtract: [6, "$$puntuacion"] }
+                }
+            },
+            encuestas_calidad_transformado: {
+                $map: {
+                    input: "$ref_encuestas_satisfaccion.PUNTUACION_CALIDAD",
+                    as: "puntuacion",
+                    in: { $subtract: [6, "$$puntuacion"] }
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            capacidadMax: "$TOTAL_ELEM",
+            nota_encuestas_area: {
+                $sum: {
+                    $concatArrays: ["$encuestas_accesibilidad_transformado", "$encuestas_calidad_transformado"]
+                }
+            },
+
+            numero_incidencias_ponderado: {
+                $multiply: [{ $size: "$ref_incidentes_seguridad" }, 3]
+            },
+            juegos_mantenimiento: {
+                $size: {
+                    $filter: {
+                        input: "$ref_juegos",
+                        as: "juego",
+                        cond: {
+                            $eq: ["$$juego.ESTADO", "EN REPARACION"]
+                        }
+                    }
+                }
+            },
+        }
+    },
+    {
+        $addFields: {
+            nota_total_area: {
+                $sum:
+                    ["$nota_encuestas_area", "$numero_incidencias_ponderado", "$juegos_mantenimiento"]
+
+            }
+        }
+    },
+    {
+        // Agrupamos para calcular el maximo de nota_total_area entre todos los documentos
+        $group: {
+            _id: null,
+            max_nota_global: { $max: "$nota_total_area" },
+            areas: { $push: "$$ROOT" }
+        }
+    },
+    {
+        // Desagregamos para aplicar el maximo calculado a cada documento
+        $unwind: "$areas"
+    },
+    {
+        $replaceRoot: {
+            newRoot: {
+                $mergeObjects: ["$areas", { max_nota: "$max_nota_global" }]
+            }
+        }
+    },
+    {
+        $addFields: {
+            estado_global_area: {
+                $round: [
+                    {
+                        $multiply: [
+                            { $divide: ["$nota_total_area", "$max_nota"] },
+                            10
+                        ]
+                    },
+                    2
+                ]
+            },
+        }
+    },
+    {
+        $addFields: {
+            estado_global_area: {
+                $subtract: [10, "$estado_global_area"]
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            SISTEMA_COORD: 1,
+            LATITUD: 1,
+            LONGITUD: 1,
+            BARRIO: 1,
+            DISTRITO: 1,
+            FECHA_INSTALACION: 1,
+            ESTADO: 1,
+            TOTAL_ELEM: 1,
+            capacidadMax: 1,
+            cantidad_juego_por_tipo: 1,
+            estado_global_area: 1,
+            ref_juegos: 1,
+            ref_incidentes_seguridad: {
+                _id: 1,
+                GRAVEDAD: 1,
+                FECHA_REPORTE: 1,
+            },
+            ref_encuestas_satisfaccion: {
+                _id: 1
+            },
+            ref_estaciones_meteo_codigo_postal: {
+                _id: 1
+            },
+        }
+    },
+    {
+        $out: { db: "entregable2", coll: "agregado_area_recreativa_clima" }
+    }
+]);
+
+
+// --------- AGREGADO DE JUEGOS CON MANTENIMIENTO E INCIDENCIAS ---------
+
+// Agregado de juego
+db.juegos.aggregate([
+    {
+        // Juegos con mantenimiento
+        $lookup: {
+            from: 'mantenimiento',
+            localField: '_id',
+            foreignField: 'JuegoID',
+            as: 'ref_mantenimiento'
+        }
+    },
+    {
+        $lookup: {
+            from: "incidencias_usuarios",
+            localField: "ref_mantenimiento._id",
+            foreignField: "MantenimientoID",
+            as: "res_incidencias_usuarios"
+        }
+    },
+
+    {
+        $out: { db: "entregable2", coll: "agregado_juego" }
+    }
+]);
+
+// Cálculo de los atributos derivados: indicadorExposición, últimaFechaMantenimiento, tiempoResolución y desgaste acumulado
+db.agregado_juego.aggregate([
+    {
+        $addFields: {
+            "indicadorExposicion": {
+                $add: [
+                    {
+                        $floor: {
+                            $multiply: [
+                                { $rand: {} },
+                                3
+                            ]
+                        }
+                    },
+                    1
+                ]
+            },
+            "ultimaFechaMantenimiento": {
+                $max: {
+                    $map: {
+                        input: "$ref_mantenimiento",
+                        as: "ref",
+                        in: "$$ref.FECHA_INTERVENCION"
+                    }
+                }
+            },
+            "res_incidencias_usuarios": {
+                $map: {
+                    input: "$res_incidencias_usuarios",
+                    as: "ref",
+                    in: {
+                        ID: "$$ref._id",
+                        TIPO_INCIDENCIA: "$$ref.TIPO_INCIDENCIA",
+                        FECHA_REPORTE: "$$ref.FECHA_REPORTE",
+                        ESTADO: "$$ref.ESTADO",
+                        tiempoResolucion: {
+                            $max: {
+                                $map: {
+                                    input: "$$ref.MantenimientoID",
+                                    as: "mantenimiento_id",
+                                    in: {
+                                        $subtract: [
+                                            {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $map: {
+                                                            input: {
+                                                                $filter: {
+                                                                    input: "$ref_mantenimiento",
+                                                                    as: "mantenimiento",
+                                                                    cond: { $eq: ["$$mantenimiento._id", "$$mantenimiento_id"] }
+                                                                }
+                                                            },
+                                                            as: "man",
+                                                            in: "$$man.FECHA_INTERVENCION"
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            },
+                                            "$$ref.FECHA_REPORTE"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ref_mantenimiento": {
+                $map: {
+                    input: "$ref_mantenimiento",
+                    in: "$$this._id"
+                }
+            }
+        }
+    },
+    {
+        $addFields: {
+            "desgasteAcumulado": {
+                $max: [
+                    {
+                        $subtract: [
+                            {
+                                $multiply: [
+                                    {
+                                        $add: [
+                                            {
+                                                $floor: {
+                                                    $multiply: [
+                                                        { $rand: {} },
+                                                        15
+                                                    ]
+                                                }
+                                            },
+                                            1
+                                        ]
+                                    },
+                                    "$indicadorExposicion"
+                                ]
+                            },
+                            {
+                                $multiply: [
+                                    { $size: "$ref_mantenimiento" },
+                                    5
+                                ]
+                            }
+                        ]
+                    },
+                    0
+                ]
+            }
+        }
+    },
+    {
+        $out: {
+            db: "entregable2",
+            coll: "agregado_juego"
+        }
+    }
+]);
+
+
+// --------- AGREGADO DE INCIDENCIAS Y USUARIOS ---------
+
+// Agregado con el resumen de usuarios y el dato agregado nivelEscalamiento
+db.incidencias_usuarios.aggregate([
+    {
+        // Incidencias con usuario
+        $lookup: {
+            from: 'usuarios',
+            localField: 'UsuarioID',
+            foreignField: '_id',
+            as: 'ref_usuarios'
+        }
+    },
+    {
+        $addFields: {
+            nivelEscalamiento: {
+                $add: [
+                    { $floor: { $multiply: [{ $rand: {} }, 10] } },
+                    1
+                ]
+            }
+        }
+    },
+    {
+        $project: {
+            UsuarioID: 0,
+            MantenimientoID: 0
+        }
+    },
+    {
+        $out: { db: "entregable2", coll: "agregado_incidencia" }
+    }
+]);

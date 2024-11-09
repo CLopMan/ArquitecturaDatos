@@ -1,5 +1,5 @@
 use entregable2;
-// crear esquema de validacion
+// -------------------------- Aplicar Esquemas de Validación ---------------------------
 db.runCommand({
     collMod: "areas",
     validator: {
@@ -364,35 +364,4 @@ db.runCommand({
     },
 });
 
-// comprobar esquema
-console.log(db.areas.validate())
-console.log(db.juegos.validate())
-console.log(db.encuestas_satisfaccion.validate())
-console.log(db.estaciones_meteo_codigo_postal.validate())
-console.log(db.incidencias_usuarios.validate())
-console.log(db.incidentes_seguridad.validate())
-console.log(db.mantenimiento.validate())
-console.log(db.meteo24.validate())
-console.log(db.usuarios.validate())
 
-db.usuarios.aggregate([
-    {
-        $project: {
-            ID: { $type: "$_id" },
-            desc_clasificacion: { $type: "$DESC_CLASIFICATION" },
-            cod_barrio: { $type: "$COD_BARRIO" },
-            barrio: { $type: "$BARRIO" },
-            cod_distrito: { $type: "$COD_DISTRITO" },
-            distrito: { $type: "$DISTRITO" },
-        }
-    },
-    {
-        $group: {
-            _id: null,
-            ID: { $addToSet: "$ID" },
-            NOMBRE: { $addToSet: "$NOMBRE" },
-            EMAIL: { $addToSet: "$EMAIL" },
-            TELEFONO: { $addToSet: "$TELEFONO" }
-        }
-    }
-]);
