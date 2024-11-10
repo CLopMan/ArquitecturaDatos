@@ -5,7 +5,8 @@
 *.out
 *.zip
 *.gz
-*.pdf
+entregable1/*.pdf
+entregable2/docs/*.pdf
 __pycache__/
 venv
 
