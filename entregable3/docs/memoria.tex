@@ -61,6 +61,81 @@ estadístico, aprovechando las cualidades de \texttt{Cassandra} para el análisi
 de datos gracias a su capacidad para la consulta masiva de datos de una misma
 columna.
 
+La metodología usada para el desarrollo de este proyecto ha sido la siguiente:
+análisis de datos y casos de uso, realización del diseño lógico y físico
+orientado a \texttt{Cassandra} e implementación de casos de uso en forma e
+consulta. Adicionalmente se empleará la herramienta \texttt{PySpark} para
+realizar el primer volcado de datos.
+% =======
+% Para la realización de esta práctica se busca realizar una migración de datos desde el gestor de bases de datos \textit{Mongodb} a \textit{Cassandra}, además de suplir una serie de casos de uso 
+% 
+% Esta práctica se basa en la migración de un sistema gestor de expedientes de sanciones que se encontraba en el gestor de bases de datos \textit{Mongodb} y se quiere mover a \textit{Cassandra}, además de implementar nuevos casos de uso. 
+% Para ello se realizará un estudio de los datos almacenados en \textit{mongodb} y de los casos de uso propuestos. Tras esto se desarrollará un diseño lógico y físico de la base de datos en \textit{Cassandra} que nos faciliten la creación de las tablas en este mismo gestor de bases de datos y la implementación de las consultas enfocadas a los casos de uso.
+% Con las tablas configuradas se insertarán los antiguos datos a través de la herramienta \textit{PySpark}, para finalmente probar el correcto funcionamiento del nuevo sistema.
+
+\section{Modelo de Información del nuevo sistema}
+\label{sec:modelo_informacion}
+
+El nuevo sistema será una migración del antiguo sistema por lo que es necesario realizar un estudio de los datos almacenados en el antiguo modelo. Como la anterior gestión de los datos se realizaba en el gestor de bases de datos \textit{mongodb} se tiene un json con todos los datos.
+
+Observando las características del json con la información del anterior sistema podemos sacar las siguientes conclusiones:
+\begin{itemize}
+    \item El antiguo sistema almacena registro sobre los vehículos que han circulado por diferentes autovías, este registro se ha hecho a través de grabaciones realizadas por los diferentes radares situados por las autovías.
+    \item El sistema también gestiona sanciones ya emitidas como multas por velocidad (\textit{speed ticket}), cargos administrativos (\textit{clearance ticket}) y multas extendidas (\textit{stretch ticket})
+    \item Para cada uno de los registros se pueden identificar los siguientes elementos:
+    \begin{itemize}
+        \item Una autovía o carretera
+        \item Un radar en un kilometro determinado de la carretera
+        \item Un vehículo que ha cruzado el radar
+        \item El vehículo consta de información del conductor en ese momento y del propietario del vehículo
+        \item Una grabación realizada por el radar sobre el vehículo en cuestión
+    \end{itemize} 
+\end{itemize}
+
+Con el objetivo de entender el dominio del problema se ha creado un diagrama de clases en formato UML que nos permita entender los elementos que se tienen en el sistema y cómo estos se relacionan entre sí.
+
+\section{Análisis de los Casos de Uso}
+\label{sec:analisis_casos_de_uso}
+
+Para poder desarrollar el nuevo sistema es necesario entender a la perfección los casos de uso que se nos plantean, por lo que a continuación se analizarán los distintos casos de uso que se nos presentan.
+
+Los casos de uso se pueden dividir según su finalidad:
+\begin{itemize}
+    \item \textbf{Por funciones operativas}: Aquellos casos de uso que tienen como objetivo generar nuevas funcionalidades
+    \item \textbf{Para análisis estadístico}: Aquellos casos de uso que tienen como objetivo organizar la información de tal manera que pueda realizarse un análisis estadístico sobre ella.
+\end{itemize}
+
+\subsection{Funciones Operativas}
+\label{subsec:funciones_operativas}
+
+Encontramos 2 casos de uso enfocados a las funciones operativas.
+\begin{itemize}
+    \item \textbf{Emisión de sanciones}
+    
+    Este caso de uso busca generar nuevas sanciones a aquellos conductores que no cumplen con una serie de condiciones relacionadas con la velocidad del coche durante el tramo de radar, la situación personal del conductor identificado, el estado de las revisiones técnicas del vehículos y otros factores.
+    A continuación se realizará descripción de las condiciones que generarán una nueva sanción:
+    \begin{itemize}
+        \item \textit{Superar la velocidad del radar}: En aquellos casos en los que la grabación reconozca que el vehículo ha superado la velocidad limite del radar
+        \item \textit{Discrepancia en el carné de conducir del conductor}: En aquellos casos en los que la fecha de obtención del permiso de conducir no sea superior a la fecha de nacimiento del conductor en 18 años.
+        \item \textit{Conducción con el vehículo deficiente}: Un coche se considera deficiente si en su última revisión se ha identificado algún defecto. 
+        \item \textit{Impago de sanciones emitidas}: Se generará una nueva sanción a aquellos conductores no hayan realizado el pago durante la fecha prevista, dado que no se tiene el conocimiento de esta fecha se tomará una fecha que corresponda con la mediana de todas las fechas existentes en la base de datos.
+    \end{itemize}
+    \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado}
+    
+    Este caso de uso busca identificar aquellos expedientes que aún continuan activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir un proceso ejecutivo que es realizado por otro sistema de gestión de la DGT que permita avisar a los conductores para que realicen su pago.
+\end{itemize}
+
+\subsection{Análisis Estadístico}
+\label{subsec:analisis_estadistico}
+
+Para el análisis estadístico la DGT está interesada en los siguientes estudios:
+\begin{itemize}
+    \item Estudio por marcas y modelos
+    \item Estudio por carreteras
+    \item Estudio por conductores
+\end{itemize}
+>>>>>>> fabb48932b0c68734fd0e546e97a6034b4e44bfb
+
 \newpage
 \section{Conclusión}
 \label{sec:conclusion}
