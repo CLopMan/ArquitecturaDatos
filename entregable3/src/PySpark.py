@@ -18,8 +18,7 @@ df = spark.read.json(file_path)
 # Mostrar el esquema del DataFrame
 #df.printSchema()
 # Filtrar los registros donde la edad es mayor a 25
-df_a = df.cache()
-df_a.filter("_corrupt_record IS NOT NULL").select("_corrupt_record").show(n=880, truncate=False)
+df.show(n=100)
 print(df.count())
 print(df.rdd.filter(lambda row: row["_corrupt_record"] is not None).count())
 
