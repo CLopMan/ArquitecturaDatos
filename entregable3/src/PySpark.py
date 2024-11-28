@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, to_date
 from pyspark.sql import DataFrame
 
 # Crear una sesión de Spark
@@ -39,7 +39,7 @@ json_df = rename_columns(json_df)
 # Mostrar el nuevo esquema
 json_df.printSchema()
 
-# Seleccionar las columnas necesarias de la tabla original
+# Seleccionar las columnas necesarias de la discrepancia carné
 discrepancia_carne = json_df.select(
     col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
@@ -47,6 +47,21 @@ discrepancia_carne = json_df.select(
     col("vehicle.Driver.Birthdate").alias("fecha_nacimiento"),
     col("vehicle.Driver.driving_license.date").alias("fecha_carne"),
     col("vehicle.number_plate").alias("matricula")
+).filter(
+    to_date(col("vehicle.Driver.driving_license.date"),"dd/MM/yyyy") < date_add(to_date(col("vehicle.Driver.Birthdate"),"dd/MM/yyyy"), 18 * 365)
+)
+
+vehiculo_deficiente = json_df.select(
+    col("vehicle.Driver.DNI").alias("dni_conductor"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
+    col("Record.date").alias("fecha_record"),
+    col("vehicle.roadworthiness").alias("revisiones"),
+    col("vehicle.make").alias("marca"),
+    col("vehicle.model").alias("modelo"),
+    col("vehicle.number_plate").alias("matricula")
+).filter(
+    ~col("vehicle.roadworthiness").rlike("^[0-9]{2}/[0-9]{2}/[0-9]{4}$") &
+    ~col("vehicle.roadworthiness").rlike(r'.*\{"MOT date":"[0-9]{2}/[0-9]{2}/[0-9]{4}"\}]$')
 )
 
 # Seleccionar las columnas para la nueva tabla de clearance_ticket
@@ -90,6 +105,7 @@ superar_velocidad = json_df.filter(col("radar.speed_limit") < col("Record.speed"
 )
 # Mostrar los datos seleccionados
 discrepancia_carne.show()
+vehiculo_deficiente.show()
 clearance_ticket.show()
 stretch_ticket.show()
 vehiculos.show()
