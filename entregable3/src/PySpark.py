@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, to_date
+from pyspark.sql.functions import col, to_date, date_add
 from pyspark.sql import DataFrame
 
 # Crear una sesión de Spark
