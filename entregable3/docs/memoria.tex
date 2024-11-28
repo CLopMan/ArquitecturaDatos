@@ -9,6 +9,36 @@
 \usepackage{xcolor}
 \usepackage{float}
 
+\definecolor{miverde}{rgb}{0,0.6,0}
+\lstdefinelanguage{cql}{
+  morekeywords={SELECT, FROM, WHERE, INSERT, INTO, UPDATE, DELETE, CREATE, TABLE, PRIMARY, KEY, IF, EXISTS, NOT, NULL, AND, OR, SET, USE, VALUES, IN, ALLOW, FILTERING}, % Palabras clave
+  sensitive=true, % Si las palabras clave distinguen mayúsculas de minúsculas
+  morecomment=[l]--, % Comentarios de línea (prefijados con "--")
+  morecomment=[s]{/*}{*/}, % Comentarios de bloque
+  morestring=[b]', % Cadenas entre comillas simples
+  morestring=[b]" % Cadenas entre comillas dobles
+}
+
+
+\lstdefinestyle{cql}{
+    language=cql,
+    backgroundcolor=\color{gray!2},     % Color de fondo
+    basicstyle=\ttfamily,               % Tipo y tamaño de fuente
+    keywordstyle=\color{blue}\bfseries, % Color para palabras clave
+    stringstyle=\color{miverde},        % Color para cadenas
+    commentstyle=\color{red},           % Color para comentarios
+    showspaces=false,                   % No mostrar espacios
+    showstringspaces=false,             % No mostrar espacios en las cadenas
+    frame=single,                       % Poner un marco alrededor del código
+    breaklines=true,                    % Romper las líneas largas
+    captionpos=b,                       % Posición del caption
+    tabsize=4,                          % Tamaño de las tabulaciones
+    escapeinside={\%*}{*)},             % Para incluir código LaTeX en los listings
+    morekeywords={self},                 % Palabras clave adicionales
+    extendedchars=true,
+    inputencoding=utf8
+}
+
 %title
 \title{Práctica 1} 
 
@@ -131,8 +161,66 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
 Para el análisis estadístico la DGT está interesada en los siguientes estudios:
 \begin{itemize}
     \item Estudio por marcas y modelos
+
+    Este caso de uso busca realizar un estudio sobre las marcas y modelos de coches que más infracciones cometen. Es por ello que se exigen tres análisis:
+    
+    \begin{enumerate}
+        \item Número de multas por marca y modelo del vehículo
+        \item Los tres colores más multados de coches
+        \item Las marcas y modelos de los vehículos con más infracciones por velocidad
+    \end{enumerate}
+
+    Es por ello que se han realizado tres tablas distintas sobre las que hacer las querys en Cassandra que permitan obtener cada una de estadísticas. Las tablas tienen esta forma: [introducir fotos]
+
+    Además, las querys que actúan sobre las tablas tienen este aspecto:
+
+    \lstset{style=cql}
+    \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 1]
+// Query para el numero de multas por marca y modelo
+SELECT Multas FROM multas_marca_modelo WHERE marca="Valor_Marca" AND modelo="Valor_Modelo";
+
+// Query para el numero de multas por color
+SELECT Color FROM multas_color_coche ORDER BY (Multas) DESC LIMIT 3;
+
+// Query para sacar las marcas y modelos de los vehiculos con mas infracciones por velocidad
+SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
+    \end{lstlisting}
+
     \item Estudio por carreteras
+
+    Este caso de uso busca realizar un estudio sobre las carreteras más conflictivas de España, haciendo un análisis del exceso de velocidad medio en carreteras, así como los tramos donde más infracciones se han cometido. Es por ello que se pide lo siguiente:
+
+    \begin{enumerate}
+        \item Exceso de velocidad medio para una carretera determinada
+        \item Tramo y sentido más conflictivo de una carretera 
+    \end{enumerate}
+
+    Para poder hacer las consultas, es necesario dos tablas que se han definido de la siguiente manera [introducir fotos]
+
+    Las querys para obtener las estadísticas son las siguientes:
+
+    \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 2]
+// Query para el exceso de velocidad medio para una carretera determinada
+SELECT Exceso_velocidad FROM exceso_velocidad_carretera WHERE Carretera = "Valor_Carretera";
+
+// Query para el tramo y sentido mas conflictivo de una carretera
+SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor_Carretera" ORDER BY (Infracciones) DESC LIMIT 1;
+    \end{lstlisting}
+ 
     \item Estudio por conductores
+
+    El último caso de uso busca realizar un estudio sobre los conductores, concretamente, buscan determinar los conductores más infractores, así como la probabilidad de que se cometa una infracción cuando un vehículo no es conducido por el dueño del mismo. Para esto, se han diseñados las siguientes tablas: [introducir fotos]
+
+    Para consultar estos valores, se han diseñado las siguientes querys:
+
+    \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 3]
+// Query para los conductores mas infractores
+SELECT DNI FROM concutores_mas_infractores ORDER BY (Suma_infracciones) DESC;
+
+// Query para la probabilidad
+a
+
+    \end{lstlisting}
 \end{itemize}
 
 \newpage

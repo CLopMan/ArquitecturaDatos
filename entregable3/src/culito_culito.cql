@@ -18,7 +18,7 @@ CREATE TABLE sanciones_pagadas (
 CREATE TABLE concutores_mas_infractores (
     DNI text,
     Suma_infracciones int,
-    PRIMARY KEY (DNI)
+    PRIMARY KEY (DNI, Suma_infracciones)
 );
 
 CREATE TABLE multas_marca_modelo (
