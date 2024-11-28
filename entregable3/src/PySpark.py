@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, date_add
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import lit
 
 # Crear una sesión de Spark
 spark = SparkSession.builder \
@@ -39,6 +40,7 @@ json_df = rename_columns(json_df)
 # Mostrar el nuevo esquema
 json_df.printSchema()
 
+
 # Seleccionar las columnas necesarias de la discrepancia carné
 discrepancia_carne = json_df.select(
     col("vehicle.Driver.DNI").alias("dni_conductor"),
@@ -68,7 +70,9 @@ vehiculo_deficiente = json_df.select(
 #### TODO: preguntarle a la profe que cojones es clearance_ticket porque en nuestro esquema guardamos una matrícula
 clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
     col("Clearance_ticket.Debtor.DNI").alias("dni_deudor"),
-    col("Clearance_ticket.Issue_date").alias("fecha_emision"),
+    col("Record.date").alias("fecha_grabacion"),
+    col("Clearance_ticket.Pay_date").alias("fecha_pago"),
+    col("Clearance_ticket.Amount").alias("cantidad"),
     col("vehicle.number_plate").alias("matricula"),
     col("Clearance_ticket.State").alias("estado")
 )
@@ -76,7 +80,9 @@ clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
 # Seleccionar las columnas para la nueva tabla de stretch ticket
 stretch_ticket = json_df.filter(col("Stretch_ticket").isNotNull()).select(
     col("Stretch_ticket.Debtor.DNI").alias("dni_deudor"),
-    col("Stretch_ticket.Issue_date").alias("fecha_emision"),
+    col("Record.date").alias("fecha_grabacion"),
+    col("Stretch_ticket.Pay_date").alias("fecha_pago"),
+    col("Stretch_ticket.Amount").alias("cantidad"),
     col("vehicle.number_plate").alias("matricula"),
     col("Stretch_ticket.State").alias("estado")
 )
@@ -90,7 +96,10 @@ vehiculos = json_df.select(
 )
 
 # Seleccionar las columnas para la nueva tabla de velocidad
-superar_velocidad = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
+speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
+    col("Speed_ticket.Debtor.DNI").alias("dni_deudor"),
+    col("Speed_ticket.Pay_date").alias("fecha_pago"),
+    col("Speed_ticket.Amount").alias("cantidad"),
     col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
     col("Record.date").alias("fecha_grabacion"),
@@ -103,10 +112,29 @@ superar_velocidad = json_df.filter(col("radar.speed_limit") < col("Record.speed"
     col("vehicle.number_plate").alias("matricula"),
     col("Speed_ticket.State").alias("estado")
 )
+
+
+def gen_impago_sanciones():
+    speed = speed_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("velocidad"))
+    clearance = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion","matricula", "cantidad").withColumn("tipo_multa", lit("clearance"))
+    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("stretch"))
+    return speed.union(clearance).union(stretch)
+
+def gen_sanciones():
+    speed = speed_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
+    clearance = clearance_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
+    impago = impago_sanciones.select("dni_deudor", "fecha_grabacion", "cantidad").withcolumn("tipo", "impago").withcolumn("estado", lit("stand by"))
+    # desperefectos, carne y stretch
+
+    # return speed.union(clearance).union(impago).union(....
+
+impago_sanciones = gen_impago_sanciones()
+
 # Mostrar los datos seleccionados
 discrepancia_carne.show()
 vehiculo_deficiente.show()
 clearance_ticket.show()
 stretch_ticket.show()
 vehiculos.show()
-superar_velocidad.show()
+speed_ticket.show()
+impago_sanciones.show()
