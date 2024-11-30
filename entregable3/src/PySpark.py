@@ -40,7 +40,6 @@ json_df = rename_columns(json_df)
 # Mostrar el nuevo esquema
 json_df.printSchema()
 
-
 # Seleccionar las columnas necesarias de la discrepancia carné
 discrepancia_carne = json_df.select(
     col("vehicle.Driver.DNI").alias("dni_conductor"),
@@ -94,6 +93,7 @@ vehiculos = json_df.select(
     col("vehicle.model").alias("modelo"),
     col("vehicle.colour").alias("color")
 )
+vehiculos = vehiculos.dropDuplicates()
 
 # Seleccionar las columnas para la nueva tabla de velocidad
 speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
@@ -123,18 +123,27 @@ def gen_impago_sanciones():
 def gen_sanciones():
     speed = speed_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
     clearance = clearance_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
-    impago = impago_sanciones.select("dni_deudor", "fecha_grabacion", "cantidad").withcolumn("tipo", "impago").withcolumn("estado", lit("stand by"))
-    # desperefectos, carne y stretch
+    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "estado" ,"matricula", "cantidad").withColumn("tipo", lit("stretch"))
 
-    # return speed.union(clearance).union(impago).union(....
+    # Obtiene impago y reorganiza
+    impago = impago_sanciones.select("dni_deudor", "fecha_grabacion", "cantidad", "matricula").withColumn("tipo", lit("impago")).withColumn("estado", lit("stand by"))
+    impago = impago.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
 
+    # Obtiene carne y reorganiza TODO: Revisar estado y cantidad
+    carne = discrepancia_carne.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit("a"))
+    carne = carne.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
+
+    # Obtiene desperfectos y reorganiza TODO: Revisar esyado y cantidad
+    desperfectos = vehiculo_deficiente.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit("a"))
+    desperfectos = desperfectos.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
+
+    return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
+
+def gen_sanciones_vehiculo():
+    sanciones_vehiculo = sanciones.join(vehiculos, sanciones["matricula"] == vehiculos["matricula"]).select(vehiculos["matricula"], vehiculos["marca"], sanciones["tipo"], vehiculos["modelo"], vehiculos["color"])
+    return sanciones_vehiculo
+
+# Generar las sanciones 
 impago_sanciones = gen_impago_sanciones()
-
-# Mostrar los datos seleccionados
-discrepancia_carne.show()
-vehiculo_deficiente.show()
-clearance_ticket.show()
-stretch_ticket.show()
-vehiculos.show()
-speed_ticket.show()
-impago_sanciones.show()
+sanciones = gen_sanciones()
+sanciones_vehiculo = gen_sanciones_vehiculo()
