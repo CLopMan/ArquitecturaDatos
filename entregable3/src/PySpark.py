@@ -3,6 +3,8 @@ from pyspark.sql.functions import col, to_date, date_add, sum, avg, count
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import lit
 
+KEYSPACE = "practica2"
+
 # Crear una sesión de Spark
 spark = SparkSession.builder \
     .appName("Carga de datos con PySpark") \
@@ -130,19 +132,23 @@ def gen_sanciones():
     impago = impago.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
 
     # Obtiene carne y reorganiza TODO: Revisar estado y cantidad
-    carne = discrepancia_carne.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit("a"))
+    carne = discrepancia_carne.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
     carne = carne.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
 
-    # Obtiene desperfectos y reorganiza TODO: Revisar esyado y cantidad
-    desperfectos = vehiculo_deficiente.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit("a"))
+    # Obtiene desperfectos y reorganiza TODO: Revisar estado y cantidad
+    desperfectos = vehiculo_deficiente.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
     desperfectos = desperfectos.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
-
     return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
 
 def gen_sanciones_vehiculo():
     sanciones_vehiculo = sanciones.join(vehiculos, sanciones["matricula"] == vehiculos["matricula"]).select(vehiculos["matricula"], vehiculos["marca"], sanciones["tipo"], vehiculos["modelo"], vehiculos["color"])
     return sanciones_vehiculo
 
+def write_to_cassandra(table, name, mode):
+    df.write.format("org.apache.spark.sql.cassandra")\
+    .options(table=name, keyspace=KEYSPACE)\
+    .mode(mode)\
+    .save()
 # Generar las sanciones 
 impago_sanciones = gen_impago_sanciones()
 sanciones = gen_sanciones()
@@ -166,3 +172,5 @@ multas_color.show()
 
 velocidad_marca_modelo = gen_velocidad_marca_modelo()
 velocidad_marca_modelo.show()
+
+write_to_cassandra(sanciones, "sanciones", "overwrite")
