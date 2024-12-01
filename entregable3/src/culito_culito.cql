@@ -1,3 +1,9 @@
+CREATE KEYSPACE practica2
+WITH replication = {
+  'class': 'SimpleStrategy',
+  'replication_factor': 3
+};
+
 CREATE TABLE sanciones (
     DNI text,
     Tipo text,
