@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, to_date, date_add
+from pyspark.sql.functions import col, to_date, date_add, sum, avg, count
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import lit
 
@@ -147,3 +147,22 @@ def gen_sanciones_vehiculo():
 impago_sanciones = gen_impago_sanciones()
 sanciones = gen_sanciones()
 sanciones_vehiculo = gen_sanciones_vehiculo()
+
+# Funciones de los casos de uso
+def gen_multas_marca_modelo():
+    return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
+
+def gen_multas_color():
+    return sanciones_vehiculo.select("color").groupBy("color").agg(count("*").alias("num_multas"))
+
+def gen_velocidad_marca_modelo():
+    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
+
+multas_marca_modelo = gen_multas_marca_modelo()
+multas_marca_modelo.show()
+
+multas_color = gen_multas_color()
+multas_color.show()
+
+velocidad_marca_modelo = gen_velocidad_marca_modelo()
+velocidad_marca_modelo.show()
