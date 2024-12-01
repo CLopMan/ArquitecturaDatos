@@ -149,12 +149,13 @@ def write_to_cassandra(table, name, mode):
     .options(table=name, keyspace=KEYSPACE)\
     .mode(mode)\
     .save()
+
 # Generar las sanciones 
 impago_sanciones = gen_impago_sanciones()
 sanciones = gen_sanciones()
 sanciones_vehiculo = gen_sanciones_vehiculo()
 
-# Funciones de los casos de uso
+# Funciones del caso de uso 1
 def gen_multas_marca_modelo():
     return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
 
@@ -165,12 +166,20 @@ def gen_velocidad_marca_modelo():
     return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
 
 multas_marca_modelo = gen_multas_marca_modelo()
-multas_marca_modelo.show()
-
 multas_color = gen_multas_color()
-multas_color.show()
-
 velocidad_marca_modelo = gen_velocidad_marca_modelo()
-velocidad_marca_modelo.show()
 
-write_to_cassandra(sanciones, "sanciones", "overwrite")
+# Funciones del caso de uso 3
+def gen_conductores_infactores():
+    return sanciones.select("dni_deudor").groupBy("dni_deudor").agg(count("*").alias("num_multas"))
+
+conductores_infractores = gen_conductores_infactores()
+
+# Función del caso de uso general
+def gen_sanciones_en_proceso():
+    return sanciones.filter(col("estado") == "stand by").select("dni_deudor", "tipo", "fecha_grabacion")
+
+sanciones_en_proceso = gen_sanciones_en_proceso()
+
+# Inserción en Cassandra
+# write_to_cassandra(sanciones, "sanciones", "overwrite")
