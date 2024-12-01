@@ -1,14 +1,46 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, to_date, date_add
+from pyspark.sql.functions import col, to_date, date_add, sum, avg, count
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import lit
 
 KEYSPACE = "practica2"
 
-# Crear una sesión de Spark
+from pyspark.sql.functions import to_date, date_format, col
+
+def convertir_formato_fecha(df, columna_fecha):
+    """
+    Convierte el formato de una columna de fechas de 'dd/MM/yyyy' a 'yyyy/MM/dd'.
+
+    :param df: DataFrame de PySpark
+    :param columna_fecha: Nombre de la columna que contiene las fechas a convertir
+    :return: DataFrame con la columna de fecha convertida
+    """
+    # Convertir la columna de fecha de 'dd/MM/yyyy' a formato date
+    df_converted = df.withColumn(
+        columna_fecha,
+        to_date(col(columna_fecha), 'dd/MM/yyyy')
+    )
+
+    # Cambiar el formato de la fecha a 'yyyy/MM/dd'
+    df_converted = df_converted.withColumn(
+        columna_fecha,
+        date_format(col(columna_fecha), 'yyyy/MM/dd')
+    )
+
+    return df_converted
+
+
+# # Crear una sesión de Spark
+# spark = SparkSession.builder \
+#     .appName("Carga de datos con PySpark") \
+#     .getOrCreate()
+
 spark = SparkSession.builder \
-    .appName("Carga de datos con PySpark") \
+    .appName("CargaDatos") \
+    .config("spark.cassandra.connection.host", "127.0.0.1") \
+    .config("spark.cassandra.connection.port", "9042") \
     .getOrCreate()
+
 
 # Ruta al archivo NDJSON
 file_path = "./data/sample_parsed.json"
@@ -145,7 +177,7 @@ def gen_sanciones_vehiculo():
     return sanciones_vehiculo
 
 def write_to_cassandra(table, name, mode):
-    df.write.format("org.apache.spark.sql.cassandra")\
+    table.write.format("org.apache.spark.sql.cassandra")\
     .options(table=name, keyspace=KEYSPACE)\
     .mode(mode)\
     .save()
@@ -154,6 +186,28 @@ impago_sanciones = gen_impago_sanciones()
 sanciones = gen_sanciones()
 sanciones_vehiculo = gen_sanciones_vehiculo()
 
-sanciones.show()
+# Funciones de los casos de uso
+def gen_multas_marca_modelo():
+    return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
 
-write_to_cassandra(sanciones, "sanciones", "overwrite")
+def gen_multas_color():
+    return sanciones_vehiculo.select("color").groupBy("color").agg(count("*").alias("num_multas"))
+
+def gen_velocidad_marca_modelo():
+    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
+
+multas_marca_modelo = gen_multas_marca_modelo()
+multas_marca_modelo.show()
+
+multas_color = gen_multas_color()
+multas_color.show()
+
+velocidad_marca_modelo = gen_velocidad_marca_modelo()
+velocidad_marca_modelo.show()
+
+sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
+#write_to_cassandra(sanciones, "sanciones", "append")
+sanciones.select("dni_deudor", "fecha_grabacion", "matricula", "tipo", "cantidad").write.format("org.apache.spark.sql.cassandra").options(table="sanciones", keyspace=KEYSPACE).mode("append").save()
+
+spark.stop()
+exit()

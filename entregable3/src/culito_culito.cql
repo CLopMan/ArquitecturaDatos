@@ -1,24 +1,28 @@
+drop keyspace practica2;
+
 CREATE KEYSPACE practica2
-WITH replication = {
-  'class': 'SimpleStrategy',
-  'replication_factor': 3
+with replication = {
+    'class': 'SimpleStrategy',
+    'replication_factor': 1
 };
 
+use practica2;
 CREATE TABLE sanciones (
-    DNI text,
-    Tipo text,
-    Fecha date, 
-    Estado text,
-    Matricula text,
-    Cantidad int,
-    PRIMARY KEY (DNI, (Tipo, Fecha))
+    dni_deudor text,
+    fecha_grabacion date,
+    estado text,
+    matricula text,
+    cantidad int,
+    tipo text,
+    PRIMARY KEY ((dni_deudor), tipo, fecha_grabacion)
 );
+
 
 CREATE TABLE sanciones_pagadas (
     DNI text,
     Tipo text,
     Fecha date, 
-    PRIMARY KEY (DNI, (Tipo, Fecha))
+    PRIMARY KEY ((DNI), Tipo, Fecha)
 );
 
 CREATE TABLE concutores_mas_infractores (
@@ -60,4 +64,3 @@ CREATE TABLE exceso_velocidad_carretera (
     Exceso_velocidad float,
     PRIMARY KEY (Carretera)
 );
-
