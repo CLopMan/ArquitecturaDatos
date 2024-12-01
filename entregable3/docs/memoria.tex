@@ -9,6 +9,7 @@
 \usepackage{xcolor}
 \usepackage{float}
 
+
 \definecolor{miverde}{rgb}{0,0.6,0}
 \lstdefinelanguage{cql}{
   morekeywords={SELECT, FROM, WHERE, INSERT, INTO, UPDATE, DELETE, CREATE, TABLE, PRIMARY, KEY, IF, EXISTS, NOT, NULL, AND, OR, SET, USE, VALUES, IN, ALLOW, FILTERING}, % Palabras clave
@@ -145,11 +146,31 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
     Este caso de uso busca generar nuevas sanciones a aquellos conductores que no cumplen con una serie de condiciones relacionadas con la velocidad del coche durante el tramo de radar, la situación personal del conductor identificado, el estado de las revisiones técnicas del vehículos y otros factores.
     A continuación se realizará descripción de las condiciones que generarán una nueva sanción:
     \begin{itemize}
-        \item \textit{Superar la velocidad del radar}: En aquellos casos en los que la grabación reconozca que el vehículo ha superado la velocidad limite del radar
         \item \textit{Discrepancia en el carné de conducir del conductor}: En aquellos casos en los que la fecha de obtención del permiso de conducir no sea superior a la fecha de nacimiento del conductor en 18 años.
         \item \textit{Conducción con el vehículo deficiente}: Un coche se considera deficiente si en su última revisión se ha identificado algún defecto. 
         \item \textit{Impago de sanciones emitidas}: Se generará una nueva sanción a aquellos conductores no hayan realizado el pago durante la fecha prevista, dado que no se tiene el conocimiento de esta fecha se tomará una fecha que corresponda con la mediana de todas las fechas existentes en la base de datos.
     \end{itemize}
+
+    Con el objetivo de cumplir este caso de uso se ha generado una tabla llamada \texttt{sanciones}. En esta tabla se recopilarán todas las sanciones de cualquier tipo, tanto las generadas como las emitidas. Para ello se generará la siguiente tabla:
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l} 
+        \textbf{Sanciones} \\ \hline
+        DNI \hspace{0.6cm}K\\
+        Tipo \hspace{0.5cm}C↑\\
+        Fecha \hspace{0.4cm}C↓\\
+        Estado \\
+        Matrícula \\
+        Cantidad
+    \end{tabular}
+    \end{table}
+
+    Tal y como funciona \textit{Cassandra} es necesario crear una tabla vaya de la mano de la consulta. Para satisfacer el caso de uso se realizará a través de la siguiente consulta:
+    \begin{lstlisting}
+        Select * from Sanciones WHERE DNI = '12345678X' AND Tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
+    \end{lstlisting}
+
+    Como se puede observar para poder realizar esta consulta en \textit{Cassandra} es necesario que el \textit{DNI} y \textit{Tipo} formen parte de la clave primaria de la tabla. Además de estos dos atributos se considera que \textit{Fecha} permite ordenar todas las sanciones generadas y concede control en la unicidad de los registros. 
     \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado}
     
     Este caso de uso busca identificar aquellos expedientes que aún continuan activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir un proceso ejecutivo que es realizado por otro sistema de gestión de la DGT que permita avisar a los conductores para que realicen su pago.
