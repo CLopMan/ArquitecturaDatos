@@ -5,6 +5,8 @@ from pyspark.sql.functions import lit, count, max, avg
 
 KEYSPACE = "practica2"
 
+KEYSPACE = "practica2"
+
 # Crear una sesión de Spark
 spark = SparkSession.builder \
     .appName("Carga de datos con PySpark") \
