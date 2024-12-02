@@ -252,12 +252,14 @@ conductores_infractores = gen_conductores_infactores()
 sanciones_en_proceso = gen_sanciones_en_proceso()
 
 # ----- ESCRITURA EN CASSANDRA -----
+sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
 write_to_cassandra(sanciones, "sanciones", "append")
 write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
 write_to_cassandra(velocidad_marca_modelo, "velocidad_marca_modelo", "append")
 write_to_cassandra(tramo_conflictivo, "conflictos_tramo_sentido", "append")
 write_to_cassandra(exceso_velocidad_medio, "exceso_velocidad_carretera", "append")
+sanciones_en_proceso = convertir_formato_fecha(sanciones_en_proceso, "fecha_grabacion")
 write_to_cassandra(sanciones_en_proceso, "sanciones_en_proceso", "append")
 write_to_cassandra(conductores_infractores, "concutores_mas_infractores", "append")
 
