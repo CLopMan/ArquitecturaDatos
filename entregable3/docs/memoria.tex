@@ -8,6 +8,8 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
 
 
 \definecolor{miverde}{rgb}{0,0.6,0}
@@ -112,7 +114,7 @@ El nuevo sistema será una migración del antiguo sistema por lo que es necesari
 Observando las características del json con la información del anterior sistema podemos sacar las siguientes conclusiones:
 \begin{itemize}
     \item El antiguo sistema almacena registro sobre los vehículos que han circulado por diferentes autovías, este registro se ha hecho a través de grabaciones realizadas por los diferentes radares situados por las autovías.
-    \item El sistema también gestiona sanciones ya emitidas como multas por velocidad (\textit{speed ticket}), cargos administrativos (\textit{clearance ticket}) y multas extendidas (\textit{stretch ticket})
+    \item El sistema también gestiona sanciones ya emitidas como multas por velocidad (\textit{speed ticket}), cargos administrativos (\textit{clearance ticket}) y multas en zonas de radar de tramo (\textit{stretch ticket}).
     \item Para cada uno de los registros se pueden identificar los siguientes elementos:
     \begin{itemize}
         \item Una autovía o carretera
@@ -132,7 +134,7 @@ Para poder desarrollar el nuevo sistema es necesario entender a la perfección l
 
 Los casos de uso se pueden dividir según su finalidad:
 \begin{itemize}
-    \item \textbf{Por funciones operativas}: Aquellos casos de uso que tienen como objetivo generar nuevas funcionalidades
+    \item \textbf{Por funciones operativas}: Aquellos casos de uso que tienen como objetivo generar nuevas funcionalidades.
     \item \textbf{Para análisis estadístico}: Aquellos casos de uso que tienen como objetivo organizar la información de tal manera que pueda realizarse un análisis estadístico sobre ella.
 \end{itemize}
 
@@ -141,7 +143,7 @@ Los casos de uso se pueden dividir según su finalidad:
 
 Encontramos 2 casos de uso enfocados a las funciones operativas.
 \begin{itemize}
-    \item \textbf{Emisión de sanciones}
+    \item \textbf{Emisión de sanciones:}
     
     Este caso de uso busca generar nuevas sanciones a aquellos conductores que no cumplen con una serie de condiciones relacionadas con la velocidad del coche durante el tramo de radar, la situación personal del conductor identificado, el estado de las revisiones técnicas del vehículos y otros factores.
     A continuación se realizará descripción de las condiciones que generarán una nueva sanción:
@@ -154,27 +156,41 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
     Con el objetivo de cumplir este caso de uso se ha generado una tabla llamada \texttt{sanciones}. En esta tabla se recopilarán todas las sanciones de cualquier tipo, tanto las generadas como las emitidas. Para ello se generará la siguiente tabla:
 \begin{table}[H]
     \centering
-    \begin{tabular}{l} 
-        \textbf{Sanciones} \\ \hline
-        DNI \hspace{0.6cm}K\\
-        Tipo \hspace{0.5cm}C↑\\
-        Fecha \hspace{0.4cm}C↓\\
-        Estado \\
-        Matrícula \\
-        Cantidad
+    \begin{tabular}{ll} 
+        \toprule
+        \multicolumn{2}{c}{\large\textbf{Sanciones}} \\ 
+        \midrule
+        dni\_deudor      & K\\
+        tipo             & C↑\\
+        fecha\_grabacion & C↓\\
+        estado \\
+        matrícula \\
+        cantidad\\
+        \bottomrule
     \end{tabular}
-    \end{table}
+    \caption {Tabla SANCIONES}
+ \end{table}
 
     Tal y como funciona \textit{Cassandra} es necesario crear una tabla vaya de la mano de la consulta. Para satisfacer el caso de uso se realizará a través de la siguiente consulta:
-    \begin{lstlisting}
-        Select * from Sanciones WHERE DNI = '12345678X' AND Tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
+    \lstset{style=cql}
+    \begin{lstlisting}[language=cql, caption=Consulta de todas las sanciones]
+        SELECT * from Sanciones WHERE dni_deudor = '12345678X' AND tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
     \end{lstlisting}
+    
 
     Como se puede observar para poder realizar esta consulta en \textit{Cassandra} es necesario que el \textit{DNI} y \textit{Tipo} formen parte de la clave primaria de la tabla. Además de estos dos atributos se considera que \textit{Fecha} permite ordenar todas las sanciones generadas y concede control en la unicidad de los registros. 
-    \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado}
+    \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado:}
     
-    Este caso de uso busca identificar aquellos expedientes que aún continuan activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir un proceso ejecutivo que es realizado por otro sistema de gestión de la DGT que permita avisar a los conductores para que realicen su pago.
+    Este caso de uso busca identificar aquellos expedientes que aún continuan activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir un proceso ejecutivo realizado por otro sistema de gestión de la DGT que permita avisar a los conductores para que realicen su pago. Esta funcionalidad se contempla en la siguiente consulta sobre la tabla anterior: 
+\vspace{0.3cm}
+
+\begin{lstlisting}[language=cql, caption=Consulta de las sanciones pendientes de pago]
+        SELECT * from Sanciones WHERE estado='stand_by' ALLOW FILTERING; 
+\end{lstlisting}
+
+En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING} debido a que las claves primaria y de clustering no forman parte de la condición de búsqueda. Sin embargo, ya que necseitamos comprobar todos los registros para extraer aquellos con el estado adecuado no presenta un problema.
 \end{itemize}
+
 
 \subsection{Análisis Estadístico}
 \label{subsec:analisis_estadistico}
@@ -191,9 +207,51 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
         \item Las marcas y modelos de los vehículos con más infracciones por velocidad
     \end{enumerate}
 
-    Es por ello que se han realizado tres tablas distintas sobre las que hacer las querys en Cassandra que permitan obtener cada una de estadísticas. Las tablas tienen esta forma: [introducir fotos]
+    Se han elabroado tres tablas distintas sobre las que hacer las consultas en \texttt{Cassandra}  que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll} 
+        \toprule
+        \multicolumn{2}{c}{\large\textbf{Multas por marca y modelo}} \\ 
+        \midrule
+        marca       & K\\
+        modelo      & K\\
+        num. multas & C↓\\
+        \bottomrule
+    \end{tabular}
+    \caption {Tabla MULTAS\_MARCA\_MODELO}
+\end{table}
 
-    Además, las querys que actúan sobre las tablas tienen este aspecto:
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll} 
+        \toprule
+        \multicolumn{2}{c}{\large\textbf{Multas por color}} \\ 
+        \midrule
+        color       & K\\
+        num. multas & C↓\\
+        \bottomrule
+    \end{tabular}
+    \caption {Tabla MULTAS\_COLOR}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll} 
+        \toprule
+        \multicolumn{2}{c}{\large\textbf{Multas por marca, velocidad y modelo}} \\ 
+        \midrule
+        marca       & K\\
+        modelo      & C↑\\
+        num. multas & C↓\\
+        \bottomrule
+    \end{tabular}
+    \caption {Tabla MULTAS\_VELOCIDAD\_MARCA\_MODELO}
+ \end{table}
+
+Es importante destacar que, aunque la primera y tercera tabla parezcan iguales, es necesario separarlas debido al requisito de filtrar las multas por tipo (velocidad). 
+
+   A continuación se incluyen las consultas realizadas sobre estas tablas:
 
     \lstset{style=cql}
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 1]
@@ -243,6 +301,7 @@ a
 
     \end{lstlisting}
 \end{itemize}
+
 
 \newpage
 \section{Conclusión}
