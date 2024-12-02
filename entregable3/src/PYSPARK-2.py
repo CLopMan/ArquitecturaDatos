@@ -2,10 +2,23 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, date_add, sum, avg, count
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import lit, count, max, avg
+from pyspark.sql.functions import to_date, date_format, col
+
+# ----- CONSTANTES -----
 
 KEYSPACE = "practica2"
 
-from pyspark.sql.functions import to_date, date_format, col
+# Ruta al archivo NDJSON
+file_path = "./data/sample_parsed.json"
+
+# ----- CREACIÓN DE LA SESIÓN DE PYSPARK -----
+spark = SparkSession.builder \
+    .appName("CargaDatos") \
+    .config("spark.cassandra.connection.host", "127.0.0.1") \
+    .config("spark.cassandra.connection.port", "9042") \
+    .getOrCreate()
+
+# ----- FUNCIONES AUXILIARES -----
 
 def convertir_formato_fecha(df, columna_fecha):
     """
@@ -29,26 +42,6 @@ def convertir_formato_fecha(df, columna_fecha):
 
     return df_converted
 
-
-# # Crear una sesión de Spark
-# spark = SparkSession.builder \
-#     .appName("Carga de datos con PySpark") \
-#     .getOrCreate()
-
-spark = SparkSession.builder \
-    .appName("CargaDatos") \
-    .config("spark.cassandra.connection.host", "127.0.0.1") \
-    .config("spark.cassandra.connection.port", "9042") \
-    .getOrCreate()
-
-
-# Ruta al archivo NDJSON
-file_path = "./data/sample_parsed.json"
-
-# Leer el archivo NDJSON
-json_df = spark.read.json(file_path)
-
-
 def rename_columns(df: DataFrame) -> DataFrame:
     def rename_struct_fields(schema):
         """Renombra campos dentro de estructuras anidadas."""
@@ -68,11 +61,103 @@ def rename_columns(df: DataFrame) -> DataFrame:
     # Aplicar los cambios al DataFrame
     return spark.createDataFrame(df.rdd, new_schema)
 
+def write_to_cassandra(table, name, mode):
+    table.write.format("org.apache.spark.sql.cassandra")\
+    .options(table=name, keyspace=KEYSPACE)\
+    .mode(mode)\
+    .save()
+
+# ----- FUNCIONES DE GENERACIÓN DE LAS TABLAS GENERALES -----
+def gen_impago_sanciones():
+    speed = speed_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("velocidad"))
+    clearance = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion","matricula", "cantidad").withColumn("tipo_multa", lit("clearance"))
+    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("stretch"))
+    return speed.union(clearance).union(stretch)
+
+def gen_sanciones():
+    speed = speed_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
+    clearance = clearance_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
+    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "estado" ,"matricula", "cantidad").withColumn("tipo", lit("stretch"))
+
+    # Obtiene impago y reorganiza
+    impago = impago_sanciones.select("dni_deudor", "fecha_grabacion", "cantidad", "matricula").withColumn("tipo", lit("impago")).withColumn("estado", lit("stand by"))
+    impago = impago.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
+
+    # Obtiene carne y reorganiza TODO: Revisar estado y cantidad
+    carne = discrepancia_carne.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
+    carne = carne.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
+
+    # Obtiene desperfectos y reorganiza TODO: Revisar estado y cantidad
+    desperfectos = vehiculo_deficiente.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
+    desperfectos = desperfectos.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
+    return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
+
+def gen_sanciones_vehiculo():
+    sanciones_vehiculo = sanciones.join(vehiculos, sanciones["matricula"] == vehiculos["matricula"]).select(vehiculos["matricula"], vehiculos["marca"], sanciones["tipo"], vehiculos["modelo"], vehiculos["color"])
+    return sanciones_vehiculo
+
+# ----- FUNCIONES DE GENERACIÓN DE LAS TABLAS DE LOS CASOS DE USO -----
+
+# Funciones del caso de uso 1
+def gen_multas_marca_modelo():
+    return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
+
+def gen_multas_color():
+    return sanciones_vehiculo.select("color").groupBy("color").agg(count("*").alias("num_multas"))
+
+def gen_velocidad_marca_modelo():
+    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
+
+# Funciones del caso de uso 2
+def gen_tramo_conflictivo():
+    # Primer groupBy para contar infracciones por tramo
+    infracciones_por_tramo = speed_ticket.select("carretera", "kilometro", "sentido") \
+        .groupBy("carretera", "kilometro", "sentido") \
+        .agg(count("*").alias("numero_infracciones")) \
+        .alias("t1")  # Alias para la primera tabla
+    
+    # Subconsulta con alias
+    max_infracciones = infracciones_por_tramo \
+        .groupBy("carretera") \
+        .agg(max("numero_infracciones").alias("mayor_numero_infracciones_carretera")) \
+        .alias("t2")  # Alias para la segunda tabla
+    
+    # Join usando los alias
+    tramo_conflictivo = infracciones_por_tramo.join(
+        max_infracciones,
+        (col("t1.carretera") == col("t2.carretera")) &
+        (col("t1.numero_infracciones") == col("t2.mayor_numero_infracciones_carretera"))
+    ).select(
+        col("t1.carretera"),
+        col("t1.kilometro"),
+        col("t1.sentido"),
+        col("t2.mayor_numero_infracciones_carretera")
+    )
+    return tramo_conflictivo
+
+def gen_exceso_velocidad_medio():
+    exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada") \
+    .groupBy("carretera") \
+    .agg(avg("velocidad_registrada").alias("exceso_velocidad_media"))
+    return exceso_velocidad_medio
+
+# Funciones del caso de uso 3
+def gen_conductores_infactores():
+    return sanciones.select("dni_deudor").groupBy("dni_deudor").agg(count("*").alias("num_multas"))
+
+# Función del caso de uso general
+def gen_sanciones_en_proceso():
+    return sanciones.filter(col("estado") == "stand by").select("dni_deudor", "tipo", "fecha_grabacion")
+
+# ----- LECTURA DE FICHERO -----
+
+# Leer el archivo NDJSON
+json_df = spark.read.json(file_path)
+
 # Aplicar la función al DataFrame original
 json_df = rename_columns(json_df)
 
-# Mostrar el nuevo esquema
-json_df.printSchema()
+# ----- GENERACIÓN DE LAS TABLAS -----
 
 # Seleccionar las columnas necesarias de la discrepancia carné
 discrepancia_carne = json_df.select(
@@ -100,7 +185,6 @@ vehiculo_deficiente = json_df.select(
 )
 
 # Seleccionar las columnas para la nueva tabla de clearance_ticket
-#### TODO: preguntarle a la profe que cojones es clearance_ticket porque en nuestro esquema guardamos una matrícula
 clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
     col("Clearance_ticket.Debtor.DNI").alias("dni_deudor"),
     col("Record.date").alias("fecha_grabacion"),
@@ -147,129 +231,35 @@ speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).se
     col("Speed_ticket.State").alias("estado")
 )
 
-
-def gen_impago_sanciones():
-    speed = speed_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("velocidad"))
-    clearance = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion","matricula", "cantidad").withColumn("tipo_multa", lit("clearance"))
-    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "matricula", "cantidad").withColumn("tipo_multa", lit("stretch"))
-    return speed.union(clearance).union(stretch)
-
-def gen_sanciones():
-    speed = speed_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
-    clearance = clearance_ticket.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
-    stretch = clearance_ticket.filter(col("fecha_pago").isNull() & (col("estado") != "fullfilled")).select("dni_deudor", "fecha_grabacion", "estado" ,"matricula", "cantidad").withColumn("tipo", lit("stretch"))
-
-    # Obtiene impago y reorganiza
-    impago = impago_sanciones.select("dni_deudor", "fecha_grabacion", "cantidad", "matricula").withColumn("tipo", lit("impago")).withColumn("estado", lit("stand by"))
-    impago = impago.select("dni_deudor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
-
-    # Obtiene carne y reorganiza TODO: Revisar estado y cantidad
-    carne = discrepancia_carne.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
-    carne = carne.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
-
-    # Obtiene desperfectos y reorganiza TODO: Revisar estado y cantidad
-    desperfectos = vehiculo_deficiente.select("dni_propietario", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000))
-    desperfectos = desperfectos.select("dni_propietario", "fecha_record", "estado", "matricula", "cantidad", "tipo")
-    return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
-
-def gen_sanciones_vehiculo():
-    sanciones_vehiculo = sanciones.join(vehiculos, sanciones["matricula"] == vehiculos["matricula"]).select(vehiculos["matricula"], vehiculos["marca"], sanciones["tipo"], vehiculos["modelo"], vehiculos["color"])
-    return sanciones_vehiculo
-
-def write_to_cassandra(table, name, mode):
-    table.write.format("org.apache.spark.sql.cassandra")\
-    .options(table=name, keyspace=KEYSPACE)\
-    .mode(mode)\
-    .save()
-
-def gen_tramo_conflictivo():
-    # Primer groupBy para contar infracciones por tramo
-    infracciones_por_tramo = speed_ticket.select("carretera", "kilometro", "sentido") \
-        .groupBy("carretera", "kilometro", "sentido") \
-        .agg(count("*").alias("numero_infracciones")) \
-        .alias("t1")  # Alias para la primera tabla
-    
-    # Subconsulta con alias
-    max_infracciones = infracciones_por_tramo \
-        .groupBy("carretera") \
-        .agg(max("numero_infracciones").alias("mayor_numero_infracciones_carretera")) \
-        .alias("t2")  # Alias para la segunda tabla
-    
-    # Join usando los alias
-    tramo_conflictivo = infracciones_por_tramo.join(
-        max_infracciones,
-        (col("t1.carretera") == col("t2.carretera")) &
-        (col("t1.numero_infracciones") == col("t2.mayor_numero_infracciones_carretera"))
-    ).select(
-        col("t1.carretera"),
-        col("t1.kilometro"),
-        col("t1.sentido"),
-        col("t2.mayor_numero_infracciones_carretera")
-    )
-    return tramo_conflictivo
-
-def gen_exceso_velocidad_medio():
-    exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada") \
-    .groupBy("carretera") \
-    .agg(avg("velocidad_registrada").alias("exceso_velocidad_media"))
-    return exceso_velocidad_medio
-
-
-# Funciones del caso de uso 1
-def gen_multas_marca_modelo():
-    return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
-
-def gen_multas_color():
-    return sanciones_vehiculo.select("color").groupBy("color").agg(count("*").alias("num_multas"))
-
-def gen_velocidad_marca_modelo():
-    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
-
-# Funciones del caso de uso 3
-def gen_conductores_infactores():
-    return sanciones.select("dni_deudor").groupBy("dni_deudor").agg(count("*").alias("num_multas"))
-
-# Función del caso de uso general
-def gen_sanciones_en_proceso():
-    return sanciones.filter(col("estado") == "stand by").select("dni_deudor", "tipo", "fecha_grabacion")
-
-# Inserción en Cassandra
-# write_to_cassandra(sanciones, "sanciones", "overwrite")
-
 # Generar las sanciones 
 impago_sanciones = gen_impago_sanciones()
 sanciones = gen_sanciones()
 sanciones_vehiculo = gen_sanciones_vehiculo()
 
-# Funciones de los casos de uso
-def gen_multas_marca_modelo():
-    return sanciones_vehiculo.select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
-
-def gen_multas_color():
-    return sanciones_vehiculo.select("color").groupBy("color").agg(count("*").alias("num_multas"))
-
-def gen_velocidad_marca_modelo():
-    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo").groupBy("marca", "modelo").agg(count("*").alias("num_multas"))
-
+# Caso de uso 1
 multas_marca_modelo = gen_multas_marca_modelo()
-multas_marca_modelo.show()
-
 multas_color = gen_multas_color()
-multas_color.show()
-
 velocidad_marca_modelo = gen_velocidad_marca_modelo()
-velocidad_marca_modelo.show()
 
-sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
-write_to_cassandra(sanciones, "sanciones", "append")
-#sanciones.select("dni_deudor", "fecha_grabacion", "matricula", "tipo", "cantidad").write.format("org.apache.spark.sql.cassandra").options(table="sanciones", keyspace=KEYSPACE).mode("append").save()
-
+# Caso de uso 2
 tramo_conflictivo = gen_tramo_conflictivo()
 exceso_velocidad_medio = gen_exceso_velocidad_medio()
-multas_marca_modelo = gen_multas_marca_modelo()
-multas_color = gen_multas_color()
-velocidad_marca_modelo = gen_velocidad_marca_modelo()
+
+# Caso de uso 3
 conductores_infractores = gen_conductores_infactores()
+
+# Caso de uso general
 sanciones_en_proceso = gen_sanciones_en_proceso()
+
+# ----- ESCRITURA EN CASSANDRA -----
+write_to_cassandra(sanciones, "sanciones", "append")
+write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
+write_to_cassandra(multas_color, "multas_color_coche", "append")
+write_to_cassandra(velocidad_marca_modelo, "velocidad_marca_modelo", "append")
+write_to_cassandra(tramo_conflictivo, "conflictos_tramo_sentido", "append")
+write_to_cassandra(exceso_velocidad_medio, "exceso_velocidad_carretera", "append")
+write_to_cassandra(sanciones_en_proceso, "sanciones_en_proceso", "append")
+write_to_cassandra(conductores_infractores, "concutores_mas_infractores", "append")
+
 spark.stop()
 exit()

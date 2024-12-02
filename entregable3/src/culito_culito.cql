@@ -18,7 +18,7 @@ CREATE TABLE sanciones (
 );
 
 
-CREATE TABLE sanciones_pagadas (
+CREATE TABLE sanciones_en_proceso (
     DNI text,
     Tipo text,
     Fecha date, 
