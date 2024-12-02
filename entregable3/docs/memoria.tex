@@ -156,16 +156,16 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
     Con el objetivo de cumplir este caso de uso se ha generado una tabla llamada \texttt{sanciones}. En esta tabla se recopilarán todas las sanciones de cualquier tipo, tanto las generadas como las emitidas. Para ello se generará la siguiente tabla:
 \begin{table}[H]
     \centering
-    \begin{tabular}{ll} 
+    \begin{tabular}{lll} 
         \toprule
         \multicolumn{2}{c}{\large\textbf{Sanciones}} \\ 
         \midrule
-        dni\_deudor      & K\\
-        tipo             & C↑\\
-        fecha\_grabacion & C↓\\
-        estado \\
-        matrícula \\
-        cantidad\\
+        dni\_deudor    & text & K \\
+        tipo           & text & C↑\\
+        fecha\_grabacion & date & C↓\\
+        estado & text &\\
+        matrícula & text &\\
+        cantidad & int &\\
         \bottomrule
     \end{tabular}
     \caption {Tabla SANCIONES}
@@ -207,16 +207,16 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
         \item Las marcas y modelos de los vehículos con más infracciones por velocidad
     \end{enumerate}
 
-    Se han elabroado tres tablas distintas sobre las que hacer las consultas en \texttt{Cassandra}  que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:
+    Se han elaborado tres tablas distintas sobre las que hacer las consultas en \texttt{Cassandra} que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:
 \begin{table}[H]
     \centering
-    \begin{tabular}{ll} 
+    \begin{tabular}{lll} 
         \toprule
         \multicolumn{2}{c}{\large\textbf{Multas por marca y modelo}} \\ 
         \midrule
-        marca       & K\\
-        modelo      & K\\
-        num. multas & C↓\\
+        marca       & text & K\\
+        modelo      & text & K\\
+        num. multas & int &\\
         \bottomrule
     \end{tabular}
     \caption {Tabla MULTAS\_MARCA\_MODELO}
@@ -224,12 +224,12 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{ll} 
+    \begin{tabular}{lll} 
         \toprule
         \multicolumn{2}{c}{\large\textbf{Multas por color}} \\ 
         \midrule
-        color       & K\\
-        num. multas & C↓\\
+        color       & text & K\\
+        num. multas & int & \\
         \bottomrule
     \end{tabular}
     \caption {Tabla MULTAS\_COLOR}
@@ -237,21 +237,21 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{ll} 
+    \begin{tabular}{lll} 
         \toprule
-        \multicolumn{2}{c}{\large\textbf{Multas por marca, velocidad y modelo}} \\ 
+        \multicolumn{2}{c}{\large\textbf{Multas velocidad por marca y modelo}} \\ 
         \midrule
-        marca       & K\\
-        modelo      & C↑\\
-        num. multas & C↓\\
+        marca      & text & K\\
+        modelo     & text & K\\
+        num. multas & int & \\
         \bottomrule
-    \end{tabular}
+    \end{tabular} 
     \caption {Tabla MULTAS\_VELOCIDAD\_MARCA\_MODELO}
  \end{table}
 
-Es importante destacar que, aunque la primera y tercera tabla parezcan iguales, es necesario separarlas debido al requisito de filtrar las multas por tipo (velocidad). 
+    Es importante destacar que, aunque la primera y tercera tabla parezcan iguales, es necesario separarlas debido al requisito de filtrar las multas por tipo (velocidad). 
 
-   A continuación se incluyen las consultas realizadas sobre estas tablas:
+    A continuación se incluyen las consultas realizadas sobre estas tablas:
 
     \lstset{style=cql}
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 1]
@@ -274,6 +274,37 @@ SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
         \item Tramo y sentido más conflictivo de una carretera 
     \end{enumerate}
 
+    Se han elaborado dos tablas distintas sobre las que hacer las consultas en \texttt{Cassandra} que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:  
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{2}{c}{\large\textbf{Exceso de Velocidad Medio Por Carretera}} \\ 
+            \midrule
+            carretera      & text & K\\
+            exceso medio     & float & \\
+            \bottomrule
+        \end{tabular}
+        \caption {Tabla EXCESO\_VELOCIDAD\_MEDIO\_CARRETERA}
+    \end{table}
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{2}{c}{\large\textbf{Tramo y Sentido más Conflicto por Carretera}} \\ 
+            \midrule
+            carretera     & text & K\\
+            kilometro     & int & \\
+            sentido       & text& \\
+            numero de infracciones & int & \\
+            \bottomrule
+        \end{tabular}
+        \caption {Tabla TRAMO\_SENTIDO\_MAS\_CONFLICTIVO}
+    \end{table}
+    
+
     Para poder hacer las consultas, es necesario dos tablas que se han definido de la siguiente manera [introducir fotos]
 
     Las querys para obtener las estadísticas son las siguientes:
@@ -288,16 +319,43 @@ SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor
  
     \item Estudio por conductores
 
-    El último caso de uso busca realizar un estudio sobre los conductores, concretamente, buscan determinar los conductores más infractores, así como la probabilidad de que se cometa una infracción cuando un vehículo no es conducido por el dueño del mismo. Para esto, se han diseñados las siguientes tablas: [introducir fotos]
+    El último caso de uso busca realizar un estudio sobre los conductores, concretamente, buscan determinar los conductores más infractores, así como la probabilidad de que se cometa una infracción cuando un vehículo no es conducido por el dueño del mismo. Para esto, se han diseñados las siguientes tablas: 
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{2}{c}{\large\textbf{Conductores Más Infractores}} \\ 
+            \midrule
+            DNI       & text & K\\
+            Suma de infractores     & int & \\
+            \bottomrule
+        \end{tabular}
+        \caption {Tabla CONDUCTORES\_MAS\_INFRACTORES}
+     \end{table}
+
+     \begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{2}{c}{\large\textbf{Probabilidades de Coche tenga Infracción con Conductor != Propietario}} \\ 
+            \midrule
+            marca      & text & K\\
+            modelo     & text & K\\
+            probabilidad   & float & \\
+            \bottomrule
+        \end{tabular}
+        \caption {Tabla PROBABILIDAD\_INFRACCION\_CONDUCTOR\_NO\_PROPIETARIO}
+     \end{table}
 
     Para consultar estos valores, se han diseñado las siguientes querys:
 
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 3]
 // Query para los conductores mas infractores
-SELECT DNI FROM concutores_mas_infractores ORDER BY (Suma_infracciones) DESC;
+SELECT DNI FROM conductores_mas_infractores ORDER BY (Suma_infracciones) DESC;
 
 // Query para la probabilidad
-a
+SELECT * FROM probabilidad_infraccion_conductor_no_propietario;
 
     \end{lstlisting}
 \end{itemize}
