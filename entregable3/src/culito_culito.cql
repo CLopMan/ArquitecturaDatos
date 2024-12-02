@@ -22,33 +22,33 @@ CREATE TABLE sanciones_en_proceso (
     dni_deudor text,
     tipo text,
     fecha_grabacion date, 
-    PRIMARY KEY ((DNI), Tipo, Fecha)
+    PRIMARY KEY ((dni_deudor), tipo, fecha_grabacion)
 );
 
 CREATE TABLE concutores_mas_infractores (
     dni_deudor text,
     num_multas int,
-    PRIMARY KEY (DNI, Suma_infracciones)
+    PRIMARY KEY (dni_deudor, num_multas)
 );
 
 CREATE TABLE multas_marca_modelo (
     marca text,
     modelo text,
     num_multas int,
-    PRIMARY KEY ((Marca, Modelo), Multas)
+    PRIMARY KEY ((marca, modelo), num_multas)
 );
 
 CREATE TABLE multas_color_coche (
     color text,
     num_multas int,
-    PRIMARY KEY (Color, Multas)
+    PRIMARY KEY (color, num_multas)
 );
 
 CREATE TABLE velocidad_marca_modelo (
     marca text,
     modelo text,
     num_multas int,
-    PRIMARY KEY ((Marca, Modelo), Multas)
+    PRIMARY KEY ((marca, modelo), num_multas)
 );
 
 CREATE TABLE conflictos_tramo_sentido (
@@ -56,11 +56,11 @@ CREATE TABLE conflictos_tramo_sentido (
     kilometro int,
     sentido text,
     mayor_numero_infracciones_carretera int,
-    PRIMARY KEY (Carretera, Infracciones)
+    PRIMARY KEY (carretera,)mayor_numero_infracciones_carretera)
 );
 
 CREATE TABLE exceso_velocidad_carretera (
     carretera text,
     exceso_velocidad_media float,
-    PRIMARY KEY (Carretera)
+    PRIMARY KEY (carretera)
 );
