@@ -136,9 +136,9 @@ def gen_tramo_conflictivo():
     return tramo_conflictivo
 
 def gen_exceso_velocidad_medio():
-    exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada") \
+    exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada", "velocidad_limite_radar") \
     .groupBy("carretera") \
-    .agg(avg("velocidad_registrada").alias("exceso_velocidad_media"))
+    .agg(((avg("velocidad_registrada") / avg("velocidad_limite_radar") * 100) - 100 ).alias("exceso_velocidad_media"))
     return exceso_velocidad_medio
 
 # Funciones del caso de uso 3
@@ -240,19 +240,20 @@ velocidad_marca_modelo = gen_velocidad_marca_modelo()
 # Caso de uso 2
 tramo_conflictivo = gen_tramo_conflictivo()
 exceso_velocidad_medio = gen_exceso_velocidad_medio()
-
+exceso_velocidad_medio.show()
 # Caso de uso 3
 conductores_infractores = gen_conductores_infactores()
 
 # ----- ESCRITURA EN CASSANDRA -----
 sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
+"""
 write_to_cassandra(sanciones, "sanciones", "append")
 write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
 write_to_cassandra(velocidad_marca_modelo, "velocidad_marca_modelo", "append")
 write_to_cassandra(tramo_conflictivo, "conflictos_tramo_sentido", "append")
 write_to_cassandra(exceso_velocidad_medio, "exceso_velocidad_carretera", "append")
-write_to_cassandra(conductores_infractores, "concutores_mas_infractores", "append")
-
+write_to_cassandra(conductores_infractores, "conductores_mas_infractores", "append")
+"""
 spark.stop()
 exit()
