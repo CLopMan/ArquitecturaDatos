@@ -256,13 +256,13 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
     \lstset{style=cql}
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 1]
 // Query para el numero de multas por marca y modelo
-SELECT Multas FROM multas_marca_modelo WHERE marca="Valor_Marca" AND modelo="Valor_Modelo";
+SELECT num_multas FROM multas_marca_modelo WHERE marca='Valor_Marca' AND modelo='Valor_Modelo';
 
 // Query para el numero de multas por color
-SELECT Color FROM multas_color_coche ORDER BY (Multas) DESC LIMIT 3;
+SELECT Color FROM multas_color_coche;
 
 // Query para sacar las marcas y modelos de los vehiculos con mas infracciones por velocidad
-SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
+SELECT marca , modelo, num_multas FROM velocidad_marca_modelo;
     \end{lstlisting}
 
     \item Estudio por carreteras
@@ -311,10 +311,10 @@ SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
 
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 2]
 // Query para el exceso de velocidad medio para una carretera determinada
-SELECT Exceso_velocidad FROM exceso_velocidad_carretera WHERE Carretera = "Valor_Carretera";
+SELECT exceso_velocidad_medio FROM exceso_velocidad_carretera WHERE Carretera = 'Valor_Carretera';
 
 // Query para el tramo y sentido mas conflictivo de una carretera
-SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor_Carretera" ORDER BY (Infracciones) DESC LIMIT 1;
+SELECT kilometro, sentido FROM conflictos_tramo_sentido WHERE Carretera = 'Valor_Carretera';
     \end{lstlisting}
  
     \item Estudio por conductores
@@ -352,7 +352,7 @@ SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor
 
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 3]
 // Query para los conductores mas infractores
-SELECT DNI FROM conductores_mas_infractores ORDER BY (Suma_infracciones) DESC;
+SELECT dni_deudor, num_multas FROM conductores_mas_infractores;
 
 // Query para la probabilidad
 SELECT * FROM probabilidad_infraccion_conductor_no_propietario;

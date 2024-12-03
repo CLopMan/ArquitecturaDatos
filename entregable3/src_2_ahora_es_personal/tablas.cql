@@ -9,21 +9,11 @@ with replication = {
 use practica2;
 CREATE TABLE sanciones (
     dni_deudor text,
-    dni_propietario text,
-    dni_conductor text,
     fecha_grabacion date,
     estado text,
     matricula text,
     cantidad int,
     tipo text,
-    PRIMARY KEY ((dni_deudor), tipo, fecha_grabacion)
-);
-
-
-CREATE TABLE sanciones_en_proceso (
-    dni_deudor text,
-    tipo text,
-    fecha_grabacion date, 
     PRIMARY KEY ((dni_deudor), tipo, fecha_grabacion)
 );
 
@@ -33,24 +23,27 @@ CREATE TABLE conductores_mas_infractores (
     PRIMARY KEY (dni_deudor, num_multas)
 );
 
-CREATE TABLE multas_marca_modelo (
+CREATE TABLE multas_por_marca_modelo (
     marca text,
     modelo text,
+    matricula text,
     num_multas int,
-    PRIMARY KEY ((marca, modelo), num_multas)
+    PRIMARY KEY ((marca, modelo), matricula)
 );
 
 CREATE TABLE multas_color_coche (
     color text,
+    matricula text,
     num_multas int,
-    PRIMARY KEY (color, num_multas)
+    PRIMARY KEY (color, matricula)
 );
 
 CREATE TABLE velocidad_marca_modelo (
     marca text,
     modelo text,
+    matricula text,
     num_multas int,
-    PRIMARY KEY ((marca, modelo), num_multas)
+    PRIMARY KEY ((marca, modelo), matricula)
 );
 
 CREATE TABLE conflictos_tramo_sentido (
