@@ -9,6 +9,8 @@ with replication = {
 use practica2;
 CREATE TABLE sanciones (
     dni_deudor text,
+    dni_propietario text,
+    dni_conductor text,
     fecha_grabacion date,
     estado text,
     matricula text,
