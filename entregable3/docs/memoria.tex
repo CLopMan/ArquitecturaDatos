@@ -158,7 +158,7 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
     \centering
     \begin{tabular}{lll} 
         \toprule
-        \multicolumn{2}{c}{\large\textbf{Sanciones}} \\ 
+        \multicolumn{3}{c}{\large\textbf{Sanciones}} \\ 
         \midrule
         dni\_deudor    & text & K \\
         tipo           & text & C↑\\
@@ -212,7 +212,7 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
     \centering
     \begin{tabular}{lll} 
         \toprule
-        \multicolumn{2}{c}{\large\textbf{Multas por marca y modelo}} \\ 
+        \multicolumn{3}{c}{\large\textbf{Multas por marca y modelo}} \\ 
         \midrule
         marca       & text & K\\
         modelo      & text & K\\
@@ -226,7 +226,7 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
     \centering
     \begin{tabular}{lll} 
         \toprule
-        \multicolumn{2}{c}{\large\textbf{Multas por color}} \\ 
+        \multicolumn{3}{c}{\large\textbf{Multas por color}} \\ 
         \midrule
         color       & text & K\\
         num. multas & int & \\
@@ -239,7 +239,7 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
     \centering
     \begin{tabular}{lll} 
         \toprule
-        \multicolumn{2}{c}{\large\textbf{Multas velocidad por marca y modelo}} \\ 
+        \multicolumn{3}{c}{\large\textbf{Multas velocidad por marca y modelo}} \\ 
         \midrule
         marca      & text & K\\
         modelo     & text & K\\
@@ -280,7 +280,7 @@ SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
         \centering
         \begin{tabular}{lll} 
             \toprule
-            \multicolumn{2}{c}{\large\textbf{Exceso de Velocidad Medio Por Carretera}} \\ 
+            \multicolumn{3}{c}{\large\textbf{Exceso de Velocidad Medio Por Carretera}} \\ 
             \midrule
             carretera      & text & K\\
             exceso medio     & float & \\
@@ -293,7 +293,7 @@ SELECT Marca, Modelo FROM velocidad_marca_modelo ORDER BY (Multas);
         \centering
         \begin{tabular}{lll} 
             \toprule
-            \multicolumn{2}{c}{\large\textbf{Tramo y Sentido más Conflicto por Carretera}} \\ 
+            \multicolumn{3}{c}{\large\textbf{Tramo y Sentido más Conflicto por Carretera}} \\ 
             \midrule
             carretera     & text & K\\
             kilometro     & int & \\
@@ -325,7 +325,7 @@ SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor
         \centering
         \begin{tabular}{lll} 
             \toprule
-            \multicolumn{2}{c}{\large\textbf{Conductores Más Infractores}} \\ 
+            \multicolumn{3}{c}{\large\textbf{Conductores Más Infractores}} \\ 
             \midrule
             DNI       & text & K\\
             Suma de infractores     & int & \\
@@ -338,7 +338,7 @@ SELECT Kilometro, Sentido FROM conflictos_tramo_sentido WHERE Carretera = "Valor
         \centering
         \begin{tabular}{lll} 
             \toprule
-            \multicolumn{2}{c}{\large\textbf{Probabilidades de Coche tenga Infracción con Conductor != Propietario}} \\ 
+            \multicolumn{3}{c}{\large\textbf{Probabilidades de Coche tenga Infracción con Conductor != Propietario}} \\ 
             \midrule
             marca      & text & K\\
             modelo     & text & K\\
