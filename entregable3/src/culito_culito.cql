@@ -25,7 +25,7 @@ CREATE TABLE sanciones_en_proceso (
     PRIMARY KEY ((dni_deudor), tipo, fecha_grabacion)
 );
 
-CREATE TABLE concutores_mas_infractores (
+CREATE TABLE conductores_mas_infractores (
     dni_deudor text,
     num_multas int,
     PRIMARY KEY (dni_deudor, num_multas)
