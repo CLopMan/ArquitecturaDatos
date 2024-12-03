@@ -232,6 +232,7 @@ def gen_conductores_infactores():
     return sanciones.select("dni_deudor").groupBy("dni_deudor").agg(count("*").alias("num_multas"))
 
 # Función del caso de uso general
+# TODO : evaular si se puede borrar
 def gen_sanciones_en_proceso():
     return sanciones.filter(col("estado") == "stand by").select("dni_deudor", "tipo", "fecha_grabacion")
 
