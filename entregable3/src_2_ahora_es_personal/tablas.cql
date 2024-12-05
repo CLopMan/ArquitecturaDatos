@@ -54,8 +54,4 @@ CREATE TABLE exceso_velocidad_carretera (
 );
 
 // Caso de uso 3
-CREATE TABLE conductores_mas_infractores (
-    dni_deudor text,
-    num_multas int,
-    PRIMARY KEY (dni_deudor, num_multas)
-);
+
