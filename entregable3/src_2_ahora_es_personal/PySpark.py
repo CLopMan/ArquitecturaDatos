@@ -110,10 +110,7 @@ def gen_tramo_conflictivo():
     return speed_ticket.select("carretera","kilometro","sentido","fecha_grabacion")
 
 def gen_exceso_velocidad_medio():
-    exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada", "velocidad_limite_radar") \
-    .groupBy("carretera") \
-    .agg(((avg("velocidad_registrada") / avg("velocidad_limite_radar") * 100) - 100 ).alias("exceso_velocidad_media"))
-    return exceso_velocidad_medio
+    return speed_ticket.select("carretera", "velocidad_registrada", "velocidad_limite_radar", "fecha_grabacion")
 
 # Funciones del caso de uso 3
 def gen_conductores_infactores():
@@ -221,6 +218,7 @@ conductores_infractores = gen_conductores_infactores()
 # ----- ESCRITURA EN CASSANDRA -----
 sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
 tramo_conflictivo = convertir_formato_fecha(tramo_conflictivo, "fecha_grabacion")
+exceso_velocidad_medio = convertir_formato_fecha(exceso_velocidad_medio,"fecha_grabacion")
 write_to_cassandra(sanciones, "sanciones", "append")
 write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
