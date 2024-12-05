@@ -108,32 +108,8 @@ def gen_multas_color():
 def gen_velocidad_marca_modelo():
     return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo", "matricula", "fecha_grabacion")
 
-# Funciones del caso de uso 2
 def gen_tramo_conflictivo():
-    # Primer groupBy para contar infracciones por tramo
-    infracciones_por_tramo = speed_ticket.select("carretera", "kilometro", "sentido") \
-        .groupBy("carretera", "kilometro", "sentido") \
-        .agg(count("*").alias("numero_infracciones")) \
-        .alias("t1")  # Alias para la primera tabla
-    
-    # Subconsulta con alias
-    max_infracciones = infracciones_por_tramo \
-        .groupBy("carretera") \
-        .agg(max("numero_infracciones").alias("mayor_numero_infracciones_carretera")) \
-        .alias("t2")  # Alias para la segunda tabla
-    
-    # Join usando los alias
-    tramo_conflictivo = infracciones_por_tramo.join(
-        max_infracciones,
-        (col("t1.carretera") == col("t2.carretera")) &
-        (col("t1.numero_infracciones") == col("t2.mayor_numero_infracciones_carretera"))
-    ).select(
-        col("t1.carretera"),
-        col("t1.kilometro"),
-        col("t1.sentido"),
-        col("t2.mayor_numero_infracciones_carretera")
-    )
-    return tramo_conflictivo
+    return speed_ticket.select("carretera","kilometro","sentido","fecha_grabacion")
 
 def gen_exceso_velocidad_medio():
     exceso_velocidad_medio = speed_ticket.select("carretera", "velocidad_registrada", "velocidad_limite_radar") \
@@ -247,6 +223,7 @@ conductores_infractores = gen_conductores_infactores()
 
 # ----- ESCRITURA EN CASSANDRA -----
 sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
+tramo_conflictivo = convertir_formato_fecha(tramo_conflictivo, "fecha_grabacion")
 write_to_cassandra(sanciones, "sanciones", "append")
 write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
