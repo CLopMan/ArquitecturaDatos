@@ -41,8 +41,8 @@ CREATE TABLE conflictos_tramo_sentido (
     carretera text,
     kilometro int,
     sentido text,
-    mayor_numero_infracciones_carretera int,
-    PRIMARY KEY ((carretera), mayor_numero_infracciones_carretera)
+    fecha_grabacion date,
+    PRIMARY KEY ((carretera, kilometro, sentido), fecha_grabacion)
 );
     
 CREATE TABLE exceso_velocidad_carretera (
