@@ -25,6 +25,7 @@ CREATE TABLE multas_marca_modelo (
     modelo text,
     matricula text,
     fecha_grabacion date,
+    tipo text,
     PRIMARY KEY ((marca, modelo), matricula, fecha_grabacion)
 );
 
@@ -33,14 +34,6 @@ CREATE TABLE multas_color_coche (
     matricula text,
     fecha_grabacion date,
     PRIMARY KEY (color, matricula, fecha_grabacion)
-);
-
-CREATE TABLE velocidad_marca_modelo (
-    marca text,
-    modelo text,
-    matricula text,
-    fecha_grabacion date,
-    PRIMARY KEY ((marca, modelo), matricula, fecha_grabacion)
 );
 
 // Caso de uso 2

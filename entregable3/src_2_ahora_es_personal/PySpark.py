@@ -100,13 +100,10 @@ def gen_sanciones_vehiculo():
 
 # Funciones del caso de uso 1
 def gen_multas_marca_modelo():
-    return sanciones_vehiculo.select("marca", "modelo", "matricula", "fecha_grabacion")
+    return sanciones_vehiculo.select("marca", "modelo", "matricula", "fecha_grabacion", "tipo")
 
 def gen_multas_color():
     return sanciones_vehiculo.select("color", "matricula", "fecha_grabacion")
-
-def gen_velocidad_marca_modelo():
-    return sanciones_vehiculo.filter(col("tipo") == "velocidad").select("marca", "modelo", "matricula", "fecha_grabacion")
 
 # Funciones del caso de uso 2
 def gen_tramo_conflictivo():
@@ -236,7 +233,6 @@ sanciones_vehiculo = convertir_formato_fecha(sanciones_vehiculo, "fecha_grabacio
 # Caso de uso 1
 multas_marca_modelo = gen_multas_marca_modelo()
 multas_color = gen_multas_color()
-velocidad_marca_modelo = gen_velocidad_marca_modelo()
 
 # Caso de uso 2
 tramo_conflictivo = gen_tramo_conflictivo()
@@ -250,7 +246,6 @@ sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
 write_to_cassandra(sanciones, "sanciones", "append")
 write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
-write_to_cassandra(velocidad_marca_modelo, "velocidad_marca_modelo", "append")
 write_to_cassandra(tramo_conflictivo, "conflictos_tramo_sentido", "append")
 write_to_cassandra(exceso_velocidad_medio, "exceso_velocidad_carretera", "append")
 write_to_cassandra(conductores_infractores, "conductores_mas_infractores", "append")
