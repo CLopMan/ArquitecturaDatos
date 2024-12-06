@@ -15,7 +15,7 @@
 \definecolor{miverde}{rgb}{0,0.6,0}
 \lstdefinelanguage{cql}{
   morekeywords={SELECT, FROM, WHERE, INSERT, INTO, UPDATE, DELETE, CREATE, TABLE, PRIMARY, KEY, IF, EXISTS, NOT, NULL, AND, OR, SET, USE, VALUES, IN, ALLOW, FILTERING}, % Palabras clave
-  sensitive=true, % Si las palabras clave distinguen mayúsculas de minúsculas
+  sensitive=false, % Si las palabras clave distinguen mayúsculas de minúsculas
   morecomment=[l]--, % Comentarios de línea (prefijados con "--")
   morecomment=[s]{/*}{*/}, % Comentarios de bloque
   morestring=[b]', % Cadenas entre comillas simples
@@ -99,6 +99,13 @@ análisis de datos y casos de uso, realización del diseño lógico y físico
 orientado a \texttt{Cassandra} e implementación de casos de uso en forma e
 consulta. Adicionalmente se empleará la herramienta \texttt{PySpark} para
 realizar el primer volcado de datos.
+
+En el diseño de consultas se tratará de aprovechar al máximo las capacidades de
+\texttt{Cassandra} en la lectura y escritura, dejando a la aplicación otra clase de
+operaciones. De esta forma, ambos sistemas trabajarán en conjunto, garantizando
+la eficiencia de la aplicación.
+
+
 % =======
 % Para la realización de esta práctica se busca realizar una migración de datos desde el gestor de bases de datos \textit{Mongodb} a \textit{Cassandra}, además de suplir una serie de casos de uso 
 % 
@@ -387,6 +394,16 @@ A continuación se puede ver una figura de cómo resultará la tabla \textit{San
     \caption{Modelo lógico de Sanciones}
     \label{fig:modelo_sanciones}
 \end{figure}
+
+\section{Optimización de la base de datos}
+\label{sec:optimusprime}
+Una vez lograda la funcionalidad completa de la base de datos se ha explorado la posibilidad de añadir índices o modificar las tablas para lograr una mayor eficiencia.
+
+\subsection{Uso de índices}
+
+\subsection{Inclusión de atributos en claves de clustering}
+
+
 \newpage
 \section{Conclusión}
 \label{sec:conclusion}
