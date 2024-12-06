@@ -47,13 +47,11 @@ CREATE TABLE conflictos_tramo_sentido (
     
 CREATE TABLE exceso_velocidad_carretera (
     carretera text,
-    exceso_velocidad_media float,
-    PRIMARY KEY (carretera)
+    velocidad_registrada int,
+    velocidad_limite_radar int,
+    fecha_grabacion date,
+    PRIMARY KEY (carretera, fecha_grabacion)
 );
 
 // Caso de uso 3
-CREATE TABLE conductores_mas_infractores (
-    dni_deudor text,
-    num_multas int,
-    PRIMARY KEY (dni_deudor, num_multas)
-);
+
