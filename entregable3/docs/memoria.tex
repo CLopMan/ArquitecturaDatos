@@ -116,9 +116,9 @@ la eficiencia de la aplicación.
 \section{Modelo de Información del nuevo sistema}
 \label{sec:modelo_informacion}
 
-El nuevo sistema será una migración del antiguo sistema por lo que es necesario realizar un estudio de los datos almacenados en el antiguo modelo. Como la anterior gestión de los datos se realizaba en el gestor de bases de datos \textit{mongodb} se tiene un json con todos los datos.
+Para completar la migración es necesario realizar un estudio de los datos almacenados en el antiguo modelo. Como la anterior gestión de los datos se realizaba en el gestor de bases de datos \textit{MongoDB} se tiene un \texttt{json} con todos los datos.
 
-Observando las características del json con la información del anterior sistema podemos sacar las siguientes conclusiones:
+Observando las características del \texttt{json} con la información del anterior sistema podemos sacar las siguientes conclusiones:
 \begin{itemize}
     \item El antiguo sistema almacena registro sobre los vehículos que han circulado por diferentes autovías, este registro se ha hecho a través de grabaciones realizadas por los diferentes radares situados por las autovías.
     \item El sistema también gestiona sanciones ya emitidas como multas por velocidad (\textit{speed ticket}), cargos administrativos (\textit{clearance ticket}) y multas en zonas de radar de tramo (\textit{stretch ticket}).
