@@ -164,6 +164,8 @@ vehiculo_deficiente = json_df.select(
 # Seleccionar las columnas para la nueva tabla de clearance_ticket
 clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
     col("Clearance_ticket.Debtor.DNI").alias("dni_deudor"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
+    col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("Record.date").alias("fecha_grabacion"),
     col("Clearance_ticket.Pay_date").alias("fecha_pago"),
     col("Clearance_ticket.Amount").alias("cantidad"),
@@ -174,10 +176,13 @@ clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
 # Seleccionar las columnas para la nueva tabla de stretch ticket
 stretch_ticket = json_df.filter(col("Stretch_ticket").isNotNull()).select(
     col("Stretch_ticket.Debtor.DNI").alias("dni_deudor"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
+    col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("Record.date").alias("fecha_grabacion"),
     col("Stretch_ticket.Pay_date").alias("fecha_pago"),
     col("Stretch_ticket.Amount").alias("cantidad"),
     col("vehicle.number_plate").alias("matricula"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
     col("Stretch_ticket.State").alias("estado")
 )
 
@@ -193,10 +198,10 @@ vehiculos = vehiculos.dropDuplicates()
 # Seleccionar las columnas para la nueva tabla de velocidad
 speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
     col("Speed_ticket.Debtor.DNI").alias("dni_deudor"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
+    col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("Speed_ticket.Pay_date").alias("fecha_pago"),
     col("Speed_ticket.Amount").alias("cantidad"),
-    col("vehicle.Driver.DNI").alias("dni_conductor"),
-    col("vehicle.Owner.DNI").alias("dni_propietario"),
     col("Record.date").alias("fecha_grabacion"),
     col("road.name").alias("carretera"),
     col("radar.mileage").alias("kilometro"),
