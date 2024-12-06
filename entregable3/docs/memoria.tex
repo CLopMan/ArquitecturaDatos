@@ -360,7 +360,33 @@ SELECT * FROM probabilidad_infraccion_conductor_no_propietario;
     \end{lstlisting}
 \end{itemize}
 
+\section{Modelo Lógico y Físico}
+\label{sec:modelo_logico_fisico}
+Tras presentar los casos de uso y cómo estos casos de uso derivan en sus respectivas consultas y tablas, estudiaremos cómo se ha realizado el modelo completo del sistema para conseguir las tablas antes mencionadas se carguen con los datos necesarios.
 
+\subsection{Modelo Lógico}
+
+El primer enfoque que se ha considerado es conseguir alimentar la tabla \textbf{Sanciones} con aquellas personas que tenga algún tipo de sanción. Por lo que para alimentar esta tabla tenemos que tratar dos grupos de sanciones: sanciones generadas y sanciones emitidas previamente.
+\begin{itemize}
+    \item \textbf{Sanciones ya generadas}: En los datos originales encontramos sanciones ya emitidas con anterioridad como lo son \textit{Speed Ticket}, \textit{Clearance Ticket} y \textit{Stretch Ticket}, por lo que ha creado un \textit{dataframe} en \textit{Pyspark} para cada una de estas multas.
+    \item \textbf{Nuevas sanciones}: Para generar nuevas sanciones se han contemplado las condiciones anteriormente mencionadas, y para cada una de estas se ha generado un \textit{dataframe} en \textit{Pyspark} que parte de los datos del \textit{JSON}, excepto para el caso de \textit{impago de sanciones} que utilizará los dataframes de las multas para conocer qué conductores deben de recibir otra infracción. En cada uno de los \textit{dataframes} se insertarán los datos que cumplan la condición, de manera que solo contengan los datos de aquellos conductores infractores. Finalmente los \textit{dataframes} creados han sido los siguientes: \texttt{Discrepancia\_Carnet}, \texttt{Vehiculo\_Deficiente}, \texttt{Impago\_Sanciones}
+\end{itemize}
+
+
+Cada de uno de los \textit{dataframes} mencionados tendrá únicamente los atributos necesarios para alimentar la tabla de \textit{Sanciones} y cualquier otra tabla que satisfaga a un caso de uso.
+La tabla \textit{Sanciones} será la unión de algunos atributos de cada una de los \textit{dataframes} mencionados y tal omo se ha indicado en el anterior punto, \textit{Sanciones} cuenta con los atributos \texttt{dni\_deudor}, \texttt{tipo}, \texttt{fecha\_grabación}, \texttt{estado}, \texttt{matricula}, \texttt{cantidad}; por lo que será necesario que los dataframes tengan esta información, o al menos pueda ser obtenida de algún modo.
+\newline
+
+Para ello los \textit{dataframes} anteriores contarán con \texttt{dni\_deudor}, \texttt{fecha\_grabación}, \texttt{matricula}; y si son sanciones emitidas previamente se usará su estado, tipo y cantidad, en cambio para las sanciones generadas se les dotará de una cantidad, el estado de \texttt{stand\_by} y el tipo según la procedencia de la multa.
+\newline
+
+A continuación se puede ver una figura de cómo resultará la tabla \textit{Sanciones}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./imagenes/Sanciones.png}
+    \caption{Modelo lógico de Sanciones}
+    \label{fig:modelo_sanciones}
+\end{figure}
 \newpage
 \section{Conclusión}
 \label{sec:conclusion}
