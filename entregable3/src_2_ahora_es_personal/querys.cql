@@ -8,7 +8,7 @@ SELECT marca, modelo, COUNT(*) as total_multas FROM multas_marca_modelo GROUP BY
 SELECT color, COUNT(*) as total_multas from multas_color_coche GROUP BY color;
 
 // Query 1.3: Funciona
-SELECT marca, modelo, COUNT(*) as total_multas FROM multas_marca_modelo WHERE tipo = 'velocidad' GROUP BY marca, modelo;
+SELECT marca, modelo, COUNT(*) as total_multas FROM multas_marca_modelo WHERE tipo = 'velocidad' GROUP BY marca, modelo ALLOW FILTERING;
 
 // Query 2.1 
 SELECT carretera, kilometro, sentido, COUNT(*) as infracciones_tramo FROM conflictos_tramo_sentido GROUP BY carretera, kilometro, sentido;

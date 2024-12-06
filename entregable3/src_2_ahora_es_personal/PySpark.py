@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, to_date, date_add, sum, avg, count
+from pyspark.sql.functions import col, to_timestamp, date_add, sum, avg, count, concat
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import lit, count, max, avg
 from pyspark.sql.functions import to_date, date_format, col
@@ -22,22 +22,16 @@ spark = SparkSession.builder \
 
 def convertir_formato_fecha(df, columna_fecha):
     """
-    Convierte el formato de una columna de fechas de 'dd/MM/yyyy' a 'yyyy/MM/dd'.
+    Convierte el formato de una columna de fechas a timestamps
 
     :param df: DataFrame de PySpark
     :param columna_fecha: Nombre de la columna que contiene las fechas a convertir
     :return: DataFrame con la columna de fecha convertida
     """
-    # Convertir la columna de fecha de 'dd/MM/yyyy' a formato date
+    # Convertir la columna de fecha a formato timestamp
     df_converted = df.withColumn(
         columna_fecha,
-        to_date(col(columna_fecha), 'dd/MM/yyyy')
-    )
-
-    # Cambiar el formato de la fecha a 'yyyy/MM/dd'
-    df_converted = df_converted.withColumn(
-        columna_fecha,
-        date_format(col(columna_fecha), 'yyyy-MM-dd')
+        to_timestamp(col(columna_fecha), 'dd/MM/yyyy HH:mm:ss.SSS')
     )
 
     return df_converted
@@ -144,7 +138,7 @@ json_df = rename_columns(json_df)
 discrepancia_carne = json_df.select(
     col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
-    col("Record.date").alias("fecha_record"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_record"),
     col("vehicle.Driver.Birthdate").alias("fecha_nacimiento"),
     col("vehicle.Driver.driving_license.date").alias("fecha_carne"),
     col("vehicle.number_plate").alias("matricula")
@@ -155,7 +149,7 @@ discrepancia_carne = json_df.select(
 vehiculo_deficiente = json_df.select(
     col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
-    col("Record.date").alias("fecha_record"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_record"),
     col("vehicle.roadworthiness").alias("revisiones"),
     col("vehicle.make").alias("marca"),
     col("vehicle.model").alias("modelo"),
@@ -170,7 +164,7 @@ clearance_ticket = json_df.filter(col("Clearance_ticket").isNotNull()).select(
     col("Clearance_ticket.Debtor.DNI").alias("dni_deudor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
     col("vehicle.Driver.DNI").alias("dni_conductor"),
-    col("Record.date").alias("fecha_grabacion"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_grabacion"),
     col("Clearance_ticket.Pay_date").alias("fecha_pago"),
     col("Clearance_ticket.Amount").alias("cantidad"),
     col("vehicle.number_plate").alias("matricula"),
@@ -182,7 +176,7 @@ stretch_ticket = json_df.filter(col("Stretch_ticket").isNotNull()).select(
     col("Stretch_ticket.Debtor.DNI").alias("dni_deudor"),
     col("vehicle.Owner.DNI").alias("dni_propietario"),
     col("vehicle.Driver.DNI").alias("dni_conductor"),
-    col("Record.date").alias("fecha_grabacion"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_grabacion"),
     col("Stretch_ticket.Pay_date").alias("fecha_pago"),
     col("Stretch_ticket.Amount").alias("cantidad"),
     col("vehicle.number_plate").alias("matricula"),
@@ -206,7 +200,7 @@ speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).se
     col("vehicle.Driver.DNI").alias("dni_conductor"),
     col("Speed_ticket.Pay_date").alias("fecha_pago"),
     col("Speed_ticket.Amount").alias("cantidad"),
-    col("Record.date").alias("fecha_grabacion"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_grabacion"),
     col("road.name").alias("carretera"),
     col("radar.mileage").alias("kilometro"),
     col("radar.direction").alias("sentido"),
