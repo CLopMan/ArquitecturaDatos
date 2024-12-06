@@ -126,6 +126,10 @@ def gen_tramo_conflictivo():
 def gen_exceso_velocidad_medio():
     return speed_ticket.select("carretera", "velocidad_registrada", "velocidad_limite_radar", "fecha_grabacion")
 
+# Funciones del caso de uso 3
+def gen_probabilidad_infraccion():
+    return sanciones.select("matricula", "fecha_grabacion", (col("dni_conductor") == col("dni_propietario")).alias("conductor_igual_propietario"))
+
 # ----- LECTURA DE FICHERO -----
 
 # Leer el archivo NDJSON
@@ -227,6 +231,9 @@ multas_color = gen_multas_color()
 tramo_conflictivo = gen_tramo_conflictivo()
 exceso_velocidad_medio = gen_exceso_velocidad_medio()
 
+# Caso de uso 3
+probabilidad_infraccion = gen_probabilidad_infraccion()
+probabilidad_infraccion = convertir_formato_fecha(probabilidad_infraccion, "fecha_grabacion")
 
 # ----- ESCRITURA EN CASSANDRA -----
 sanciones = convertir_formato_fecha(sanciones, "fecha_grabacion")
@@ -237,6 +244,7 @@ write_to_cassandra(multas_marca_modelo, "multas_marca_modelo", "append")
 write_to_cassandra(multas_color, "multas_color_coche", "append")
 write_to_cassandra(tramo_conflictivo, "conflictos_tramo_sentido", "append")
 write_to_cassandra(exceso_velocidad_medio, "exceso_velocidad_carretera", "append")
+write_to_cassandra(probabilidad_infraccion, "probabilidad_infraccion", "append")
 
 spark.stop()
 exit()

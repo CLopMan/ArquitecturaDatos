@@ -56,4 +56,9 @@ CREATE TABLE exceso_velocidad_carretera (
 );
 
 // Caso de uso 3
-
+CREATE TABLE probabilidad_infraccion (
+    matricula text,
+    fecha_grabacion date,
+    conductor_igual_propietario boolean,
+    PRIMARY KEY (conductor_igual_propietario, matricula, fecha_grabacion)
+);

@@ -19,3 +19,5 @@ SELECT carretera, AVG(velocidad_registrada) as media_velocidad_registrada, AVG(v
 // Query 3.1
 SELECT dni_deudor, COUNT(*) as num_multas FROM sanciones GROUP BY dni_deudor;
 
+// Query 3.2
+select conductor_igual_propietario, count(*) from probabilidad_infraccion GROUP BY conductor_igual_propietario;
