@@ -10,11 +10,15 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{amsmath}
 
 
 \definecolor{miverde}{rgb}{0,0.6,0}
+\definecolor{miazul}{rgb}{0.5,0.5,1}
 \lstdefinelanguage{cql}{
-  morekeywords={SELECT, FROM, WHERE, INSERT, INTO, UPDATE, DELETE, CREATE, TABLE, PRIMARY, KEY, IF, EXISTS, NOT, NULL, AND, OR, SET, USE, VALUES, IN, ALLOW, FILTERING}, % Palabras clave
+  morekeywords={SELECT, FROM, WHERE, INSERT, INTO, UPDATE, DELETE, CREATE, TABLE, PRIMARY, KEY, IF, EXISTS, NOT, NULL, AND, OR, SET, USE, VALUES, IN, ALLOW, FILTERING, AS}, % Palabras clave
+    ndkeywords={COUNT, AVG},
+    ndkeywordstyle=\color{miazul},
   sensitive=false, % Si las palabras clave distinguen mayúsculas de minúsculas
   morecomment=[l]--, % Comentarios de línea (prefijados con "--")
   morecomment=[s]{/*}{*/}, % Comentarios de bloque
@@ -137,7 +141,9 @@ Con el objetivo de entender el dominio del problema se ha creado un diagrama de 
 \section{Análisis de los Casos de Uso}
 \label{sec:analisis_casos_de_uso}
 
-Para poder desarrollar el nuevo sistema es necesario entender a la perfección los casos de uso que se nos plantean, por lo que a continuación se analizarán los distintos casos de uso que se nos presentan.
+Para poder desarrollar el nuevo sistema es necesario entender a la perfección
+los casos de uso que se nos plantean. A continuación se analizan los
+distintos casos de uso que se presentan.
 
 Los casos de uso se pueden dividir según su finalidad:
 \begin{itemize}
@@ -148,7 +154,7 @@ Los casos de uso se pueden dividir según su finalidad:
 \subsection{Funciones Operativas}
 \label{subsec:funciones_operativas}
 
-Encontramos 2 casos de uso enfocados a las funciones operativas.
+Encontramos dos casos de uso enfocados a las funciones operativas.
 \begin{itemize}
     \item \textbf{Emisión de sanciones:}
     
@@ -160,19 +166,21 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
         \item \textit{Impago de sanciones emitidas}: Se generará una nueva sanción a aquellos conductores no hayan realizado el pago durante la fecha prevista, dado que no se tiene el conocimiento de esta fecha se tomará una fecha que corresponda con la mediana de todas las fechas existentes en la base de datos.
     \end{itemize}
 
-    Con el objetivo de cumplir este caso de uso se ha generado una tabla llamada \texttt{sanciones}. En esta tabla se recopilarán todas las sanciones de cualquier tipo, tanto las generadas como las emitidas. Para ello se generará la siguiente tabla:
+    Con el objetivo de cumplir este caso de uso se ha generado una tabla llamada \texttt{sanciones}. En esta tabla se recopilarán todas las sanciones de cualquier tipo, tanto generadas como las emitidas. Para ello se generará la siguiente tabla:
 \begin{table}[H]
     \centering
     \begin{tabular}{lll} 
         \toprule
         \multicolumn{3}{c}{\large\textbf{Sanciones}} \\ 
         \midrule
-        dni\_deudor    & text & K \\
-        tipo           & text & C↑\\
+        dni\_deudor      & text & K \\
+        tipo             & text & C↑\\
         fecha\_grabacion & date & C↓\\
-        estado & text &\\
-        matrícula & text &\\
-        cantidad & int &\\
+        cantidad         & int  &   \\
+        dni\_conductor   & text &   \\
+        dni\_propietario & text &   \\
+        estado           & text &   \\
+        matrícula        & text &   \\
         \bottomrule
     \end{tabular}
     \caption {Tabla SANCIONES}
@@ -183,21 +191,29 @@ Encontramos 2 casos de uso enfocados a las funciones operativas.
     \begin{lstlisting}[language=cql, caption=Consulta de todas las sanciones]
         SELECT * from Sanciones WHERE dni_deudor = '12345678X' AND tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
     \end{lstlisting}
-    
 
-    Como se puede observar para poder realizar esta consulta en \textit{Cassandra} es necesario que el \textit{DNI} y \textit{Tipo} formen parte de la clave primaria de la tabla. Además de estos dos atributos se considera que \textit{Fecha} permite ordenar todas las sanciones generadas y concede control en la unicidad de los registros. 
+    Como se puede observar para poder realizar esta consulta en
+    \textit{Cassandra} es necesario que el \textit{DNI} y \textit{Tipo} formen
+    parte de la clave primaria de la tabla. Además, la elección de
+    \textit{Fecha} como clave de \textit{clustering} permite ordenar todas las
+    sanciones generadas y concede control en la unicidad de los registros. 
+
     \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado:}
     
-    Este caso de uso busca identificar aquellos expedientes que aún continuan activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir un proceso ejecutivo realizado por otro sistema de gestión de la DGT que permita avisar a los conductores para que realicen su pago. Esta funcionalidad se contempla en la siguiente consulta sobre la tabla anterior: 
+    Este caso de uso busca identificar aquellos expedientes que continuan
+    activos pero su plazo de pago no ha sido cerrado, para posteriormente abrir
+    un proceso ejecutivo realizado por otro sistema de gestión de la DGT que
+    permita avisar a los conductores para que realicen su pago. Esta
+    funcionalidad se contempla en la siguiente consulta sobre la tabla
+    anterior: 
 \vspace{0.3cm}
 
 \begin{lstlisting}[language=cql, caption=Consulta de las sanciones pendientes de pago]
         SELECT * from Sanciones WHERE estado='stand_by' ALLOW FILTERING; 
 \end{lstlisting}
 
-En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING} debido a que las claves primaria y de clustering no forman parte de la condición de búsqueda. Sin embargo, ya que necseitamos comprobar todos los registros para extraer aquellos con el estado adecuado no presenta un problema.
+En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING} debido a que las claves primaria y de clustering no forman parte de la condición de búsqueda. Sin embargo, ya que es necesario comprobar todos los registros para extraer aquellos con el estado adecuado no presenta un problema.
 \end{itemize}
-
 
 \subsection{Análisis Estadístico}
 \label{subsec:analisis_estadistico}
@@ -214,16 +230,18 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
         \item Las marcas y modelos de los vehículos con más infracciones por velocidad
     \end{enumerate}
 
-    Se han elaborado tres tablas distintas sobre las que hacer las consultas en \texttt{Cassandra} que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:
+    Se han elaborado dos tablas distintas sobre las que hacer las consultas en \texttt{Cassandra} que permitan obtener cada una de estas estadísticas. Las tablas tienen la siguiente forma:
 \begin{table}[H]
     \centering
     \begin{tabular}{lll} 
         \toprule
         \multicolumn{3}{c}{\large\textbf{Multas por marca y modelo}} \\ 
         \midrule
-        marca       & text & K\\
-        modelo      & text & K\\
-        num. multas & int &\\
+        marca              & text & K\\
+        modelo             & text & K\\
+        matricula          & text & C↓\\
+        fecha\_grabacion   & text & C↓\\
+        tipo               & text &  \\
         \bottomrule
     \end{tabular}
     \caption {Tabla MULTAS\_MARCA\_MODELO}
@@ -235,53 +253,53 @@ Para el análisis estadístico la DGT está interesada en los siguientes estudio
         \toprule
         \multicolumn{3}{c}{\large\textbf{Multas por color}} \\ 
         \midrule
-        color       & text & K\\
-        num. multas & int & \\
+        color            & text & K\\
+        matricula        & text & C↓\\
+        fecha\_grabacion & date & C↓\\
         \bottomrule
     \end{tabular}
     \caption {Tabla MULTAS\_COLOR}
 \end{table}
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{lll} 
-        \toprule
-        \multicolumn{3}{c}{\large\textbf{Multas velocidad por marca y modelo}} \\ 
-        \midrule
-        marca      & text & K\\
-        modelo     & text & K\\
-        num. multas & int & \\
-        \bottomrule
-    \end{tabular} 
-    \caption {Tabla MULTAS\_VELOCIDAD\_MARCA\_MODELO}
- \end{table}
-
-    Es importante destacar que, aunque la primera y tercera tabla parezcan iguales, es necesario separarlas debido al requisito de filtrar las multas por tipo (velocidad). 
+    
+    La primera tabla recoge todas las sanciones con la marca y el modelo como claves de partición. De esta forma la consulta relativa a este caso de uso será más eficiente.
 
     A continuación se incluyen las consultas realizadas sobre estas tablas:
 
     \lstset{style=cql}
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 1]
 // Query para el numero de multas por marca y modelo
-SELECT num_multas FROM multas_marca_modelo WHERE marca='Valor_Marca' AND modelo='Valor_Modelo';
+SELECT marca, modelo, COUNT(*) as total_multas FROM multas_marca_modelo GROUP BY marca, modelo;
 
 // Query para el numero de multas por color
-SELECT Color FROM multas_color_coche;
+SELECT color, COUNT(*) as total_multas from multas_color_coche GROUP BY color;
 
 // Query para sacar las marcas y modelos de los vehiculos con mas infracciones por velocidad
-SELECT marca , modelo, num_multas FROM velocidad_marca_modelo;
+SELECT marca, modelo, COUNT(*) as total_multas FROM multas_marca_modelo WHERE tipo = 'velocidad' GROUP BY marca, modelo ALLOW FILTERING;
     \end{lstlisting}
+
+    Para la primera y tercera consulta, se obtienen directamente los datos que
+    se piden para el caso de uso. En el caso de la consulta 2, se obtienen
+    todas las multas para cada color y se deja como responsabilidad de la
+    aplicación obtener los tres registros con mayor número de multas. Esto último
+    es necesario ya que \texttt{Cassandra} sólo soporta ordenar en una única
+    partición. No obstante, los datos de esta consulta podrían estar
+    distribuidos en varios nodos.
 
     \item Estudio por carreteras
 
-    Este caso de uso busca realizar un estudio sobre las carreteras más conflictivas de España, haciendo un análisis del exceso de velocidad medio en carreteras, así como los tramos donde más infracciones se han cometido. Es por ello que se pide lo siguiente:
+    Este caso de uso busca realizar un estudio sobre las carreteras más
+    conflictivas de España, haciendo un análisis del exceso de velocidad medio
+    en carreteras, así como los tramos donde más infracciones se han cometido.
+    Es por ello que se pide lo siguiente:
 
     \begin{enumerate}
         \item Exceso de velocidad medio para una carretera determinada
         \item Tramo y sentido más conflictivo de una carretera 
     \end{enumerate}
 
-    Se han elaborado dos tablas distintas sobre las que hacer las consultas en \texttt{Cassandra} que permitan obtener cada una de estadísticas. Las tablas tienen esta forma:  
+    Se han elaborado dos tablas distintas sobre las que hacer las consultas en
+    \texttt{Cassandra} que permitan obtener cada una de estadísticas. Las
+    tablas tienen la siguiente forma:  
 
     \begin{table}[H]
         \centering
@@ -289,11 +307,13 @@ SELECT marca , modelo, num_multas FROM velocidad_marca_modelo;
             \toprule
             \multicolumn{3}{c}{\large\textbf{Exceso de Velocidad Medio Por Carretera}} \\ 
             \midrule
-            carretera      & text & K\\
-            exceso medio     & float & \\
+            carretera        & text & K\\
+            fecha\_grabacion & date & C↓\\
+            velocidad\_registrada & int & \\
+            velocidad\_limite\_radar & int & \\
             \bottomrule
         \end{tabular}
-        \caption {Tabla EXCESO\_VELOCIDAD\_MEDIO\_CARRETERA}
+        \caption {Tabla EXCESO\_VELOCIDAD\_CARRETERA}
     \end{table}
 
     \begin{table}[H]
@@ -303,73 +323,86 @@ SELECT marca , modelo, num_multas FROM velocidad_marca_modelo;
             \multicolumn{3}{c}{\large\textbf{Tramo y Sentido más Conflicto por Carretera}} \\ 
             \midrule
             carretera     & text & K\\
+            fecha\_grabacion & date & C↓\\
             kilometro     & int & \\
             sentido       & text& \\
-            numero de infracciones & int & \\
             \bottomrule
         \end{tabular}
-        \caption {Tabla TRAMO\_SENTIDO\_MAS\_CONFLICTIVO}
+        \caption {Tabla CONFLICTO\_TRAMO\_SENTIDO}
     \end{table}
-    
 
-    Para poder hacer las consultas, es necesario dos tablas que se han definido de la siguiente manera [introducir fotos]
+    Las consultas para obtener las estadísticas son las siguientes:
 
-    Las querys para obtener las estadísticas son las siguientes:
-
-    \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 2]
+    \begin{lstlisting}[language=cql, caption=Consultas para el caso de uso 2]
 // Query para el exceso de velocidad medio para una carretera determinada
-SELECT exceso_velocidad_medio FROM exceso_velocidad_carretera WHERE Carretera = 'Valor_Carretera';
+SELECT carretera, AVG(velocidad_registrada) as media_velocidad_registrada, AVG(velocidad_limite_radar) as media_velocidad_radar FROM exceso_velocidad_carretera GROUP BY carretera;
 
 // Query para el tramo y sentido mas conflictivo de una carretera
-SELECT kilometro, sentido FROM conflictos_tramo_sentido WHERE Carretera = 'Valor_Carretera';
+SELECT carretera, kilometro, sentido, COUNT(*) as infracciones_tramo FROM conflictos_tramo_sentido GROUP BY carretera, kilometro, sentido;
     \end{lstlisting}
+
+    La primera consulta devuele el promedio de las velocidades esperadas en un tramo y las registradas para conches infractores. La segunda consulta permite conocer el número de infracciones para cada tramo de cada carretera, de forma que la aplicación pueda seleccionar aquellos registros con mayor número de multas.
+
+    Adicionalmente, se puede modificar ligeramente la consulta en caso de querer seleccionar los registros para una única carretera. En este caso sería necesario usar la \textit{flag} \texttt{ALLOW FILTERING} debido a que la condición where no agrupa todos los atributos de la clave de partición. 
+
+\begin{lstlisting}[language=cql, caption=Querys modificada para el caso de uso 2]
+// Query para el tramo y sentido mas conflictivo de una carretera concreta
+SELECT carretera, kilometro, sentido, COUNT(*) as infracciones_tramo FROM conflictos_tramo_sentido  where carretera = 'A2' GROUP BY carretera, kilometro, sentido ALLOW FILTERING;
+    \end{lstlisting}
+
  
     \item Estudio por conductores
 
-    El último caso de uso busca realizar un estudio sobre los conductores, concretamente, buscan determinar los conductores más infractores, así como la probabilidad de que se cometa una infracción cuando un vehículo no es conducido por el dueño del mismo. Para esto, se han diseñados las siguientes tablas: 
+    El último caso de uso busca realizar un estudio sobre los conductores,
+    concretamente, buscan determinar los conductores más infractores, así como
+    la probabilidad de que se cometa una infracción cuando un vehículo no es
+    conducido por el dueño del mismo.
+
+    Para determinar qué conductores son los más infractores se ha diseñado la siguiente consulta sobre la tabla sanciones:
+    \begin{lstlisting}[language=cql, caption=Consulta para obtener los conductores más infractores]
+SELECT dni_deudor, COUNT(*) as num_multas FROM sanciones GROUP BY dni_deudor;
+    \end{lstlisting}
+
+    Esta consulta devuelve el número de infracciones para cada conductor, de forma que la aplicación pueda seleccionar fácilmente el valor más alto del registro.
+
+    Para obtener la probabilidad de que un infractor sea el propietario del coche se ha diseñado una tabla adicional con la siguiente forma:
 
     \begin{table}[H]
         \centering
         \begin{tabular}{lll} 
             \toprule
-            \multicolumn{3}{c}{\large\textbf{Conductores Más Infractores}} \\ 
+            \multicolumn{3}{c}{\large\textbf{Probabilidad de infracción}} \\ 
             \midrule
-            DNI       & text & K\\
-            Suma de infractores     & int & \\
+            conductor\_igual\_propietario & boolean & K\\
+            matricula        & text      & C↓\\
+            fecha\_grabacion & timestamp & C↓\\
             \bottomrule
         \end{tabular}
         \caption {Tabla CONDUCTORES\_MAS\_INFRACTORES}
      \end{table}
 
-     \begin{table}[H]
-        \centering
-        \begin{tabular}{lll} 
-            \toprule
-            \multicolumn{3}{c}{\large\textbf{Probabilidades de Coche tenga Infracción con Conductor != Propietario}} \\ 
-            \midrule
-            marca      & text & K\\
-            modelo     & text & K\\
-            probabilidad   & float & \\
-            \bottomrule
-        \end{tabular}
-        \caption {Tabla PROBABILIDAD\_INFRACCION\_CONDUCTOR\_NO\_PROPIETARIO}
-     \end{table}
+    El valor requerido es el resultado de la siguiente fórmula: 
 
-    Para consultar estos valores, se han diseñado las siguientes querys:
+    $$P = \frac{\text{num\_conductor\_eq\_propietario}}{\text{num\_multas}}$$
+
+    Estos dos valores se pueden obtener fácilmente mediante dos consultas:
 
     \begin{lstlisting}[language=cql, caption=Querys para el caso de uso 3]
-// Query para los conductores mas infractores
-SELECT dni_deudor, num_multas FROM conductores_mas_infractores;
-
-// Query para la probabilidad
-SELECT * FROM probabilidad_infraccion_conductor_no_propietario;
-
+// Obtencion del numero de multas totales
+SELECT COUNT(*) FROM sanciones;
+// Obtencion del numero de infracciones con conductor = propietario
+select conductor_igual_propietario, count(*) from probabilidad_infraccion GROUP BY conductor_igual_propietario;
     \end{lstlisting}
 \end{itemize}
 
+    Con ambos valores la aplicación puede calcular el valor requerido, garantizando la resolución eficiente de este caso de uso.
+
 \section{Modelo Lógico y Físico}
 \label{sec:modelo_logico_fisico}
-Tras presentar los casos de uso y cómo estos casos de uso derivan en sus respectivas consultas y tablas, estudiaremos cómo se ha realizado el modelo completo del sistema para conseguir las tablas antes mencionadas se carguen con los datos necesarios.
+Tras presentar los casos de uso y cómo estos casos de uso derivan en sus
+respectivas consultas y tablas, estudiaremos cómo se ha realizado el modelo
+completo del sistema para conseguir las tablas antes mencionadas se carguen con
+los datos necesarios.
 
 \subsection{Modelo Lógico}
 
@@ -378,7 +411,6 @@ El primer enfoque que se ha considerado es conseguir alimentar la tabla \textbf{
     \item \textbf{Sanciones ya generadas}: En los datos originales encontramos sanciones ya emitidas con anterioridad como lo son \textit{Speed Ticket}, \textit{Clearance Ticket} y \textit{Stretch Ticket}, por lo que ha creado un \textit{dataframe} en \textit{Pyspark} para cada una de estas multas.
     \item \textbf{Nuevas sanciones}: Para generar nuevas sanciones se han contemplado las condiciones anteriormente mencionadas, y para cada una de estas se ha generado un \textit{dataframe} en \textit{Pyspark} que parte de los datos del \textit{JSON}, excepto para el caso de \textit{impago de sanciones} que utilizará los dataframes de las multas para conocer qué conductores deben de recibir otra infracción. En cada uno de los \textit{dataframes} se insertarán los datos que cumplan la condición, de manera que solo contengan los datos de aquellos conductores infractores. Finalmente los \textit{dataframes} creados han sido los siguientes: \texttt{Discrepancia\_Carnet}, \texttt{Vehiculo\_Deficiente}, \texttt{Impago\_Sanciones}
 \end{itemize}
-
 
 Cada de uno de los \textit{dataframes} mencionados tendrá únicamente los atributos necesarios para alimentar la tabla de \textit{Sanciones} y cualquier otra tabla que satisfaga a un caso de uso.
 La tabla \textit{Sanciones} será la unión de algunos atributos de cada una de los \textit{dataframes} mencionados y tal omo se ha indicado en el anterior punto, \textit{Sanciones} cuenta con los atributos \texttt{dni\_deudor}, \texttt{tipo}, \texttt{fecha\_grabación}, \texttt{estado}, \texttt{matricula}, \texttt{cantidad}; por lo que será necesario que los dataframes tengan esta información, o al menos pueda ser obtenida de algún modo.
