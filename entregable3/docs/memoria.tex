@@ -893,7 +893,45 @@ La queery funciona correctamente, devolvienvdo dos filas con las que calcular un
 \end{itemize}
 
 \newpage
-\section{Conclusión}
+\section{Conclusiones}
+
+Esta práctica nos ha permitido introducirnos al diseño de bases de datos con la
+herramienta \verb!Cassandra! y a la migración de bases de datos a través de
+herramientas como \verb!PySpark!. Consideramos crucial la combinación de los
+lenguajes de programación con los sistemas de gestión de bases de datos para
+lograr un sistema eficiente y una migración completa que nos perita explotar
+las características de \verb!Cassandra!.
+
+También destacamos la importancia de crear un modelo adaptado al sistema gestor
+de base de datos. En el caso particular de esta práctica, \verb!Cassandra! es
+un tipo de base de datos no relacional orientado a columnas optimizado para
+lecturas y escrituras masivas. Por lo que las tablas del diseño deben estar
+optimizadas para consultas específicas, estructuradas según las necesidades de
+acceso y los patrones de consulta previstos. Esto implica diseñar tablas que
+minimicen las uniones (joins) y aprovechen al máximo las características clave
+de \verb!Cassandra!, como las claves de partición y las claves de agrupamiento
+para garantizar una distribución uniforme de los datos y un acceso eficiente.
+
+Además, esta práctica resalta la importancia de comprender las diferencias
+entre los sistemas de gestión de bases de datos relacionales y no relacionales.
+En \verb!Cassandra!, el modelado de datos se centra en las consultas, por lo
+que el diseño debe priorizar el rendimiento y la escalabilidad, sacrificando en
+algunos casos la normalización para evitar operaciones costosas.
+
+En cuanto a la migración con \verb!PySpark!, destacamos su capacidad para
+manejar grandes volúmenes de datos y transformarlos de manera eficiente, lo que
+resulta fundamental en entornos distribuidos. \verb!PySpark! no solo facilita
+la extracción y transformación de datos desde fuentes heterogéneas, sino que
+también permite integrarlos de manera óptima en un sistema como
+\verb!Cassandra!, asegurando consistencia y alta disponibilidad.
+
+En conclusión, esta práctica nos ha permitido integrar nuestros conocimientos
+teóricos en bases de datos No SQL con conocimiento práctico en lenguajes de
+programación, comprendiendo la importancia de elegir las herramientas adecuadas
+para diseñar y migrar bases de datos que satisfagan las necesidades de
+escalabilidad y eficiencia de sistemas para la gestión de grandes volúmenes de
+información.
+
 \label{sec:conclusion}
 
 \end{document}
