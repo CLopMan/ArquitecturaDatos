@@ -56,6 +56,22 @@
     inputencoding=utf8
 }
 
+\lstdefinestyle{python}{
+    language=Python,
+    backgroundcolor=\color{gray!2},     % Color de fondo
+    basicstyle=\ttfamily,               % Tipo y tamaño de fuente
+    keywordstyle=\color{blue}\bfseries, % Color para palabras clave
+    stringstyle=\color{miverde},        % Color para cadenas
+    commentstyle=\color{red},           % Color para comentarios
+    showspaces=false,                   % No mostrar espacios
+    showstringspaces=false,             % No mostrar espacios en las cadenas
+    frame=single,                       % Poner un marco alrededor del código
+    breaklines=true,                    % Romper las líneas largas
+    captionpos=b,                       % Posición del caption
+    tabsize=4,                          % Tamaño de las tabulaciones
+    escapeinside={\%*}{*)},             % Para incluir código LaTeX en los listings
+    morekeywords={self}                 % Palabras clave adicionales
+}
 %title
 \title{Práctica 1} 
 
@@ -201,7 +217,7 @@ Encontramos dos casos de uso enfocados a las funciones operativas.
     Tal y como funciona \textit{Cassandra} es necesario crear una tabla vaya de la mano de la consulta. Para satisfacer el caso de uso se realizará a través de la siguiente consulta:
     \lstset{style=cql}
     \begin{lstlisting}[language=cql, caption=Consulta de todas las sanciones]
-        SELECT * from Sanciones WHERE dni_deudor = '12345678X' AND tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
+SELECT * from Sanciones WHERE dni_deudor = '12345678X' AND tipo IN ('discrepancia carne', 'desperfectos', 'impago') 
     \end{lstlisting}
 
     Como se puede observar para poder realizar esta consulta en
@@ -221,7 +237,7 @@ Encontramos dos casos de uso enfocados a las funciones operativas.
 \vspace{0.3cm}
 
 \begin{lstlisting}[language=cql, caption=Consulta de las sanciones pendientes de pago]
-        SELECT * from Sanciones WHERE estado='stand_by' ALLOW FILTERING; 
+SELECT * from Sanciones WHERE estado='stand_by' ALLOW FILTERING; 
 \end{lstlisting}
 
 En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING} debido a que las claves primaria y de clustering no forman parte de la condición de búsqueda. Sin embargo, ya que es necesario comprobar todos los registros para extraer aquellos con el estado adecuado no presenta un problema.
@@ -509,6 +525,18 @@ Es por eso que necesitan alimentarse exclusivamente de información relativa a l
 
 \subsubsection{Probabilidad de infracción}
 
+La tabla con información relativa al caso de uso 3, es decir, el análisis de la probabilidad de infracción cuando el conductor de un vehículo multado es distinto al propietario, contiene los siguientes datos: 
+\begin{itemize}
+    \item\textbf{Conductor igual a propietario}: \verb!conductor_igual_propietario!, \verb!matricula!, y \verb!fecha_grabacion!.
+\end{itemize}
+
+Es por ello que necesitan obtener estos datos de la tabla de sanciones, explicada anteriormente,tal y como se puede observar en la siguiente figura:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\textwidth]{./imagenes/conductores.png}
+    \caption{Modelo lógico de la Probabilidad de multa con conductor igual a propietario}
+\end{figure}
 
 \subsubsection{Diagrama completo}
 
@@ -519,6 +547,169 @@ Con todo lo anterior, el diagrama que representa la nueva base de datos, así co
 %    \includegraphics[width=0.8\textwidth]{./imagenes/diagram.png}
 %    \caption{Modelo lógico de Tramos conflictivos y Exceso de velocidad medio}
 %\end{figure}
+
+\newpage
+\section{Implementación y carga de las tablas}
+\label{sec:implementacion}
+Una vez analizados los casos de uso y definididas tanto las consultas como las tablas, es necesario tratar la implementación de esta base de datos. Como se ha mencionado en puntos anteriores, se ha usado PySpark para la carga y algo de preprocesado de la información original. Es por ello que este apartado trata en detalle el script creado para la carga de datos, así cómo un breve análisis de los resultados.
+
+\subsection{Carga de datos en PySpark}
+El primer paso para realizar la carga de datos en las tablas es crear una sesión de PySpark para leer los datos del \textit{JSON} original. Para esto, primero hay que parsear el fichero original para que PySpark lo pueda procesar, algo que se ha realizado con la ayuda de un script extra que se encarga de introducir cada uno de los documentos originales en una lista, añadiendo los separadores entre documentos. Esto se ha realizado mediante el siguiente código:
+
+\lstset{style=python}
+\begin{lstlisting}[language=python, caption=Parseo del JSON original]
+import re
+
+with open("./data/sample.json", "r", encoding="ISO-8859-1") as f:
+    file_content = f.read()
+    file_parsed = re.sub(r"(?<!}\s)\n(?!\s{)", "", file_content)
+    file_parsed = re.sub(r" +", " ", file_parsed)
+    file_parsed = re.sub(r"\n(?!\s])", ",\n", file_parsed)
+
+with open("./data/sample_parsed.json", "w", encoding="utf-8") as f:
+    f.write(file_parsed)
+\end{lstlisting}
+
+Una vez que se han obtenido los datos parseados, se cargan en una sesión de PySpark de la siguiente manera:
+
+\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
+# ----- CREACION DE LA SESION DE PYSPARK -----
+spark = SparkSession.builder \
+    .appName("CargaDatos") \
+    .config("spark.cassandra.connection.host", "127.0.0.1") \
+    .config("spark.cassandra.connection.port", "9042") \
+    .getOrCreate()
+
+# ----- LECTURA DE FICHERO -----
+
+# Leer el archivo NDJSON
+json_df = spark.read.json(file_path)
+
+# Aplicar la funcion al DataFrame original
+json_df = rename_columns(json_df)
+\end{lstlisting}
+
+\subsection{Creación de las tablas intermedias}
+Una vez que se han cargado los datos, es necesario crear las tablas en PySpark que servirán para alimentar las tablas explicadas en el apartado anterior. Las tablas de PySpark se corresponden con las tablas de color verde de los diagramas del punto 4. Todas estas tablas se realizan de la misma manera, por lo que se usará la tabla de \textit{speed tickets} como ejemplo al ser la más extensa. La creación de las tablas de PySpark se realiza de la siguiente manera:
+
+\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
+# Seleccionar las columnas para la nueva tabla de velocidad
+speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
+    col("Speed_ticket.Debtor.DNI").alias("dni_deudor"),
+    col("vehicle.Owner.DNI").alias("dni_propietario"),
+    col("vehicle.Driver.DNI").alias("dni_conductor"),
+    col("Speed_ticket.Pay_date").alias("fecha_pago"),
+    col("Speed_ticket.Amount").alias("cantidad"),
+    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_grabacion"),
+    col("road.name").alias("carretera"),
+    col("radar.mileage").alias("kilometro"),
+    col("radar.direction").alias("sentido"),
+    col("road.speed_limit").alias("velocidad_limite_carretera"),
+    col("radar.speed_limit").alias("velocidad_limite_radar"),
+    col("Record.speed").alias("velocidad_registrada"),
+    col("vehicle.number_plate").alias("matricula"),
+    col("Speed_ticket.State").alias("estado")
+)
+\end{lstlisting}
+
+\subsection{Creación de las tablas finales}
+Al conseguir las tablas que servirán para alimentar las tablas sobre las que haremos las consultas, se pueden construir las tablas finales. De la misma manera que en el apartado anterior, todas se realizan de la misma manera, por lo que se usará la tabla de \textit{sanciones} como ejemplo al ser la más extensa. Estas tablas normalmente requieren de uniones entre los datos, creando así una generación muy extensa, por lo que se decidió crear una función para la generación de cada tabla, las cuáles cuentan con una estructura similar a la siguiente:
+
+\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
+def gen_sanciones():
+
+    # Calcula los speeding tickets
+    speed = speed_ticket.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
+
+    # Calcula los clearence tickets
+    clearance = clearance_ticket.select("dni_deudor", "dni_propietario","dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
+
+    # Calcula los stretch ticket
+    stretch = clearance_ticket.select("dni_deudor", "dni_propietario","dni_conductor", "fecha_grabacion", "estado" ,"matricula", "cantidad").withColumn("tipo", lit("stretch"))
+
+    # Obtiene impago y reorganiza
+    impago = impago_sanciones.select("dni_deudor","dni_propietario", "dni_conductor", "fecha_grabacion", "cantidad", "matricula").withColumn("tipo", lit("impago")).withColumn("estado", lit("stand by"))
+    impago = impago.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
+
+    # Obtiene carne y reorganiza
+    carne = discrepancia_carne.select("dni_propietario", "dni_conductor", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000)).withColumn("dni_deudor", discrepancia_carne["dni_conductor"])
+    carne = carne.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_record", "estado", "matricula", "cantidad", "tipo")
+
+    # Obtiene desperfectos y reorganiza
+    desperfectos = vehiculo_deficiente.select("dni_propietario", "dni_conductor", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000)).withColumn("dni_deudor", vehiculo_deficiente["dni_propietario"])
+    desperfectos = desperfectos.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_record", "estado", "matricula","cantidad", "tipo")
+
+    return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
+\end{lstlisting}
+
+\subsection{Inserción de las tablas en Cassandra}
+Una vez que se tienen las tablas finales creadas en PySpark, se procede al último paso, la inserción de datos en Cassandra. Para ello, se define una función que se encarga de escribir en Cassandra una tabla, la cuál tiene la siguiente forma:
+
+\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
+def write_to_cassandra(table, name, mode):
+    table.write.format("org.apache.spark.sql.cassandra")\
+    .options(table=name, keyspace=KEYSPACE)\
+    .mode(mode)\
+    .save()
+\end{lstlisting}
+
+Un problema encontrado en la inserción fueron las fechas de las grabaciones. Para poder insertar una fecha que lograse alcanzar una mayor individualidad a las multas, se decidió juntar la fecha de grabación con el tiempo, logrando así un timestamp para las fechas. Para poder insertar estos datos correctamente, fue necesario cambiar el tipo de las columnas, algo que se realizó con la siguiente función:
+
+\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
+def convertir_formato_fecha(df, columna_fecha):
+    """
+    Convierte el formato de una columna de fechas a timestamps
+
+    :param df: DataFrame de PySpark
+    :param columna_fecha: Nombre de la columna que contiene las fechas a convertir
+    :return: DataFrame con la columna de fecha convertida
+    """
+    # Convertir la columna de fecha a formato timestamp
+    df_converted = df.withColumn(
+        columna_fecha,
+        to_timestamp(col(columna_fecha), 'dd/MM/yyyy HH:mm:ss.SSS')
+    )
+
+    return df_converted
+\end{lstlisting}
+
+Con estos pasos, se consiguió insertar los datos en Cassandra.
+
+\subsection{Prueba de las querys}
+Para probar que las tablas de cassandra funcionan, es necesario comprobar que las querys explicadas con anterioridad funcionan de acuerdo a lo exigido por los casos de uso en el enunciado.
+
+\subsubsection{Querys de las funciones operativas}
+Se han obtenido los siguientes resultados para las querys de las funciones operativas:
+
+\begin{itemize}
+    \item \textbf{Emisión de sanciones}
+    \item \textbf{Apertura de un proceso ejecutivo para expedientes activos sin plazo de pago cerrado}
+\end{itemize}
+
+\subsubsection{Querys del análisis estadístico 1}
+Se han obtenido los siguientes resultados para las querys del análisis estadístico 1:
+
+\begin{itemize}
+    \item \textbf{Multas por marca y modelo}
+    \item \textbf{Multas por color}
+    \item \textbf{Multas de velocidad por marca y modelo}
+\end{itemize}
+
+\subsubsection{Querys del análisis estadístico 2}
+Se han obtenido los siguientes resultados para las querys del análisis estadístico 2:
+
+\begin{itemize}
+    \item \textbf{Exceso de velocidad medio}
+    \item \textbf{Tramo y sentido mas conflictivo}
+\end{itemize}
+
+\subsubsection{Querys del análisis estadístico 3}
+Se han obtenido los siguientes resultados para las querys del análisis estadístico 3:
+
+\begin{itemize}
+    \item \textbf{Conductores más infractores}
+    \item \textbf{Probabilidad de infracción cuando el conductor es distinto al propietario}
+\end{itemize}
 
 \newpage
 \section{Conclusión}
