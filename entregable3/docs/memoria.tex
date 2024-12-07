@@ -549,6 +549,116 @@ Con todo lo anterior, el diagrama que representa la nueva base de datos, así co
 %    \caption{Modelo lógico de Tramos conflictivos y Exceso de velocidad medio}
 %\end{figure}
 
+\subsection{Modelo físico}
+\label{subsec:modelo_fisico}
+\subsubsection{Dimensionamiento}
+\label{subsubsec:dimensionamiento}
+Con el objetivo de entender y analizar la escalabilidad de nuestros sistema, el nivel de optimización del sistema y el balanceo de la carga de trabajo, se calcularán los tamaños de las particiones.
+
+Para conocer el número de celdas (valores) que tiene cada partición usaremos la siguiente fórmula: $$N_v = N_r \cdot (N_c - N_{pk} - N_s) + N_s$$
+\begin{itemize}
+    \item $N_v$: Número de valores en la partición
+    \item $N_s$: Número de columnas estáticas
+    \item $N_r$: Número de filas
+    \item $N_c$: Número de columnas
+    \item $N_pk$: Número de columnas en la pk
+\end{itemize}
+
+Con esta fórmula calcularemos el número de valores de cada partición para cada una de las tablas. Para entender cómo se realizarán los cálculos se se desarrollará la fórmula para una tabla, en este caso utilizaremos la tabla \textbf{Sanciones}:
+\begin{itemize}
+    \item Nº de columnas: $N_c = 8$
+    \item Nº de columnas en pk: $N_{pk} = 3$
+    \item Nº de columnas estáticas: $N_s= 0$
+    \item Nº de filas: $N_r = 114049$
+\end{itemize}
+
+Obtenidos los datos para la fórmula, sustituimos $$114049 \cdot (8 - 3 - 0) + 0 = 570245 \text{filas por partición}$$
+
+A continuación se muestran los valores por partición para cada tabla:
+\begin{itemize}
+    \item \textbf{Sanciones}: 570245
+    \item \textbf{Multas por Marca y Modelo}: 48725
+    \item \textbf{Multas por Color}: 1
+    \item \textbf{Conductor igual a propietario}: 1
+    \item \textbf{Tramo y Sentido más conflictivo por carretera}: 88362
+    \item \textbf{Exceso de Velocidad medio por carretera}: 88362
+\end{itemize}
+Es importante destacar que para las tablas donde todas las columnas forman parte de la clave primaria, aunque la formula resulte en $0$, se ha tomado el valor $1$, dado que cada fila insertada se ubicará en una partición.
+
+Tras calcular el número de filas por partición calcularemos el tamaño en disco de las tablas, esto se conseguirá a través de la siguiente fórmula: $$S_t = \sum_i sizeOf(c_k) + \sum_j sizeOf(c_{s_j}) + N_r \cdot (\sum_k sizeOf(c_{r_k}) + \sum_l sizeOf(c_{c_l})) + N_v \cdot sizeOf(t_{avg})$$
+
+\begin{itemize}
+    \item $c_k$: Cuenta las columnas que son clave de partición
+    \item $c_s$: Cuenta las columnas estáticas
+    \item $c_r$: Cuenta las columnas normales
+    \item $c_c$: Cuenta las columnas que pertenecen a la clave de clusterización
+    \item $t_avg$: Promedio de bytes utilizados por Cassandra para almacenar los metadatos de un valor, suele ser 8 bytes
+    \item La función $sizeOf()$ indica el tamaño en bytes de los tipos CQL utilizados en la definición de cada columna
+\end{itemize}
+
+Al igual que para el anterior cálculo, se desarrollará en profundidad el cálculo del tamaño de una partición de una tabla, de nuevo usaremos \textbf{Sanciones}:
+\begin{itemize}
+    \item No tiene columnas estáticas ($c_s = 0$)
+    \item Cálculo de bytes por columna
+    \begin{itemize}
+        \item DNI deudor, es de tipo texto con 9 simbolos = 9 bytes
+        \item DNI propietario, 9 bytes
+        \item DNI conductor, 9 bytes
+        \item Tipo, es de tipo texto y la cadena más larga puede ser de 19 caracteres = 19 bytes
+        \item Fecha, timestamp = 8 bytes
+        \item Estado, es de tipo texto y la cadena más larga es "fullfied" que tiene 10 caracteres = 10 bytes
+        \item Matricula, 7 caracteres = 7 bytes
+        \item Cantidad, int = 4 bytes
+    \end{itemize}
+    \item Suma de columnas de clave de partición = 9 bytes
+    \item Suma de columnas de clave de clusterización = 27 bytes
+    \item Suma de columnas normales = 29 bytes
+\end{itemize}
+
+Con los valores calculados sustituimos en la fórmula $$S_t = 9 + 0 + 114049 \cdot (39 + 27) + 570245 \cdot 8 = 10948713 bytes = 12.09 MB$$
+A continuación se muestran los tamaños de las particiones de las siguientes tablas:
+\begin{itemize}
+    \item \textbf{Sanciones}: 12.09 MB
+    \item \textbf{Multas por Marca y Modelo}: 2.05 MB
+        %marca = Supuesto de 15 bytes
+        %modelo = Supuesto de 15 bytes
+        %matricula = 7 bytes
+        %Fecha = 8 bytes
+        %Tipo = 19 bytes
+        %N_r = 48725
+    \item \textbf{Multas por Color}: 0.73 MB
+        %color = Supuesto de 20 bytes
+        %Fecha = 8 bytes
+        %Matricula = 7 bytes
+        %N_r = 48725
+    \item \textbf{Conductor igual a propietario}: 0.73 MB
+        % Conductor = propietario = 1 bytes (bool)
+        % Matricula = 7 bytes
+        % Fecha = 8 bytes
+        %N_r = 48725
+    \item \textbf{Tramo y Sentido más conflictivo por carretera}: 1.5 MB
+        %Carretera = Supuesto de 8 bytes
+        %Kilometro = 4 bytes (int)
+        %Sentido = 10 bytes (text, "descending" son 10 caracteres)
+        %Num_infrac = 4 bytes (int)
+        %N_r = 44181
+    \item \textbf{Exceso de Velocidad medio por carretera}: 1.41 MB
+        %Carretera = Supuesto de 8 bytes
+        %Fecha = 8 bytes
+        %Velocidad registrada = 4 bytes (int)
+        %Velocidad radar = 4 bytes (int)
+        %N_r = 44181
+\end{itemize}
+
+Se ha supuesto que la marca y el modelo no superarán los 15 caracteres, que el color de los vehiculos no superará los 20 caracteres y que el nombre de la carretera no supera los 8 caracteres.
+
+
+
+El límite de tamaño de una partición en Cassandra es de 2GB, pero se recomienda que el tamaño sea de 1MB. En nuestro caso todas las tablas tienen una gran holgura respecto al tamaño máximo de una partición, sin embargo únicamente 2 tablas no exceden el tamaño recomendado. Dos tablas que exceden el tamaño recomendado no lo exceden por mucho, únicamente por 0.5 MB, no obstante, la tabla \textbf{Sanciones} supera en un 1200\% el tamaño recomendado, por lo que sería una tabla en la que poner el foco.
+
+¿Cómo se podría solucionar el excesivo tamaño de la tabla \textbf{Sanciones}? La propuesta más sencilla es añadir una de las columnas normales como clave de partición, en este caso podríamos añadir a la clave de partición el atributo \textit{Matricula}, de esta manera podemos conocer las sanciones que tiene una persona según los coches que tenga. Este cambio reduce el número de filas por partición de 570245 a \textbf{456196}, lo que supone que el tamaño de cada partición sea de \textbf{10.38 MB}, lo que supone una reducción del \textbf{14\%} del tamaño con tan solo cambiar un atributo.
+Esto no es suficiente, pero se podrían proponer nuevas propuestas para mejorar más esta tabla, hasta llegar al tamaño recomendado. 
+
 \newpage
 \section{Implementación y carga de las tablas}
 \label{sec:implementacion}
