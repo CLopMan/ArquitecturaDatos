@@ -419,6 +419,8 @@ los datos necesarios.
 
 \subsection{Modelo Lógico}
 
+\subsubsection{Sanciones}
+
 El primer enfoque que se ha considerado es conseguir alimentar la tabla
 \textbf{Sanciones} con aquellas personas que tenga algún tipo de sanción. Por
 lo que para alimentar esta tabla tenemos que tratar dos grupos de sanciones:
@@ -456,7 +458,6 @@ información, o al menos pueda ser obtenida de algún modo. Esta nueva tabla ser
 insertada en \texttt{Cassandra}.
 
 Para ello los \textit{dataframes} anteriores contarán con \texttt{dni\_deudor}, \texttt{fecha\_grabación}, \texttt{matricula}; y si son sanciones emitidas previamente se usará su estado, tipo y cantidad, en cambio para las sanciones generadas se les dotará de una cantidad, el estado de \texttt{stand\_by} y el tipo según la procedencia de la multa.
-\newline
 
 A continuación se puede ver un diagrama que recoge el proceso de migración para la creación de la tabla \textit{Sanciones}.
 \begin{figure}[H]
@@ -468,6 +469,56 @@ A continuación se puede ver un diagrama que recoge el proceso de migración par
 
 En verde se representan los \textit{dataframes} auxiliares que se construyen en \textit{Pyspark}.
 
+\subsubsection{Multas por marca y modelo o por color}
+
+Estas dos tablas se alimentan de datos de los vehículos y de las sanciones.
+Para cumplir con la funcionalidad descrita en los casos de uso y tal y cómo se
+expuso en el punto \ref{subsec:analisis_estadistico} es necesario que estas
+tablas contengan los siguientes datos: 
+
+\begin{itemize}
+    \item\textbf{Multas por marca y modelo}: \verb!matricula!, \verb!modelo!,
+    \verb!marca!, \verb!fecha_grabacion! y \verb!tipo_multa!.
+    \item\textbf{Multas por color}: \verb!color!, \verb!fecha_grabacion! y \verb!matricula!.
+\end{itemize}
+
+El proceso de migración que se ha seguido para alimentar estas tablas viene recogido en el siguiente diagrama:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{./imagenes/multas_estadistica.png}
+    \caption{Modelo lógico de Multas por Color y Multas por marca y modelo}
+\end{figure}
+
+\subsubsection{Tramo conflictivo y exceso de velocidad medio}
+
+Las tablas con información relativa al tramo más conflictivo y el exceso de velocidad medio contienen los siguientes datos: 
+
+\begin{itemize}
+    \item\textbf{Tramo conflictivo}: \verb!carretera!, \verb!kilometro!, \verb!sentido! y \verb!fecha_grabacion!.
+    \item\textbf{Exceso de velocidad medio}: \verb!carretera!, \verb!velocidad_registrada!, \verb!velocidad_limite_radar! y \verb!fecha_grabacion!.
+\end{itemize}
+
+Es por eso que necesitan alimentarse exclusivamente de información relativa a las multas por exceso de velocidad, tal y como se representa en el siguiente diagrama:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./imagenes/tramo_y_velocidad.png}
+    \caption{Modelo lógico de Tramos conflictivos y Exceso de velocidad medio}
+\end{figure}
+
+\subsubsection{Probabilidad de infracción}
+
+
+\subsubsection{Diagrama completo}
+
+Con todo lo anterior, el diagrama que representa la nueva base de datos, así como el proceso de migración es el siguiente:
+
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[width=0.8\textwidth]{./imagenes/diagram.png}
+%    \caption{Modelo lógico de Tramos conflictivos y Exceso de velocidad medio}
+%\end{figure}
 
 \newpage
 \section{Conclusión}
