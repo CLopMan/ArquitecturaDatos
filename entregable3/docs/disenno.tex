@@ -119,7 +119,7 @@
 
 \section{Introducción}
 \label{sec:introduccion}
-En este documento se recoge el desarrollo de la práctica 2 de la asignatura
+En este documento se recoge la parte de diseño para el desarrollo de la práctica 2 de la asignatura
 \textit{Arquitectura de Datos}. En esta práctica se tratará de completar una
 migración de una base de datos desde \texttt{MongoDB} a \texttt{Cassandra}.
 Además, se computarán nuevas tablas con el fin de permitir el análisis
@@ -167,7 +167,17 @@ Observando las características del \texttt{json} con la información del anteri
 
 Con el objetivo de entender el dominio del problema se ha creado un diagrama de clases en formato UML que nos permita entender los elementos que se tienen en el sistema y cómo estos se relacionan entre sí.
 
-\section{Análisis de los Casos de Uso}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./imagenes/diagramaUML.png}
+    \caption{Diagrama de clases}
+    \label{fig:clases}
+\end{figure}
+
+\newpage
+
+
+\section{Análisis de los Casos de Uso y diseño de consultas}
 \label{sec:analisis_casos_de_uso}
 
 Para poder desarrollar el nuevo sistema es necesario entender a la perfección
@@ -241,7 +251,10 @@ SELECT * from Sanciones WHERE dni_deudor = '12345678X' AND tipo IN ('discrepanci
 SELECT * from Sanciones WHERE estado='stand_by' ALLOW FILTERING; 
 \end{lstlisting}
 
-En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING} debido a que las claves primaria y de clustering no forman parte de la condición de búsqueda. Sin embargo, ya que es necesario comprobar todos los registros para extraer aquellos con el estado adecuado no presenta un problema.
+En este caso es necesario incluir la \textit{flag} \texttt{ALLOW FILTERING}
+debido a que las claves primaria y de clustering no forman parte de la
+condición de búsqueda. Sin embargo, ya que es necesario comprobar todos los
+registros para extraer aquellos con el estado adecuado no presenta un problema.
 \end{itemize}
 
 \subsection{Análisis Estadístico}
@@ -543,28 +556,156 @@ Es por ello que necesitan obtener estos datos de la tabla de sanciones, explicad
 
 Con todo lo anterior, el diagrama que representa la nueva base de datos, así como el proceso de migración es el siguiente:
 
-%\begin{figure}[H]
-%    \centering
-%    \includegraphics[width=0.8\textwidth]{./imagenes/diagram.png}
-%    \caption{Modelo lógico de Tramos conflictivos y Exceso de velocidad medio}
-%\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./imagenes/modelo_migracion.png}
+    \caption{Modelo lógico completo}
+\end{figure}
 
 \subsection{Modelo físico}
 \label{subsec:modelo_fisico}
+
+\subsubsection{Definición de keyspace}
+\label{subsec:keyspace}
+Pese a que pudiera parecer que existen dos contextos funcionales distintos
+(funciones operativas y análisis estadístico), dado que las tablas contienen
+información redundante en muchos casos y que existen relaciones claras entre
+todas ellas se ha decidido mantener toda la base de datos en un único
+\textit{keyspace} llamado \texttt{practica2}. Este nombre, pese a no ser
+representativo de la base de datos, se ha elegido por ser muy fácilmente
+distinguible en la máquina virtual de otras bases de datos resultado de otros
+ejercicios. En un contexto laboral se debería cambiar por un nombre más
+representativo de la naturaleza de los datos como \textit{DatosSancionesDGT} o
+similares.
+
+\subsubsection{Elección de tipos}
+
+Los tipos de datos han sido contemplados en el modelo lógico. Aunque no sea una
+decisión común en ese ámbito se ha decidido seguir esa aproximación para
+permitirnos tener una primera estimación durante la fase de diseño de las
+necesidades de almacenamiento y particularidades del \textit{pipeline} de
+migración, así como conversiones necesarias de tipos o posibles correcciones
+que hacer sobre los datos.
+
+A continuación se incluye un resumen de las tablas: 
+
+\begin{minipage}{0.45\textwidth}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lll} 
+        \toprule
+        \multicolumn{3}{c}{\large\textbf{Sanciones}} \\ 
+        \midrule
+        dni\_deudor      & text & K \\
+        tipo             & text & C↑\\
+        fecha\_grabacion & date & C↓\\
+        cantidad         & int  &   \\
+        dni\_conductor   & text &   \\
+        dni\_propietario & text &   \\
+        estado           & text &   \\
+        matrícula        & text &   \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lll} 
+        \toprule
+        \multicolumn{3}{c}{\large\textbf{Multas por marca y modelo}} \\ 
+        \midrule
+        marca              & text & K\\
+        modelo             & text & K\\
+        matricula          & text & C↓\\
+        fecha\_grabacion   & text & C↓\\
+        tipo               & text &  \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\end{minipage}
+
+
+\begin{minipage}{0.45\textwidth}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lll} 
+        \toprule
+        \multicolumn{3}{c}{\large\textbf{Multas por color}} \\ 
+        \midrule
+        color            & text & K\\
+        matricula        & text & C↓\\
+        fecha\_grabacion & date & C↓\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{3}{c}{\large\textbf{Exceso de Velocidad Medio Por Carretera}} \\ 
+            \midrule
+            carretera        & text & K\\
+            fecha\_grabacion & date & C↓\\
+            velocidad\_registrada & int & \\
+            velocidad\_limite\_radar & int & \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{minipage}
+
+\begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{3}{c}{\large\textbf{Tramo y Sentido más Conflicto por Carretera}} \\ 
+            \midrule
+            carretera     & text & K\\
+            fecha\_grabacion & date & C↓\\
+            kilometro     & int & \\
+            sentido       & text& \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\begin{table}[H]
+        \centering
+        \begin{tabular}{lll} 
+            \toprule
+            \multicolumn{3}{c}{\large\textbf{Probabilidad de infracción}} \\ 
+            \midrule
+            conductor\_igual\_propietario & boolean & K\\
+            matricula        & text      & C↓\\
+            fecha\_grabacion & timestamp & C↓\\
+            \bottomrule
+        \end{tabular}
+     \end{table}
+
+
 \subsubsection{Dimensionamiento}
 \label{subsubsec:dimensionamiento}
-Con el objetivo de entender y analizar la escalabilidad de nuestros sistema, el nivel de optimización del sistema y el balanceo de la carga de trabajo, se calcularán los tamaños de las particiones.
+Con el objetivo de entender y analizar la escalabilidad, el nivel de
+optimización y el balanceo de la carga de trabajo del sistema, se
+calcularán los tamaños de las particiones.
 
-Para conocer el número de celdas (valores) que tiene cada partición usaremos la siguiente fórmula: $$N_v = N_r \cdot (N_c - N_{pk} - N_s) + N_s$$
+Para conocer el número de celdas (valores) que tiene cada partición se usará la siguiente fórmula:
+
+$$N_v = N_r \cdot (N_c - N_{pk} - N_s) + N_s$$
+
 \begin{itemize}
     \item $N_v$: Número de valores en la partición
     \item $N_s$: Número de columnas estáticas
     \item $N_r$: Número de filas
     \item $N_c$: Número de columnas
-    \item $N_pk$: Número de columnas en la pk
+    \item $N_{pk}$: Número de columnas en la pk
 \end{itemize}
 
-Con esta fórmula calcularemos el número de valores de cada partición para cada una de las tablas. Para entender cómo se realizarán los cálculos se se desarrollará la fórmula para una tabla, en este caso utilizaremos la tabla \textbf{Sanciones}:
+Con esta fórmula se calcula el número de valores de cada partición para cada
+una de las tablas. Para entender cómo se realizarán los cálculos se se
+desarrollará la fórmula para una tabla, en este caso se usará la tabla
+\textbf{Sanciones}:
+
 \begin{itemize}
     \item Nº de columnas: $N_c = 8$
     \item Nº de columnas en pk: $N_{pk} = 3$
@@ -583,20 +724,29 @@ A continuación se muestran los valores por partición para cada tabla:
     \item \textbf{Tramo y Sentido más conflictivo por carretera}: 88362
     \item \textbf{Exceso de Velocidad medio por carretera}: 88362
 \end{itemize}
-Es importante destacar que para las tablas donde todas las columnas forman parte de la clave primaria, aunque la formula resulte en $0$, se ha tomado el valor $1$, dado que cada fila insertada se ubicará en una partición.
 
-Tras calcular el número de filas por partición calcularemos el tamaño en disco de las tablas, esto se conseguirá a través de la siguiente fórmula: $$S_t = \sum_i sizeOf(c_k) + \sum_j sizeOf(c_{s_j}) + N_r \cdot (\sum_k sizeOf(c_{r_k}) + \sum_l sizeOf(c_{c_l})) + N_v \cdot sizeOf(t_{avg})$$
+Es importante destacar que para las tablas donde todas las columnas forman
+parte de la clave primaria, aunque la formula resulte en $0$, se ha tomado el
+valor $1$, dado que cada fila insertada se ubicará en una partición.
+
+Tras calcular el número de filas por partición se calculará el tamaño en disco
+de las tablas, esto se conseguirá a través de la siguiente fórmula: 
+
+$$S_t = \sum_i sizeOf(c_k) + \sum_j sizeOf(c_{s_j}) + N_r \cdot (\sum_k sizeOf(c_{r_k}) + \sum_l sizeOf(c_{c_l})) + N_v \cdot sizeOf(t_{avg})$$
 
 \begin{itemize}
     \item $c_k$: Cuenta las columnas que son clave de partición
     \item $c_s$: Cuenta las columnas estáticas
     \item $c_r$: Cuenta las columnas normales
     \item $c_c$: Cuenta las columnas que pertenecen a la clave de clusterización
-    \item $t_avg$: Promedio de bytes utilizados por Cassandra para almacenar los metadatos de un valor, suele ser 8 bytes
-    \item La función $sizeOf()$ indica el tamaño en bytes de los tipos CQL utilizados en la definición de cada columna
+    \item $t_{avg}$: Promedio de bytes utilizados por Cassandra para almacenar los metadatos de un valor, suele ser 8 bytes
+    \item La función \verb!sizeOf()! indica el tamaño en bytes de los tipos CQL utilizados en la definición de cada columna
 \end{itemize}
 
-Al igual que para el anterior cálculo, se desarrollará en profundidad el cálculo del tamaño de una partición de una tabla, de nuevo usaremos \textbf{Sanciones}:
+Al igual que para el anterior cálculo, se desarrollará en profundidad el
+cálculo del tamaño de una partición de una tabla, de nuevo usaremos
+\textbf{Sanciones}:
+
 \begin{itemize}
     \item No tiene columnas estáticas ($c_s = 0$)
     \item Cálculo de bytes por columna
@@ -615,7 +765,10 @@ Al igual que para el anterior cálculo, se desarrollará en profundidad el cálc
     \item Suma de columnas normales = 29 bytes
 \end{itemize}
 
-Con los valores calculados sustituimos en la fórmula $$S_t = 9 + 0 + 114049 \cdot (39 + 27) + 570245 \cdot 8 = 10948713 bytes = 12.09 MB$$
+Con los valores calculados sustituimos en la fórmula 
+
+$$S_t = 9 + 0 + 114049 \cdot (39 + 27) + 570245 \cdot 8 = 10948713 bytes = 12.09 MB$$
+
 A continuación se muestran los tamaños de las particiones de las siguientes tablas:
 \begin{itemize}
     \item \textbf{Sanciones}: 12.09 MB
@@ -650,357 +803,38 @@ A continuación se muestran los tamaños de las particiones de las siguientes ta
         %N_r = 44181
 \end{itemize}
 
-Se ha supuesto que la marca y el modelo no superarán los 15 caracteres, que el color de los vehiculos no superará los 20 caracteres y que el nombre de la carretera no supera los 8 caracteres.
-
-
-
-El límite de tamaño de una partición en Cassandra es de 2GB, pero se recomienda que el tamaño sea de 1MB. En nuestro caso todas las tablas tienen una gran holgura respecto al tamaño máximo de una partición, sin embargo únicamente 2 tablas no exceden el tamaño recomendado. Dos tablas que exceden el tamaño recomendado no lo exceden por mucho, únicamente por 0.5 MB, no obstante, la tabla \textbf{Sanciones} supera en un 1200\% el tamaño recomendado, por lo que sería una tabla en la que poner el foco.
-
-¿Cómo se podría solucionar el excesivo tamaño de la tabla \textbf{Sanciones}? La propuesta más sencilla es añadir una de las columnas normales como clave de partición, en este caso podríamos añadir a la clave de partición el atributo \textit{Matricula}, de esta manera podemos conocer las sanciones que tiene una persona según los coches que tenga. Este cambio reduce el número de filas por partición de 570245 a \textbf{456196}, lo que supone que el tamaño de cada partición sea de \textbf{10.38 MB}, lo que supone una reducción del \textbf{14\%} del tamaño con tan solo cambiar un atributo.
-Esto no es suficiente, pero se podrían proponer nuevas propuestas para mejorar más esta tabla, hasta llegar al tamaño recomendado. 
-
-\newpage
-\section{Implementación y carga de las tablas}
-\label{sec:implementacion}
-Una vez analizados los casos de uso y definididas tanto las consultas como las tablas, es necesario tratar la implementación de esta base de datos. Como se ha mencionado en puntos anteriores, se ha usado PySpark para la carga y algo de preprocesado de la información original. Es por ello que este apartado trata en detalle el script creado para la carga de datos, así cómo un breve análisis de los resultados.
-
-\subsection{Carga de datos en PySpark}
-El primer paso para realizar la carga de datos en las tablas es crear una sesión de PySpark para leer los datos del \textit{JSON} original. Para esto, primero hay que parsear el fichero original para que PySpark lo pueda procesar, algo que se ha realizado con la ayuda de un script extra que se encarga de introducir cada uno de los documentos originales en una lista, añadiendo los separadores entre documentos. Esto se ha realizado mediante el siguiente código:
-
-\lstset{style=python}
-\begin{lstlisting}[language=python, caption=Parseo del JSON original]
-import re
-
-with open("./data/sample.json", "r", encoding="ISO-8859-1") as f:
-    file_content = f.read()
-    file_parsed = re.sub(r"(?<!}\s)\n(?!\s{)", "", file_content)
-    file_parsed = re.sub(r" +", " ", file_parsed)
-    file_parsed = re.sub(r"\n(?!\s])", ",\n", file_parsed)
-
-with open("./data/sample_parsed.json", "w", encoding="utf-8") as f:
-    f.write(file_parsed)
-\end{lstlisting}
-
-Una vez que se han obtenido los datos parseados, se cargan en una sesión de PySpark de la siguiente manera:
-
-\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
-# ----- CREACION DE LA SESION DE PYSPARK -----
-spark = SparkSession.builder \
-    .appName("CargaDatos") \
-    .config("spark.cassandra.connection.host", "127.0.0.1") \
-    .config("spark.cassandra.connection.port", "9042") \
-    .getOrCreate()
-
-# ----- LECTURA DE FICHERO -----
-
-# Leer el archivo NDJSON
-json_df = spark.read.json(file_path)
-
-# Aplicar la funcion al DataFrame original
-json_df = rename_columns(json_df)
-\end{lstlisting}
-
-\subsection{Creación de las tablas intermedias}
-Una vez que se han cargado los datos, es necesario crear las tablas en PySpark que servirán para alimentar las tablas explicadas en el apartado anterior. Las tablas de PySpark se corresponden con las tablas de color verde de los diagramas del punto 4. Todas estas tablas se realizan de la misma manera, por lo que se usará la tabla de \textit{speed tickets} como ejemplo al ser la más extensa. La creación de las tablas de PySpark se realiza de la siguiente manera:
-
-\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
-# Seleccionar las columnas para la nueva tabla de velocidad
-speed_ticket = json_df.filter(col("radar.speed_limit") < col("Record.speed")).select(
-    col("Speed_ticket.Debtor.DNI").alias("dni_deudor"),
-    col("vehicle.Owner.DNI").alias("dni_propietario"),
-    col("vehicle.Driver.DNI").alias("dni_conductor"),
-    col("Speed_ticket.Pay_date").alias("fecha_pago"),
-    col("Speed_ticket.Amount").alias("cantidad"),
-    concat(col("Record.date"), lit(" "), col("Record.time")).alias("fecha_grabacion"),
-    col("road.name").alias("carretera"),
-    col("radar.mileage").alias("kilometro"),
-    col("radar.direction").alias("sentido"),
-    col("road.speed_limit").alias("velocidad_limite_carretera"),
-    col("radar.speed_limit").alias("velocidad_limite_radar"),
-    col("Record.speed").alias("velocidad_registrada"),
-    col("vehicle.number_plate").alias("matricula"),
-    col("Speed_ticket.State").alias("estado")
-)
-\end{lstlisting}
-
-\subsection{Creación de las tablas finales}
-Al conseguir las tablas que servirán para alimentar las tablas sobre las que haremos las consultas, se pueden construir las tablas finales. De la misma manera que en el apartado anterior, todas se realizan de la misma manera, por lo que se usará la tabla de \textit{sanciones} como ejemplo al ser la más extensa. Estas tablas normalmente requieren de uniones entre los datos, creando así una generación muy extensa, por lo que se decidió crear una función para la generación de cada tabla, las cuáles cuentan con una estructura similar a la siguiente:
-
-\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
-def gen_sanciones():
-
-    # Calcula los speeding tickets
-    speed = speed_ticket.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("velocidad"))
-
-    # Calcula los clearence tickets
-    clearance = clearance_ticket.select("dni_deudor", "dni_propietario","dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad").withColumn("tipo", lit("clearance"))
-
-    # Calcula los stretch ticket
-    stretch = clearance_ticket.select("dni_deudor", "dni_propietario","dni_conductor", "fecha_grabacion", "estado" ,"matricula", "cantidad").withColumn("tipo", lit("stretch"))
-
-    # Obtiene impago y reorganiza
-    impago = impago_sanciones.select("dni_deudor","dni_propietario", "dni_conductor", "fecha_grabacion", "cantidad", "matricula").withColumn("tipo", lit("impago")).withColumn("estado", lit("stand by"))
-    impago = impago.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_grabacion", "estado", "matricula", "cantidad", "tipo")
-
-    # Obtiene carne y reorganiza
-    carne = discrepancia_carne.select("dni_propietario", "dni_conductor", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000)).withColumn("dni_deudor", discrepancia_carne["dni_conductor"])
-    carne = carne.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_record", "estado", "matricula", "cantidad", "tipo")
-
-    # Obtiene desperfectos y reorganiza
-    desperfectos = vehiculo_deficiente.select("dni_propietario", "dni_conductor", "fecha_record", "matricula").withColumn("tipo", lit("discrepancia carne")).withColumn("estado", lit("stand by")).withColumn("cantidad", lit(1000)).withColumn("dni_deudor", vehiculo_deficiente["dni_propietario"])
-    desperfectos = desperfectos.select("dni_deudor", "dni_propietario", "dni_conductor", "fecha_record", "estado", "matricula","cantidad", "tipo")
-
-    return speed.union(clearance).union(impago).union(stretch).union(carne).union(desperfectos)
-\end{lstlisting}
-
-\subsection{Inserción de las tablas en Cassandra}
-Una vez que se tienen las tablas finales creadas en PySpark, se procede al último paso, la inserción de datos en Cassandra. Para ello, se define una función que se encarga de escribir en Cassandra una tabla, la cuál tiene la siguiente forma:
-
-\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
-def write_to_cassandra(table, name, mode):
-    table.write.format("org.apache.spark.sql.cassandra")\
-    .options(table=name, keyspace=KEYSPACE)\
-    .mode(mode)\
-    .save()
-\end{lstlisting}
-
-Un problema encontrado en la inserción fueron las fechas de las grabaciones. Para poder insertar una fecha que lograse alcanzar una mayor individualidad a las multas, se decidió juntar la fecha de grabación con el tiempo, logrando así un timestamp para las fechas. Para poder insertar estos datos correctamente, fue necesario cambiar el tipo de las columnas, algo que se realizó con la siguiente función:
-
-\begin{lstlisting}[language=python, caption=Carga de datos en PySpark]
-def convertir_formato_fecha(df, columna_fecha):
-    """
-    Convierte el formato de una columna de fechas a timestamps
-
-    :param df: DataFrame de PySpark
-    :param columna_fecha: Nombre de la columna que contiene las fechas a convertir
-    :return: DataFrame con la columna de fecha convertida
-    """
-    # Convertir la columna de fecha a formato timestamp
-    df_converted = df.withColumn(
-        columna_fecha,
-        to_timestamp(col(columna_fecha), 'dd/MM/yyyy HH:mm:ss.SSS')
-    )
-
-    return df_converted
-\end{lstlisting}
-
-Con estos pasos, se consiguió insertar los datos en Cassandra.
-
-\subsection{Prueba de las querys}
-Para probar que las tablas de cassandra funcionan, es necesario comprobar que las querys explicadas con anterioridad funcionan de acuerdo a lo exigido por los casos de uso en el enunciado. Así, se ejecutarán las querys y se mostraran algunas filas que sirvan como ejemplo de salida.
-
-\subsubsection{Query de las función operativa}
-Se han obtenido los siguientes resultados para la query de las función operativa sobre los expedientes activos sin plazo de pago cerrado:
-
-\begin{table}[H]
-\begin{longtable}{lllll}
-    \hline
-    \textbf{dni\_deudor} & \textbf{tipo} & \textbf{fecha\_grabacion} & \textbf{estado} & \textbf{matricula} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{dni\_deudor} & \textbf{tipo} & \textbf{fecha\_grabacion} & \textbf{estado} & \textbf{matricula} \\ \hline
-    \endhead
-    
-    63050842E & discrepancia carne & 2008-03-12 02:04:01 & stand by & 2955AUA \\ \hline
-    63050842E & discrepancia carne & 2008-08-05 09:10:31 & stand by & 2955AUA \\ \hline
-    63050842E & discrepancia carne & 2008-09-09 14:26:53 & stand by & 2955AUA \\ \hline
-    63050842E & discrepancia carne & 2008-09-14 20:23:03 & stand by & 2955AUA \\ \hline
-    63050842E & discrepancia carne & 2009-02-13 14:08:57 & stand by & 2955AUA \\ \hline
-    63050842E & discrepancia carne & 2009-02-27 20:08:44 & stand by & 2955AUA \\ \hline
-    
-\end{longtable}
-\caption{Resumen de las multas en proceso de pago}
-\end{table}
-
-Como se puede observar, todas las filas tienen el estado ``stand by'', que cumple con lo pedido en el enunciado.
-
-\subsubsection{Querys del análisis estadístico 1}
-Se han obtenido los siguientes resultados para las querys del análisis estadístico 1:
-
-\begin{itemize}
-    \item \textbf{Multas por marca y modelo}
-
-\begin{table}[H]
-\begin{longtable}{l l l}
-    \hline
-    \textbf{marca} & \textbf{modelo} & \textbf{total\_multas} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{marca} & \textbf{modelo} & \textbf{total\_multas} \\ \hline
-    \endhead
-    
-    Zitron & Tangerine & 1930 \\ \hline
-    Bemev & Berlin & 2528 \\ \hline
-    Rinaul & Fuente & 3370 \\ \hline
-    Zitron & Orange & 1178 \\ \hline
-    Escola & Tercius & 841 \\ \hline
-    
-\end{longtable}
-\caption{Resumen de las multas por marca y modelo}
-\end{table}
-
-Como se puede observar, se agrupan el número de sanciones por marca y modelo de vehículo de una manera correcta.
-
-    \item \textbf{Multas por color}
-
-\begin{table}[H]
-\begin{longtable}{l l}
-    \hline
-    \textbf{color} & \textbf{total\_multas} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{color} & \textbf{total\_multas} \\ \hline
-    \endhead
-    
-    azul & 1876 \\ \hline
-    dorado metalizado & 1352 \\ \hline
-    ocre metalizado & 162 \\ \hline
-    gris & 3989 \\ \hline
-    marron metalizado & 464 \\ \hline
-
-\end{longtable}
-\caption{Resumen de las multas por color}
-\end{table}
-
-Como se puede observar, se agrupan el número de sanciones por color de vehículo de una manera correcta.
-
-    \item \textbf{Multas de velocidad por marca y modelo}
-
-\begin{table}[H]
-\begin{longtable}{l l l}
-    \hline
-    \textbf{marca} & \textbf{modelo} & \textbf{total\_multas} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{marca} & \textbf{modelo} & \textbf{total\_multas} \\ \hline
-    \endhead
-    
-    Zitron & Tangerine & 1775 \\ \hline
-    Bemev & Berlin & 2304 \\ \hline
-    Rinaul & Fuente & 3076 \\ \hline
-    Zitron & Orange & 1071 \\ \hline
-    Escola & Tercius & 753 \\ \hline
-\end{longtable}
-\caption{Resumen de las multas de velocidad por marca y modelo}
-\end{table}
-
-Como se puede observar, se agrupan el número de sanciones de velocidad por marca y modelo de vehículo de una manera correcta. Además, el número de multas es menor al de la tabla de multas por marca y modelo, pudiendo asumir que la selección por el tipo ``velocidad'' ha sido efectiva.
-
-\end{itemize}
-
-\subsubsection{Querys del análisis estadístico 2}
-Se han obtenido los siguientes resultados para las querys del análisis estadístico 2:
-
-\begin{itemize}
-    \item \textbf{Exceso de velocidad medio}
-
-\begin{table}[H]
-\begin{longtable}{l l l}
-    \hline
-    \textbf{carretera} & \textbf{media\_velocidad\_registrada} & \textbf{media\_velocidad\_radar} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{carretera} & \textbf{media\_velocidad\_registrada} & \textbf{media\_velocidad\_radar} \\ \hline
-    \endhead
-    
-    A2 & 116 & 100 \\ \hline
-    A3 & 116 & 100 \\ \hline
-    M30 & 66 & 50 \\ \hline
-    M45 & 96 & 80 \\ \hline
-    M40 & 96 & 80 \\ \hline
-    A6 & 116 & 100 \\ \hline
-    A4 & 116 & 100 \\ \hline
-    A1 & 117 & 100 \\ \hline
-    M50 & 117 & 100 \\ \hline
-    A5 & 116 & 100 \\ \hline
-    
-\end{longtable}
-\caption{Resumen de las medias de exceso de velocidad medio}
-\end{table}
-
-Estos resultados permiten obtener en la capa de aplicación un porcentaje dividiendo el resultado de ``media velocidad registrada'' entre ``media velocidad radar''. 
-
-    \item \textbf{Tramo y sentido mas conflictivo}
-
-\begin{table}[H]
-\begin{longtable}{l l l l}
-    \hline
-    \textbf{carretera} & \textbf{kilometro} & \textbf{sentido} & \textbf{infracciones\_tramo} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{carretera} & \textbf{kilometro} & \textbf{sentido} & \textbf{infracciones\_tramo} \\ \hline
-    \endhead
-    
-    M45 & 28 & ascending & 202 \\ \hline
-    M40 & 43 & descending & 421 \\ \hline
-    A1 & 218 & ascending & 184 \\ \hline
-    A5 & 53 & ascending & 263 \\ \hline
-    M30 & 11 & ascending & 702 \\ \hline
-    
-\end{longtable}
-\caption{Resumen de infracciones por tramo y sentido de carretera}
-\end{table}
-
-La query muestra correctamentre el número de infracciones por tramo y dirección de cada carretera, pudiendo escoger el mayor en la capa de aplicación.
-
-\end{itemize}
-
-\subsubsection{Querys del análisis estadístico 3}
-Se han obtenido los siguientes resultados para las querys del análisis estadístico 3:
-
-\begin{itemize}
-    \item \textbf{Conductores más infractores}
-
-\begin{table}[H]
-\begin{longtable}{l l}
-    \hline
-    \textbf{dni\_deudor} & \textbf{num\_multas} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{dni\_deudor} & \textbf{num\_multas} \\ \hline
-    \endhead
-    
-    63050842E & 525 \\ \hline
-    55074832K & 435 \\ \hline
-    78135349W & 472 \\ \hline
-    12519376Q & 431 \\ \hline
-    28232810B & 837 \\ \hline
-    
-\end{longtable}
-\caption{Resumen de multas por DNI del deudor}
-\end{table}
-
-La query funciona correctamente, agrupando el número de sanciones por el dni del deudor.
-
-    \item \textbf{Probabilidad de infracción cuando el conductor es distinto al propietario}
-
-\begin{table}[H]
-\begin{longtable}{l l}
-    \hline
-    \textbf{conductor\_igual\_propietario} & \textbf{count} \\ \hline
-    \endfirsthead
-    
-    \hline
-    \textbf{conductor\_igual\_propietario} & \textbf{count} \\ \hline
-    \endhead
-    
-    False & 29656 \\ \hline
-    True & 19069 \\ \hline
-    
-\end{longtable}
-\caption{Resumen de las coincidencias entre conductor y propietario}
-\end{table}
-
-La queery funciona correctamente, devolvienvdo dos filas con las que calcular un porcentaje en la capa de aplicación.
-
-\end{itemize}
+Se ha supuesto que la marca y el modelo no superarán los 15 caracteres, que el
+color de los vehiculos no superará los 20 caracteres y que el nombre de la
+carretera no supera los 8 caracteres.
+
+El límite de tamaño de una partición en Cassandra es de 2GB, pero se recomienda
+que el tamaño sea de 1MB. En nuestro caso todas las tablas tienen una gran
+holgura respecto al tamaño máximo de una partición. Sin embargo, únicamente 2
+tablas no exceden el tamaño recomendado. Respecto a las demás, existen dos tablas que exceden el tamaño
+recomendado por, aproximadamente, 0.5 MB; y una tabla, \textbf{Sanciones},
+que supera en un 1200\% el tamaño recomendado.
+
+El tamaño de la tabla \textbf{Sanciones} es un problema a tener en cuenta y
+necesario de solucionar. La propuesta más sencilla es añadir una una nueva
+columna como clave de partición. Se sugiere usar \textit{Matricula} con este
+fin, de forma que se optimicen consultas sobre sanciones que tiene una persona
+según los coches que tenga. Este cambio reduce el número de filas por partición
+de 570245 a \textbf{456196}, lo que supone que el tamaño de cada partición sea
+de \textbf{10.38 MB} y una reducción del \textbf{14\%} del tamaño
+con tan solo cambiar un atributo.
+
+Aunque esté lejos del tamaño recomendado, se pueden seguir añadiendo atributos
+a la clave de partición según las necesidades emergentes de la base de datos
+para seguir reduciendo el tamaño.
+
+\subsubsection{Testeo de rendimiento}
+
+Se han ejecutado las consultas diseñadas en el apartado relativo a los casos de
+uso (ver \ref{sec:analisis_casos_de_uso}), logrando obtener la totalidad de los
+datos en tiempos muy reducidos. Algunas de estas consultas devuelven grandes
+volúmenes de datos, destacando el buen rendimiento de \verb!Cassandra! en
+lecturas. Es por esto que concluímos que el rendimiento de la base de datos es
+suficiente y no necesita de grandes optimizaciones.
 
 \newpage
 \section{Conclusiones}
